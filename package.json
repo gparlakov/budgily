@@ -1,0 +1,14 @@
+{
+  "name": "codedoc1",
+  "version": "0.0.0",
+  "license": "MIT",
+  "scripts": {},
+  "private": true,
+  "dependencies": {
+    "qwik-nx": "0.15.2"
+  },
+  "devDependencies": {
+    "@nrwl/workspace": "15.9.2",
+    "nx": "15.9.2"
+  }
+}
