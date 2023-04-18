@@ -1,0 +1,76 @@
+{
+  "name": "budgily",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "./budgily/src",
+  "targets": {
+    "build": {
+      "executor": "qwik-nx:build",
+      "options": {
+        "runSequence": ["budgily:build.client", "budgily:build.ssr"],
+        "outputPath": "dist/./budgily"
+      },
+      "configurations": {
+        "preview": {}
+      }
+    },
+    "build.client": {
+      "executor": "@nrwl/vite:build",
+      "options": {
+        "outputPath": "dist/./budgily",
+        "configFile": "./budgily/vite.config.ts"
+      }
+    },
+    "build.ssr": {
+      "executor": "@nrwl/vite:build",
+      "defaultConfiguration": "preview",
+      "options": {
+        "outputPath": "dist/./budgily"
+      },
+      "configurations": {
+        "preview": {
+          "ssr": "src/entry.preview.tsx",
+          "mode": "production"
+        }
+      }
+    },
+    "preview": {
+      "executor": "@nrwl/vite:preview-server",
+      "options": {
+        "buildTarget": "budgily:build",
+        "port": 4300
+      }
+    },
+    "test": {
+      "executor": "@nrwl/vite:test",
+      "outputs": ["../coverage/./budgily"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../coverage/./budgily"
+      }
+    },
+    "serve": {
+      "executor": "@nrwl/vite:dev-server",
+      "options": {
+        "buildTarget": "budgily:build.client",
+        "mode": "ssr",
+        "port": 4200
+      }
+    },
+    "serve.debug": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node --inspect-brk ../node_modules/vite/bin/vite.js --mode ssr --force",
+        "cwd": "./budgily"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["budgily/**/*.{ts,tsx,js,jsx}"]
+      }
+    }
+  },
+  "tags": []
+}
