@@ -1,4 +1,4 @@
-import { JSXChildren, component$, useSignal, useVisibleTask$ } from '@builder.io/qwik';
+import { component$, useSignal, useVisibleTask$ } from '@builder.io/qwik';
 import * as d3 from 'd3';
 
 export default component$(() => {

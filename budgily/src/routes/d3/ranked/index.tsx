@@ -54,26 +54,31 @@ const y = d3
 export default component$(() => {
 
   useStylesScoped$(scoped);
-  const store = useStore({ width: 0, height: 0 });
+  const store = useStore({ width: 500, height: 500 });
   const svgRef = useSignal<Element>();
 
   useClientEffect$(() => {
-    setSvgDimension(svgRef, store);
+    console.log('----- use client effect', svgRef.value)
+    // setSvgDimension(svgRef, store);
+
+    render(getNormalizedData(data, store.width), svgRef, store.width, store.height);
   });
 
-  useOnWindow(
-    'resize',
-    $(() => {
-      setSvgDimension(svgRef, store);
-    })
-  );
+  // useOnWindow(
+  //   'resize',
+  //   $(() => {
+  //     console.log('------ resize')
+  //     setSvgDimension(svgRef, store);
+  //   })
+  // );
 
-  useTask$(({ track }) => {
-    track(() => store.width);
-    track(() => store.height);
-    const normalizedData = getNormalizedData(data, store.width);
-    render(normalizedData, svgRef, store.width, store.height);
-  });
+  // useTask$(({ track }) => {
+  //   console.log('------ task')
+  //   track(() => store.width);
+  //   track(() => store.height);
+  //   const normalizedData = getNormalizedData(data, store.width);
+  //   render(normalizedData, svgRef, store.width, store.height);
+  // });
 
   return <svg class="chart" ref={svgRef} height="500px" />;
 });
@@ -87,9 +92,9 @@ export function render(
 ) {
   const wrapper = d3
     .select(svgRef.value)
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
+    // .append('svg')
+    // .attr('width', width)
+    // .attr('height', height)
 
   const svg = wrapper
     .append('g')
@@ -119,7 +124,6 @@ export function render(
     bars
       .append('text')
         .attr('x', f => namesColumnWidth + f.width + 2)
-        // .attr('width', f => namesColumnWidth + f.width + 2)
         .attr('y', (f) => Number(y(f.fruit)) + y.bandwidth())
         .attr('height', y.bandwidth() / 2)
         .attr('fill', (d) => color(d.fruit) as string)

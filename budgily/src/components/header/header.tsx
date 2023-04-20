@@ -15,6 +15,16 @@ export default component$(() => {
       </div>
       <ul>
         <li>
+          <Link href="/d3/">
+            d3
+          </Link>
+        </li>
+        <li>
+          <Link href="/d3/ranked/">
+            ranked(d3)
+          </Link>
+        </li>
+        <li>
           <Link href="/flower/">
             Blow my mind 🤯
           </Link>
