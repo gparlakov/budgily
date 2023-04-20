@@ -6,7 +6,6 @@ import {
 } from "@builder.io/qwik";
 import { DocumentHead, useLocation } from "@builder.io/qwik-city";
 import styles from "./flower.scss?inline";
-import { DelayCount } from '../../components/delay-count/delay-count';
 
 export default component$(() => {
   useStylesScoped$(styles);

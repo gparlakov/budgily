@@ -6,7 +6,6 @@ import { Link } from '@builder.io/qwik-city';
 export default component$(() => {
   useStylesScoped$(styles);
 
-  console.log(';;;')
   return (
     <header>
       <div class="logo">
