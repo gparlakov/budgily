@@ -1,12 +1,13 @@
 .debit, .credit {
-  font-size: 0.5rem;
-  line-height: 0.5rem;
+  font-size: 0.6rem;
 }
 
-.debit {
-  color: red;
-}
+.hover {
+  position: fixed;
+  display: none;
+  background-color: white;
 
-.credit {
-  color: green;
+  .show {
+    display: initial;
+  }
 }

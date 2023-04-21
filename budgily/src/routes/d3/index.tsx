@@ -23,9 +23,8 @@ export default component$(() => {
   const dskMovements = useResource$<Movement[]>(({ track }) => {
     track(() => fetch.value);
     if (fetch.value) {
-      return getDskReports(getDSKReportFiles(window.location)).then(
-        (movements) =>
-          movements.sort((a, b) => b.date.valueOf() - a.date.valueOf())
+      return getDskReports(getDSKReportFiles(window.location)).then((movements) =>
+        movements.sort((a, b) => b.date.valueOf() - a.date.valueOf())
       );
     }
     return [];
@@ -39,9 +38,14 @@ export default component$(() => {
     monthsWidth: number;
     debounceTime: number;
     debounceRef?: number;
+
+    showOver?: boolean
+    positionX?: string;
+    positionY?: string;
+    text?: string;
   }>({
     width: 800,
-    height: 700,
+    height: 1200,
     padding: 10,
     monthsWidth: 80,
     debounceTime: 300,
@@ -53,18 +57,12 @@ export default component$(() => {
     if (store.debounceRef) {
       clearTimeout(store.debounceRef);
     }
-    store.debounceRef = setTimeout(
-      () => {
-        store.width = width;
-        clearTimeout(store.debounceRef);
-      },
-      store.debounceTime
-    ) as unknown as number;
+    store.debounceRef = setTimeout(() => {
+      store.width = width;
+      clearTimeout(store.debounceRef);
+    }, store.debounceTime) as unknown as number;
   });
-  useOnWindow(
-    'resize',
-    debouncedSVGResize
-  );
+  useOnWindow('resize', debouncedSVGResize);
 
   useVisibleTask$(({ track, cleanup }) => {
     // console.log('starting -----');
@@ -91,9 +89,8 @@ export default component$(() => {
       (m) => m.type
     );
 
-    const monthlyCreditOrDebitSums = [...monthly.values()]
-      .flatMap((m => ([...m.values()])))
-      .map(sumAmounts);
+    const monthlyCreditOrDebit = [...monthly.values()].flatMap((m) => [...m.values()]);
+    const monthlyCreditOrDebitSums = monthlyCreditOrDebit.map(sumAmounts);
     const maxSum = max(monthlyCreditOrDebitSums) ?? 25000;
     const debitScale = d3
       .scaleLinear()
@@ -103,9 +100,7 @@ export default component$(() => {
     const creditScale = debitScale;
 
     const colorDomain: MovementType[] = ['Credit', 'Debit'];
-    const color = scaleOrdinal<MovementType, string>(['teal', 'orange']).domain(
-      colorDomain
-    );
+    const color = scaleOrdinal<MovementType, string>(['teal', 'orange']).domain(colorDomain);
 
     const y = d3
       .scaleBand([padding, height - padding])
@@ -130,9 +125,7 @@ export default component$(() => {
       .data(monthly)
       .enter()
       .append('rect')
-      .attr('width', ([, values]) =>
-        debitScale(sumAmounts(values.get('Debit')))
-      )
+      .attr('width', ([, values]) => debitScale(sumAmounts(values.get('Debit'))))
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)))
       .attr('x', barsStart)
@@ -146,23 +139,17 @@ export default component$(() => {
       .attr('alignment-baseline', 'hanging')
       .attr('text-anchor', 'end')
       .attr('y', ([key]) => Number(y(key)))
-      .attr(
-        'x',
-        ([, values]) =>
-          debitScale(sumAmounts(values.get('Debit'))) + barsStart
-      )
+      .attr('x', ([, values]) => Number(max([debitScale(sumAmounts(values.get('Debit'))), 30])) + barsStart)
       .classed('debit', true)
       .text(([, values]) => `-${sumAmounts(values.get('Debit')).toFixed(2)}лв`);
 
     // credit
-   wrapper
+    wrapper
       .selectAll()
       .data(monthly)
       .enter()
       .append('rect')
-      .attr('width', ([, values]) =>
-        creditScale(sumAmounts(values.get('Credit')))
-      )
+      .attr('width', ([, values]) => creditScale(sumAmounts(values.get('Credit'))))
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
       .attr('x', barsStart)
@@ -176,37 +163,43 @@ export default component$(() => {
       .attr('alignment-baseline', 'hanging')
       .attr('text-anchor', 'end')
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
-      .attr(
-        'x',
-        ([, values]) =>
-          Number(max([creditScale(sumAmounts(values.get('Credit'))), 30])) + barsStart
-      )
+      .attr('x', ([, values]) => Number(max([creditScale(sumAmounts(values.get('Credit'))), 30])) + barsStart)
       .classed('credit', true)
       .text(([, values]) => `+${sumAmounts(values.get('Credit')).toFixed(2)}лв`);
 
     // credit By type
+    const creditByTypeColor = d3.scaleOrdinal(d3.schemeTableau10).domain(monthlyCreditOrDebit.flatMap(ms => ms.map(m => m.description)));
+    const positionX = d3.scaleLinear([50, 200]).domain([0, 2000])
     wrapper
       .selectAll()
       .data(monthly)
       .enter()
       // add a group for the credit by type
       .append('g')
-        .attr('transform', ([key, ]) => `translate(0, ${Number(y(key)) + ((y.bandwidth() / 3) * 2) + 1})`)
+      .attr('transform', ([key]) => `translate(0, ${Number(y(key)) + (y.bandwidth() / 3) * 2 + 1})`)
 
       // add rectangles for each credit type
       .selectAll('rect')
-      .data(([,perMonth]) => {
+      .data(([, perMonth]) => {
         const credits = perMonth.get('Credit') ?? [];
-        const stack = d3.stack().keys(credits.map(c => c.description))
-        const stacked = stack([credits.reduce((acc,c) => ({...acc, [c.description]: c.amount}), {})]);
+        const stack = d3.stack().keys(credits.map((c) => c.description));
+        const stacked = stack([credits.reduce((acc, c) => ({ ...acc, [c.description]: c.amount }), {})]);
         return stacked;
       })
-        .join('rect')
-        .attr('height', y.bandwidth() / 3)
-        .attr('width', ([[start, end]]) => creditScale(end) - creditScale(start))
-        .attr('x', ([[start]]) => creditScale(start) + barsStart)
-        .attr('fill', 'Green')
-        // .on('hover', );
+      .join('rect')
+      .attr('height', y.bandwidth() / 3)
+      .attr('width', ([[start, end]]) => creditScale(end) - creditScale(start))
+      .attr('x', ([[start]]) => creditScale(start) + barsStart)
+      .attr('fill', (x) => creditByTypeColor(x.key))
+      .on('mouseenter', ({clientX, clientY}, x) => {
+        store.showOver = true;
+        // give it 10px to avoid flickering
+        store.positionX = `${positionX(clientX)}px`;
+        store.positionY = `${clientY + 10}px`;
+        store.text = `+${x[0].data[x.key]}лв. ${x.key}`;
+      })
+      .on('mouseleave', () => {store.showOver = false;})
+      ;
 
     // const creaditFromStacker = d3
     //   .stack()
@@ -228,14 +221,8 @@ export default component$(() => {
           store.movements = f;
           return (
             <div>
-              <p>
-                Total Credit{' '}
-                {sumAmounts(f?.filter((m) => m.type === 'Credit')).toFixed(2)}
-              </p>
-              <p>
-                Total Debit{' '}
-                {sumAmounts(f?.filter((m) => m.type === 'Debit')).toFixed(2)}
-              </p>
+              <p>Total Credit {sumAmounts(f?.filter((m) => m.type === 'Credit')).toFixed(2)}</p>
+              <p>Total Debit {sumAmounts(f?.filter((m) => m.type === 'Debit')).toFixed(2)}</p>
             </div>
           );
         }}
@@ -243,12 +230,11 @@ export default component$(() => {
       />
       <svg width={store.width} height={store.height} ref={svgRef} />
       <div class="sizer"></div>
+      <div class="hover" style={{display: store.showOver ? 'block' : 'none', top: store.positionY, left: store.positionX }} >{store.text}</div>
     </>
   );
 });
 
 export function sumAmounts(ms?: Movement[]): number {
-  return Array.isArray(ms)
-    ? ms.map((a) => a.amount).reduce((a, b) => a + b, 0)
-    : 0;
+  return Array.isArray(ms) ? ms.map((a) => a.amount).reduce((a, b) => a + b, 0) : 0;
 }
