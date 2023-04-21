@@ -1,3 +1,4 @@
+import { group, index } from 'd3';
 import { getXmls } from './get-xml';
 import { Movement, MovementType } from './types';
 
@@ -41,10 +42,15 @@ export function defaultDSKMapper(x?: DSKExport): Movement[] {
 export function getDskReports(fileNamePath: string[], mapper: (x?: DSKExport) => Movement[] = defaultDSKMapper): Promise<Movement[]> {
   return Promise.all(fileNamePath.map(f => getXmls<DSKExport>(f)))
     .then(exports => exports.flatMap(mapper))
+    .then(all => {
+      const groups = group(all, a => `${a.amount}-${a.date.toString()}`); // group by date and amount to remove duplications
+
+      return [...groups.values()].map(v => v[0]);
+    })
 }
 
 export function getDSKReportFiles(location: Location): string[] {
-  return ['report-2022.xml'].map(v => {
+  return ['report-2022.xml', 'report-01_2022-04-2023.xml'].map(v => {
     const u = new URL(location.toString());
     u.pathname = v;
     return u.toString();
