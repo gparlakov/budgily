@@ -91,14 +91,16 @@ export default component$(() => {
       (m) => m.type
     );
 
-
-    const widthDebit = d3
+    const monthlyCreditOrDebitSums = [...monthly.values()]
+      .flatMap((m => ([...m.values()])))
+      .map(sumAmounts);
+    const maxSum = max(monthlyCreditOrDebitSums) ?? 25000;
+    const debitScale = d3
       .scaleLinear()
       // from 0 to the max of the monthly credit/debit sums
-      .domain([0, Number(max([...monthly.values()].flatMap(([, [, byType]]) => sumAmounts(byType))))])
-      .range([padding + monthsWidth, width - padding - monthsWidth]);
-
-    const widthCredit = widthDebit;
+      .domain([0, maxSum])
+      .range([0, width - padding - monthsWidth - padding]); // accounts for the bars starting at padding + monthsWidth
+    const creditScale = debitScale;
 
     const colorDomain: MovementType[] = ['Credit', 'Debit'];
     const color = scaleOrdinal<MovementType, string>(['teal', 'orange']).domain(
@@ -108,7 +110,7 @@ export default component$(() => {
     const y = d3
       .scaleBand([padding, height - padding])
       .domain(monthly.keys())
-      .padding(0.1)
+      .padding(0.2)
       .round(true);
 
     const barsStart = padding + monthsWidth;
@@ -129,7 +131,7 @@ export default component$(() => {
       .enter()
       .append('rect')
       .attr('width', ([, values]) =>
-        widthDebit(sumAmounts(values.get('Debit')))
+        debitScale(sumAmounts(values.get('Debit')))
       )
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)))
@@ -147,10 +149,10 @@ export default component$(() => {
       .attr(
         'x',
         ([, values]) =>
-          widthDebit(sumAmounts(values.get('Debit'))) + barsStart * 0.8
+          debitScale(sumAmounts(values.get('Debit'))) + barsStart
       )
       .classed('debit', true)
-      .text(([, values]) => sumAmounts(values.get('Debit')).toFixed(2));
+      .text(([, values]) => `-${sumAmounts(values.get('Debit')).toFixed(2)}лв`);
 
     // credit
    wrapper
@@ -159,7 +161,7 @@ export default component$(() => {
       .enter()
       .append('rect')
       .attr('width', ([, values]) =>
-        widthCredit(sumAmounts(values.get('Credit')))
+        creditScale(sumAmounts(values.get('Credit')))
       )
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
@@ -177,13 +179,35 @@ export default component$(() => {
       .attr(
         'x',
         ([, values]) =>
-          widthCredit(sumAmounts(values.get('Credit'))) + barsStart * 0.8
+          Number(max([creditScale(sumAmounts(values.get('Credit'))), 30])) + barsStart
       )
       .classed('credit', true)
-      .text(([, values]) => sumAmounts(values.get('Credit')).toFixed(2));
+      .text(([, values]) => `+${sumAmounts(values.get('Credit')).toFixed(2)}лв`);
 
     // credit By type
-    const credits = allMovements.filter((m) => m.type === 'Credit');
+    wrapper
+      .selectAll()
+      .data(monthly)
+      .enter()
+      // add a group for the credit by type
+      .append('g')
+        .attr('transform', ([key, ]) => `translate(0, ${Number(y(key)) + ((y.bandwidth() / 3) * 2) + 1})`)
+
+      // add rectangles for each credit type
+      .selectAll('rect')
+      .data(([,perMonth]) => {
+        const credits = perMonth.get('Credit') ?? [];
+        const stack = d3.stack().keys(credits.map(c => c.description))
+        const stacked = stack([credits.reduce((acc,c) => ({...acc, [c.description]: c.amount}), {})]);
+        return stacked;
+      })
+        .join('rect')
+        .attr('height', y.bandwidth() / 3)
+        .attr('width', ([[start, end]]) => creditScale(end) - creditScale(start))
+        .attr('x', ([[start]]) => creditScale(start) + barsStart)
+        .attr('fill', 'Green')
+        // .on('hover', );
+
     // const creaditFromStacker = d3
     //   .stack()
     //   .keys(credits.map((m) => m.oppositeSideName));

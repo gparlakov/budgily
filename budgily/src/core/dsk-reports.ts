@@ -1,4 +1,4 @@
-import { group, index } from 'd3';
+import { csv, group } from 'd3';
 import { getXmls } from './get-xml';
 import { Movement, MovementType } from './types';
 
@@ -11,46 +11,94 @@ export type DSKAccountMovement = {
   Amount: string;
 };
 
+export type DSKExport =
+  | {
+      AccountMovements: {
+        AccountMovement: DSKAccountMovement[];
+      };
+    }
+  | ({
+      'Валутен курс': string;
+      'Вид транзакция': string;
+      Дата: string;
+      'Дебит BGN': string;
+      'Кредит BGN': string;
+      'Наредител/Получател': string;
+      'Номер сметка на наредителя / получателя': string;
+      Основание: string;
+      'Свързваща референция': string;
+      'Сума във валутата на превода': string;
+    }[] & { columns: string[] });
 
-export interface DSKExport {
-  AccountMovements: {
-    AccountMovement: DSKAccountMovement[];
-  };
+export function getDateFromBGString(bgDate: string): Date {
+  const [day, month, year] = bgDate.split('.');
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  return date;
 }
-export function defaultDSKMapper(x?: DSKExport): Movement[] {
-  return (x?.AccountMovements?.AccountMovement??[])
-  .map(v => {
 
-    const [day, month, year] = v.ValueDate.split('.');
-    const date = new Date(Number(year), Number(month) - 1, Number(day));
+export function getNumberFromBgString(bgAmount: string) {
+  return parseFloat(bgAmount.replace(',', '.'));
+}
+
+export function defaultDSKMapper(exports?: DSKExport): Movement[] {
+  if (exports == null) {
+    return [];
+  }
+  if (Array.isArray(exports)) {
+    const isDebit = (x: Record<string, string>) => x['Дебит BGN'] !== '';
+
+    return exports.map((x) => ({
+      date: getDateFromBGString(x.Дата),
+      amount: getNumberFromBgString(
+        isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']
+      ),
+      type: isDebit(x) ? 'Debit' : 'Credit',
+      description: x['Основание'],
+    }));
+  }
+
+  return (exports?.AccountMovements?.AccountMovement ?? []).map((v) => {
+    const date = getDateFromBGString(v.ValueDate);
 
     if (date.toString() === new Date('Invalid date').toString()) {
-      throw new Error(`could not parse ${m.ValueDate}`);
+      throw new Error(`could not parse ${v.ValueDate}`);
     }
 
-    const amount = parseFloat(v.Amount.replace(',', '.'));
+    const amount = getNumberFromBgString(v.Amount);
 
     return {
       date,
-      oppositeSideName: v.OppositeSideAccount,
+      description: `${v.Reason}| ${v.OppositeSideAccount}[ACC:${v.OppositeSideAccount}]`,
       type: v.MovementType,
-      amount
-    }
-  })
+      amount,
+    };
+  });
 }
 
-export function getDskReports(fileNamePath: string[], mapper: (x?: DSKExport) => Movement[] = defaultDSKMapper): Promise<Movement[]> {
-  return Promise.all(fileNamePath.map(f => getXmls<DSKExport>(f)))
-    .then(exports => exports.flatMap(mapper))
-    .then(all => {
-      const groups = group(all, a => `${a.amount}-${a.date.toString()}`); // group by date and amount to remove duplications
+const dedupe = (all: Movement[]): Movement[] => {
+  // group by date,amount, and type to remove duplications from multiple files i.e. same debit reported from multiple files
+  const groups = group(all, (a) => `${a.amount}-${a.date.toString()}-${a.type}`);
+  return [...groups.values()].map((v) => v[0]);
+};
+export function getDskReports(
+  files: string[],
+  mapper: (x?: DSKExport) => Movement[] = defaultDSKMapper
+): Promise<Movement[]> {
 
-      return [...groups.values()].map(v => v[0]);
-    })
+  return Promise.all(
+    files.map((f) => f.endsWith('xml') ? getXmls<DSKExport>(f) : csv(f) as Promise<DSKExport>)
+  )
+    .then((exports) => exports.flatMap(mapper))
+    .then(dedupe);
 }
 
 export function getDSKReportFiles(location: Location): string[] {
-  return ['report-2022.xml', 'report-01_2022-04-2023.xml'].map(v => {
+  return [
+    'report-2022.xml',
+    'report-01_2022-04-2023.xml',
+    'report-11_2021-11_2022.xml',
+    'report-2020-debit-card-income.csv',
+  ].map((v) => {
     const u = new URL(location.toString());
     u.pathname = v;
     return u.toString();
