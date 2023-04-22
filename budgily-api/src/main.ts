@@ -6,6 +6,7 @@ import { root, schema } from '@codedoc1/budgily-data';
 import { json } from 'body-parser';
 import cors from 'cors';
 import express from 'express';
+import { getDskMovements } from './dsk/dsk-movements';
 
 
 const host = process.env.HOST ?? 'localhost';
@@ -15,7 +16,12 @@ const app = express();
 
 const server = new ApolloServer({
   typeDefs: schema,
-  resolvers: root,
+  resolvers: {
+    Query: {
+      ...root.Query,
+      movements: getDskMovements
+    }
+  },
 });
 
 // startStandaloneServer(server, {listen: {port}})

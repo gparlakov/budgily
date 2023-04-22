@@ -1,5 +1,7 @@
 // Construct a schema, using GraphQL schema language
 
+import { Simple } from './dsk/dsk-handler';
+
 export const schema = `
   enum MovementType {
     DEBIT
@@ -26,13 +28,8 @@ export const root = {
     hello: () => {
       return 'Hello sss!';
     },
-    movements: () => {
-      return [{
-        amount: 10
-      },
-    {
-      amount: 20
-    }]
+    movements: () =>{
+      return Simple();
     }
   },
 };

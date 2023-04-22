@@ -1,0 +1,40 @@
+﻿  <AccountMovement>
+    <ValueDate>30.08.2022</ValueDate>
+    <Reason>TRAVEL EXPENSES RFB 12154000  083022                        ISW3008220003502</Reason>
+    <OppositeSideName>GEORGI PARLAKOV</OppositeSideName>
+    <OppositeSideAccount>0000000504384010</OppositeSideAccount>
+    <MovementType>Credit</MovementType>
+    <Amount>4632,69</Amount>
+  </AccountMovement>
+  <AccountMovement>
+    <ValueDate>26.08.2022</ValueDate>
+    <Reason>ЩЕТА 31/0000763911</Reason>
+    <OppositeSideName>ЗАД Булстрад Живот АД</OppositeSideName>
+    <OppositeSideAccount>BG30BPBI79421071090909</OppositeSideAccount>
+    <MovementType>Credit</MovementType>
+    <Amount>13,46</Amount>
+  </AccountMovement>
+  <AccountMovement>
+    <ValueDate>23.08.2022</ValueDate>
+    <Reason>АВАНС 08.2022 БУЛСТАТ 20034197                              СПИСЪК 072663638321 КЛОН 0099</Reason>
+    <OppositeSideName>ЕС БИ ЕМ ООД</OppositeSideName>
+    <OppositeSideAccount>BG11STSA93000026636383</OppositeSideAccount>
+    <MovementType>Credit</MovementType>
+    <Amount>3550,00</Amount>
+  </AccountMovement>
+  <AccountMovement>
+    <ValueDate>11.08.2022</ValueDate>
+    <Reason>TRAVEL EXPENSES RFB 12059414  081122                        ISW1108220003511</Reason>
+    <OppositeSideName>GEORGI PARLAKOV</OppositeSideName>
+    <OppositeSideAccount>0000000504384010</OppositeSideAccount>
+    <MovementType>Credit</MovementType>
+    <Amount>2126,50</Amount>
+  </AccountMovement>
+  <AccountMovement>
+    <ValueDate>09.08.2022</ValueDate>
+    <Reason>ЗАПЛАТА 07.2022,БУЛСТАТ 200341                              СПИСЪК 072663638307 КЛОН 0099</Reason>
+    <OppositeSideName>ЕС БИ ЕМ ООД</OppositeSideName>
+    <OppositeSideAccount>BG11STSA93000026636383</OppositeSideAccount>
+    <MovementType>Credit</MovementType>
+    <Amount>3497,01</Amount>
+  </AccountMovement>

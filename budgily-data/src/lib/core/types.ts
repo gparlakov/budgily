@@ -5,4 +5,5 @@ export interface Movement {
   amount: number;
   type: MovementType;
   description: string;
+  // raw?: Record<string, unknown>
 }
