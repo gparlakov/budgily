@@ -30,6 +30,7 @@
         "production": {
           "esbuildOptions": {
             "sourcemap": false,
+            "bundle": true,
             "outExtension": {
               ".js": ".js"
             }

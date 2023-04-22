@@ -1,22 +1,38 @@
 // Construct a schema, using GraphQL schema language
 
-const movementsName = 'movements';
-const movementsParams = 'string';
 export const schema = `
-  type Movement {
+  enum MovementType {
+    DEBIT
+    CREDIT
+  }
 
+  type Movement {
+    amount: Float
+    date: String
+    description: String
+    type: MovementType
   }
 
 
   type Query {
-    hello: String,
-    ${movementsName}: String
+    hello: String
+    movements: [Movement]
   }
-`
+`;
 
 // The root provides a resolver function for each API endpoint
 export const root = {
-  hello: () => {
-    return "Hello world!"
+  Query: {
+    hello: () => {
+      return 'Hello sss!';
+    },
+    movements: () => {
+      return [{
+        amount: 10
+      },
+    {
+      amount: 20
+    }]
+    }
   },
-}
+};
