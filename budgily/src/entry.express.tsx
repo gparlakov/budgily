@@ -14,9 +14,7 @@ import render from './entry.ssr';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-import { createHandler } from 'graphql-http/lib/use/express';
-import { root, schema } from './schema/schema';
-import d, {default as dd} from 'graphql-playground-middleware-express';
+
 declare global {
   interface QwikCityPlatform extends PlatformNode {}
 }
@@ -46,16 +44,8 @@ const app = express();
 app.use(`/build`, express.static(buildDir, { immutable: true, maxAge: '1y' }));
 app.use(express.static(distDir, { redirect: false }));
 
-// GET method route
-app.get('/test', (req, res) => {
-  res.send('GET request to the homepage');
-});
 
-// start the GraphQl Server
-app.use('/graphql', createHandler({ rootValue: root, schema }));
-app.get('/playground', (d as unknown as {default: Function}).default({ endpoint: '/graphql' }));
-ct: false }));
-.use(router);
+app.use(router);
 
 // Use Qwik City's 404 handler
 app.use(notFound);

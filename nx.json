@@ -31,5 +31,10 @@
       "!{projectRoot}/jest.config.[jt]s"
     ],
     "sharedGlobals": []
+  },
+  "pluginsConfig": {
+    "@nrwl/js": {
+      "analyzeSourceFiles": true
+    }
   }
 }

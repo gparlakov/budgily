@@ -3,6 +3,7 @@
   "$schema": "../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "budgily-api/src",
   "projectType": "application",
+  "implicitDependencies": ["budgily-data"],
   "targets": {
     "build": {
       "executor": "@nrwl/esbuild:esbuild",

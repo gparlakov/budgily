@@ -12,8 +12,7 @@ import {
 
 import * as d3 from 'd3';
 import { max, scaleOrdinal } from 'd3';
-import { getDSKReportFiles, getDskReports } from '../../core/dsk-reports';
-import { Movement, MovementType } from '../../core/types';
+import { getDSKReportFiles, getDskReports, Movement, MovementType } from '@codedoc1/budgily-data';
 
 import global from './index.scss?inline';
 
