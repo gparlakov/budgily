@@ -8,16 +8,17 @@
       "executor": "qwik-nx:build",
       "options": {
         "runSequence": ["budgily:build.client", "budgily:build.ssr"],
-        "outputPath": "dist/./budgily"
+        "outputPath": "../dist/./budgily"
       },
       "configurations": {
-        "preview": {}
+        "preview": {},
+        "express": {}
       }
     },
     "build.client": {
       "executor": "@nrwl/vite:build",
       "options": {
-        "outputPath": "dist/./budgily",
+        "outputPath": "../dist/./budgily",
         "configFile": "./budgily/vite.config.ts"
       }
     },
@@ -25,12 +26,20 @@
       "executor": "@nrwl/vite:build",
       "defaultConfiguration": "preview",
       "options": {
-        "outputPath": "dist/./budgily"
+        "outputPath": "../dist/./budgily",
+        "emptyOutDir": true
       },
       "configurations": {
         "preview": {
           "ssr": "src/entry.preview.tsx",
           "mode": "production"
+        },
+        "express": {
+          "ssr": "src/entry.express.tsx",
+          "mode": "production"
+        },
+        "express.debug": {
+          "ssr": "src/entry.express.tsx"
         }
       }
     },
