@@ -1,0 +1,31 @@
+{
+  "name": "budgily-data",
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "budgily-data/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nrwl/vite:build",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/budgily-data"
+      }
+    },
+    "test": {
+      "executor": "@nrwl/vite:test",
+      "outputs": ["coverage/budgily-data"],
+      "options": {
+        "passWithNoTests": true,
+        "reportsDirectory": "../coverage/budgily-data"
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["budgily-data/**/*.ts"]
+      }
+    }
+  },
+  "tags": []
+}

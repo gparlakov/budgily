@@ -14,7 +14,9 @@ import render from './entry.ssr';
 import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
-
+import { createHandler } from 'graphql-http/lib/use/express';
+import { root, schema } from './schema/schema';
+import d, {default as dd} from 'graphql-playground-middleware-express';
 declare global {
   interface QwikCityPlatform extends PlatformNode {}
 }
@@ -23,14 +25,14 @@ declare global {
 
 // Directories where the static assets are located
 const distDir = process.env.DIST_DIR ?? join(fileURLToPath(import.meta.url), '..', 'dist');
-console.log('---starting with ', distDir)
+console.log('---starting with ', distDir);
 const buildDir = join(distDir, 'build');
 
 // Allow for dynamic port
 const PORT = process.env.PORT ?? 3000;
 
 // Create the Qwik City express middleware
-const { router, notFound } = createQwikCity({ render, qwikCityPlan, manifest });
+const { router, notFound } = createQwikCity({ render, qwikCityPlan, manifest, debug: true });
 
 // Create the express server
 // https://expressjs.com/
@@ -44,8 +46,16 @@ const app = express();
 app.use(`/build`, express.static(buildDir, { immutable: true, maxAge: '1y' }));
 app.use(express.static(distDir, { redirect: false }));
 
-// Use Qwik City's page and endpoint request handler
-app.use(router);
+// GET method route
+app.get('/test', (req, res) => {
+  res.send('GET request to the homepage');
+});
+
+// start the GraphQl Server
+app.use('/graphql', createHandler({ rootValue: root, schema }));
+app.get('/playground', (d as unknown as {default: Function}).default({ endpoint: '/graphql' }));
+ct: false }));
+.use(router);
 
 // Use Qwik City's 404 handler
 app.use(notFound);
