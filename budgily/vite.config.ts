@@ -11,10 +11,10 @@ export default defineConfig({
     qwikCity(),
     qwikVite({
       client: {
-        outDir: "../dist/./budgily/client",
+        outDir: "./dist/./client",
       },
       ssr: {
-        outDir: "../dist/./budgily/server",
+        outDir: "./dist/./server",
       },
     }),
     tsconfigPaths({ root: "../" }),
