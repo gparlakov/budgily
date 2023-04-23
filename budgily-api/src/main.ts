@@ -7,12 +7,13 @@ import cors from 'cors';
 import express from 'express';
 import { getDskMovements } from './dsk/dsk-movements';
 
+import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import schemaFileName from '../../budgily-data/schema/budgily.graphql'; // using the esbuild file loader the file will be copied to the output and the schemaFileName will be the new file name (it comes with a hash)
-const schema = readFileSync(schemaFileName).toString();
+const schema = readFileSync(join(__dirname, schemaFileName)).toString();
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
