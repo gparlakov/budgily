@@ -1,0 +1,13 @@
+.debit, .credit {
+  font-size: 0.6rem;
+}
+
+.hover {
+  position: fixed;
+  display: none;
+  background-color: white;
+
+  .show {
+    display: initial;
+  }
+}

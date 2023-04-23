@@ -3,10 +3,12 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "express.ps": "npx nx run budgily:build -c express && $env:DIST_DIR = \"${PWD}\\dist\\budgily\\client\" node .\\dist\\budgily\\server\\entry.express"
+    "express.ps": "npx nx run budgily:build -c express && $env:DIST_DIR = \"${PWD}\\dist\\budgily\\client\" node .\\dist\\budgily\\server\\entry.express",
+    "codegen": "graphql-codegen --config codegen.ts"
   },
   "private": true,
   "dependencies": {
+    "@apollo/client": "^3.7.12",
     "@apollo/server": "^4.7.0",
     "axios": "^1.0.0",
     "body-parser": "^1.20.2",
@@ -19,11 +21,19 @@
     "graphql-http": "^1.18.0",
     "graphql-playground-middleware-express": "^1.7.23",
     "qwik-nx": "0.15.2",
+    "react": "^18.2.0",
+    "rollup-plugin-copy": "^3.4.0",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
     "@builder.io/qwik": "~0.100.0",
     "@builder.io/qwik-city": "~0.100.0",
+    "@graphql-codegen/cli": "3.3.1",
+    "@graphql-codegen/client-preset": "^3.0.1",
+    "@graphql-codegen/named-operations-object": "^2.3.1",
+    "@graphql-codegen/typescript": "3.0.4",
+    "@graphql-codegen/typescript-document-nodes": "3.0.4",
+    "@graphql-codegen/typescript-resolvers": "3.2.1",
     "@nrwl/esbuild": "15.9.2",
     "@nrwl/eslint-plugin-nx": "15.9.2",
     "@nrwl/jest": "15.9.2",

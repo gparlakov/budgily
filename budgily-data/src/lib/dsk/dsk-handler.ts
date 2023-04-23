@@ -1,7 +1,6 @@
-import { csv, group, xml } from 'd3';
+import { csv, group } from 'd3';
 import { Movement, MovementType } from '../core/types';
 import { getXmls } from '../core';
-import {readFile} from 'fs/promises';
 
 export function DSKExportsHandler(
   mapper: (x?: DSKExport) => Movement[] = defaultDSKMapper
@@ -78,7 +77,7 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
     const isDebit = (x: Record<string, string>) => x['Дебит BGN'] !== '';
 
     return exports.map((x) => ({
-      date: getDateFromBGString(x.Дата),
+      date: getDateFromBGString(x.Дата).valueOf().toString(),
       amount: getNumberFromBgString(
         isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']
       ),
@@ -97,7 +96,7 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
     const amount = getNumberFromBgString(v.Amount);
 
     return {
-      date,
+      date: date.valueOf().toString(),
       description: `${v.Reason}| ${v.OppositeSideAccount}[ACC:${v.OppositeSideAccount}]`,
       type: v.MovementType,
       amount,

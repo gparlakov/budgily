@@ -1,0 +1,16 @@
+enum MovementType {
+  DEBIT
+  CREDIT
+}
+
+type Movement {
+  amount: Float
+  date: String
+  description: String
+  type: MovementType
+}
+
+type Query {
+  hello: String
+  movements: [Movement]
+}

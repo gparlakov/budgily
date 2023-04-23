@@ -2,6 +2,7 @@ import { csv, group } from 'd3';
 import { getXmls } from './get-xml';
 import { Movement, MovementType } from './types';
 import { DSKExport, defaultDSKMapper } from '../dsk/dsk-handler';
+import { ApolloClient, ApolloQueryResult, QueryResult, gql, useQuery } from '@apollo/client';
 
 
 export const dedupe = (all: Movement[]): Movement[] => {
@@ -19,6 +20,23 @@ export function getDskReports(
   )
     .then((exports) => exports.flatMap(mapper))
     .then(dedupe);
+}
+
+
+
+export function getDskReportsV2<T>(client: ApolloClient<T>, controller?: AbortController): QueryResult<Movement[]> {
+  return useQuery<Movement[]>(
+    gql`{
+    query GetAllMovements {
+      movements {
+        date,
+        amount,
+        description,
+        type
+      }
+    }
+  }`, {client: client, initialFetchPolicy: 'standby'})
+
 }
 
 export function getDSKReportFiles(location: Location): string[] {

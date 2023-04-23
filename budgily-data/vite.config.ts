@@ -3,6 +3,7 @@ import { defineConfig } from 'vite';
 
 import viteTsConfigPaths from 'vite-tsconfig-paths';
 import dts from 'vite-plugin-dts';
+import copy from 'rollup-plugin-copy';
 import { join } from 'path';
 
 export default defineConfig({
@@ -43,7 +44,15 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: [],
+      external: ['node:fs'],
+      plugins: [
+        copy({
+          targets: [
+            { src: 'schema/budgily.graphql', dest: 'dist' },
+          ]
+        })
+      ]
+
     },
   },
 

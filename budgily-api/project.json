@@ -18,6 +18,7 @@
         "tsConfig": "budgily-api/tsconfig.app.json",
         "assets": ["budgily-api/src/assets"],
         "generatePackageJson": true,
+        "external": ["react"],
         "esbuildOptions": {
           "sourcemap": true,
           "outExtension": {
@@ -25,7 +26,9 @@
           },
           "loader": {
             ".xml":"file",
-            ".csv":"file"
+            ".csv":"file",
+            ".graphql":"file"
+
           }
         }
       },
@@ -40,7 +43,8 @@
             },
             "loader": {
               ".xml": "file",
-              ".csv": "file"
+              ".csv": "file",
+              ".graphql":"file"
             }
           }
         }

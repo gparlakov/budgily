@@ -2,50 +2,51 @@ import {
   $,
   Resource,
   component$,
+  useContext,
   useOnWindow,
-  useResource$,
   useSignal,
   useStore,
   useStyles$,
-  useVisibleTask$,
+  useTask$,
+  useVisibleTask$
 } from '@builder.io/qwik';
 
+import { Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data';
 import * as d3 from 'd3';
 import { max, scaleOrdinal } from 'd3';
-import { getDSKReportFiles, getDskReports, Movement, MovementType } from '@codedoc1/budgily-data';
 
+import { apolloClientContext } from '../../core/apollo-client.context';
+import { debounce } from '../../core/debounce';
 import global from './index.scss?inline';
+
+const debounceMovementsMillis = 300;
+
 
 export default component$(() => {
   useStyles$(global);
-  const dskMovements = useResource$<Movement[]>(({ track }) => {
+
+  const svgRef = useSignal<Element>();
+  const store = useStore<ReportsViewModel>(initialReportsVM());
+  const initialFetch = store.refetch;
+
+  useTask$(async ({ track }) => {
+    const client = useContext(apolloClientContext);
     track(() => store.refetch);
 
-    return fetch()
-  });
-  const svgRef = useSignal<Element>();
-  const store = useStore<{
-    movements?: Movement[];
-    width: number;
-    height: number;
-    padding: number;
-    monthsWidth: number;
-    debounceTime: number;
-    debounceRef?: number;
+    const controller = new AbortController();
+    const response = await debouncedGetAllMovements(client, controller);
+    if(response.error) {
+      // context with user message
+      // store.
+    } else {
+      store.movements = response.data.map(d => ({...d, date: new Date(d.date)}));
+    }
 
-    showOver?: boolean
-    positionX?: string;
-    positionY?: string;
-    text?: string;
-    refetch: number
-  }>({
-    width: 800,
-    height: 1200,
-    padding: 10,
-    monthsWidth: 80,
-    debounceTime: 300,
-    refetch: 1
+    return () => {
+      controller.abort();
+    };
   });
+
 
   const debouncedSVGResize = $(() => {
     const { width } = document.querySelector('.sizer')?.getBoundingClientRect() ?? store;
@@ -62,14 +63,18 @@ export default component$(() => {
 
   useVisibleTask$(({ track, cleanup }) => {
     // console.log('starting -----');
-    if (fetch.value !== 'fetch') {
-      fetch.value = 'fetch'; // initiate the fetching
-      debouncedSVGResize();
-    }
+
     track(() => svgRef.value); // will redraw when the ref updates
     track(() => store.width); // for a different window - redraw
     track(() => store.movements); // for movements change - redraw
 
+    if (store.refetch === initialFetch) {
+      debouncedSVGResize();
+    }
+    store.refetch += 1;
+
+    // can't draw if missing stuff
+    // todo - error message or empty result?
     if (!svgRef.value || !Array.isArray(store.movements)) {
       return;
     }
@@ -231,6 +236,38 @@ export default component$(() => {
   );
 });
 
-export function sumAmounts(ms?: Movement[]): number {
+function initialReportsVM(): ReportsViewModel {
+  return {
+    width: 800,
+    height: 1200,
+    padding: 10,
+    monthsWidth: 80,
+    debounceTime: 300,
+    refetch: 1
+  };
+}
+
+export function sumAmounts(ms?: {amount: number}[]): number {
   return Array.isArray(ms) ? ms.map((a) => a.amount).reduce((a, b) => a + b, 0) : 0;
+}
+
+export const debouncedGetAllMovements = debounce(getDskReportsV2, debounceMovementsMillis);
+
+type MovementVm = Omit<Movement, 'date'> & {
+  date: Date;
+}
+
+interface ReportsViewModel {
+  movements?: MovementVm[];
+  width: number;
+  height: number;
+  padding: number;
+  monthsWidth: number;
+  debounceTime: number;
+  debounceRef?: number;
+  showOver?: boolean;
+  positionX?: string;
+  positionY?: string;
+  text?: string;
+  refetch: number;
 }

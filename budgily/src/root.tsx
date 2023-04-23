@@ -1,4 +1,4 @@
-import { component$, useStyles$ } from "@builder.io/qwik";
+import { component$, useContextProvider, useStyles$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -6,7 +6,10 @@ import {
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 
-import globalStyles from "./global.scss?inline";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
+import globalStyles from './global.scss?inline';
+import { createApolloContext } from './core/apollo-client.context';
 
 export default component$(() => {
   /**
@@ -16,6 +19,8 @@ export default component$(() => {
    * Don't remove the `<head>` and `<body>` elements.
    */
   useStyles$(globalStyles);
+
+  useContextProvider(...createApolloContext());
 
   return (
     <QwikCityProvider>
