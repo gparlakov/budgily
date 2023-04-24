@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 import { csvParse } from 'd3';
-import { dedupe as dedupeFn, defaultDSKMapper } from '@codedoc1/budgily-data';
+import { dedupe, defaultDSKMapper } from '@codedoc1/budgily-data';
 
 
 // @ts-ignore
@@ -17,7 +17,7 @@ import report3 from './report-2020-debit-card-income.csv';
 
 
 const parser = new XMLParser({
-  unpairedTags: ["br"]
+  unpairedTags: ["br", "hr"]
 });
 
 // essentially - load the files once in memory and keep as long as app is alive
@@ -25,8 +25,8 @@ const parser = new XMLParser({
 const filesPromise = [report, report1, report2, report3]
   .map(file => readFile(join(__dirname, file)).then(x => file.endsWith('xml') ? parser.parse(x) : csvParse(x.toString())))
 
-export function getDskMovements(mapper = defaultDSKMapper, dedupe = dedupeFn) {
-
-  return Promise.all(filesPromise).then(fs => fs.flatMap(mapper)).then(dedupe);
+export function getDskMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe) {
+  const dedup = typeof dedupeCB === 'function' ? dedupeCB : dedupe;
+  return Promise.all(filesPromise).then(fs => fs.flatMap(mapper)).then(dedup);
 }
 

@@ -49,7 +49,7 @@ export default component$(() => {
     // console.log('starting -----');
 
     track(() => svgRef.value); // will redraw when the ref updates
-    // track(() => store.width); // for a different window - redraw
+    track(() => store.width); // for a different window - redraw
     // track(() => store.movements); // for movements change - redraw
 
     const controller = new AbortController();

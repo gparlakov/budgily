@@ -78,6 +78,5 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
 export const dedupe = (all: Movement[]): Movement[] => {
   // group by date,amount, and type to remove duplications from multiple files i.e. same debit reported from multiple files
   const groups = group(all, (a) => `${a.amount}-${a.date?.toString()}-${a.type}`);
-  console.log(groups.keys());
   return [...groups.values()].map((v) => v[0]);
 };
