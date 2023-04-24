@@ -1,42 +1,15 @@
-import { csv, group } from 'd3';
-import { Movement, MovementType } from '../core/types';
-import { getXmls } from '../core';
+import { Movement, MovementType } from '../../generated/graphql';
+import { ClientContext } from '../core/types';
+import { group } from 'd3';
 
-export function DSKExportsHandler(
-  mapper: (x?: DSKExport) => Movement[] = defaultDSKMapper
-): Promise<Movement[]> {
-
-  const files = [
-    'report-2022.xml',
-    // 'report-01_2022-04-2023.xml',
-    // 'report-11_2021-11_2022.xml',
-    // 'report-2020-debit-card-income.csv',
-  ].map((v) => {
-    const u = new URL(location.toString());
-    u.pathname = v;
-    return u.toString();
-  });
-
-  return Promise.all(
-    files.map((f) => f.endsWith('xml') ? getXmls<DSKExport>(f) : csv(f) as Promise<DSKExport>)
-  )
-    .then((exports) => exports.flatMap(mapper))
-    .then(dedupe);
-}
-
-export function Simple() {
-  // xml('file://../report-2022.xml').then(console.log, console.error)
-
-
-  return Promise.resolve([{amount: 3, date: new Date()}])
-}
+export type MovementTypeDSK = 'Debit' | 'Credit';
 
 export type DSKAccountMovement = {
   ValueDate: string;
   Reason: string;
   OppositeSideName: string;
   OppositeSideAccount: string;
-  MovementType: MovementType;
+  MovementType: MovementTypeDSK;
   Amount: string;
 };
 
@@ -78,10 +51,8 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
 
     return exports.map((x) => ({
       date: getDateFromBGString(x.Дата).valueOf().toString(),
-      amount: getNumberFromBgString(
-        isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']
-      ),
-      type: isDebit(x) ? 'Debit' : 'Credit',
+      amount: getNumberFromBgString(isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']),
+      type: isDebit(x) ? MovementType.Debit : MovementType.Credit,
       description: x['Основание'],
     }));
   }
@@ -98,14 +69,15 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
     return {
       date: date.valueOf().toString(),
       description: `${v.Reason}| ${v.OppositeSideAccount}[ACC:${v.OppositeSideAccount}]`,
-      type: v.MovementType,
+      type: v.MovementType === 'Debit' ? MovementType.Debit : MovementType.Credit,
       amount,
     };
   });
 }
 
-const dedupe = (all: Movement[]): Movement[] => {
+export const dedupe = (all: Movement[]): Movement[] => {
   // group by date,amount, and type to remove duplications from multiple files i.e. same debit reported from multiple files
-  const groups = group(all, (a) => `${a.amount}-${a.date.toString()}-${a.type}`);
+  const groups = group(all, (a) => `${a.amount}-${a.date?.toString()}-${a.type}`);
+  console.log(groups.keys());
   return [...groups.values()].map((v) => v[0]);
 };

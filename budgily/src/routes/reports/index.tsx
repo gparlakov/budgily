@@ -30,22 +30,6 @@ export default component$(() => {
   const initialFetch = store.refetch;
   const clientx = useContext(clientContext);
 
-  useTask$(async ({ track }) => {
-
-    track(() => store.refetch);
-
-    const controller = new AbortController();
-    store.movements = await debouncedGetAllMovements(clientx, controller).then(response => response?.map(d => ({...d, date: new Date(d.date)})) ?? [])
-    .catch((e) => {
-      // tell users
-      console.log(e)
-      return [];
-    })
-
-    return () => {
-      controller.abort();
-    };
-  });
 
 
   const debouncedSVGResize = $(() => {
@@ -61,17 +45,31 @@ export default component$(() => {
   });
   useOnWindow('resize', debouncedSVGResize);
 
-  useVisibleTask$(({ track, cleanup }) => {
+  useVisibleTask$(async ({ track, cleanup }) => {
     // console.log('starting -----');
 
     track(() => svgRef.value); // will redraw when the ref updates
-    track(() => store.width); // for a different window - redraw
-    track(() => store.movements); // for movements change - redraw
+    // track(() => store.width); // for a different window - redraw
+    // track(() => store.movements); // for movements change - redraw
+
+    const controller = new AbortController();
+    store.movements = await debouncedGetAllMovements(clientx, controller).then(response => {
+      if(response.errors) {
+        // error handling
+        console.log(response.errors);
+      }
+      return Array.isArray(response?.data?.movements) ? response.data?.movements.map(d => ({...d, date: new Date(Number(d.date))})) : [];
+    })
+    .catch((e) => {
+      // tell users
+      console.log(e)
+      return [];
+    })
 
     if (store.refetch === initialFetch) {
       debouncedSVGResize();
+      store.refetch = store.refetch + 1;
     }
-    store.refetch += 1;
 
     // can't draw if missing stuff
     // todo - error message or empty result?
@@ -94,13 +92,14 @@ export default component$(() => {
     const monthlyCreditOrDebitSums = monthlyCreditOrDebit.map(sumAmounts);
     const maxSum = max(monthlyCreditOrDebitSums) ?? 25000;
     const debitScale = d3
-      .scaleLinear()
-      // from 0 to the max of the monthly credit/debit sums
-      .domain([0, maxSum])
-      .range([0, width - padding - monthsWidth - padding]); // accounts for the bars starting at padding + monthsWidth
+    .scaleLinear()
+    // from 0 to the max of the monthly credit/debit sums
+    .domain([0, maxSum])
+    .range([0, width - padding - monthsWidth - padding]); // accounts for the bars starting at padding + monthsWidth
     const creditScale = debitScale;
 
-    const colorDomain: MovementType[] = ['Credit', 'Debit'];
+
+    const colorDomain: MovementType[] = [MovementType.Credit, MovementType.Debit];
     const color = scaleOrdinal<MovementType, string>(['teal', 'orange']).domain(colorDomain);
 
     const y = d3
@@ -114,8 +113,8 @@ export default component$(() => {
     const main = d3.select(svgRef.value as Element);
 
     cleanup(() => {
-      // console.log('clearing', main.selectChildren());
-      main.selectChildren().remove();
+      main?.selectChildren().remove();
+      controller.abort();
     });
 
     const wrapper = main.append('g');
@@ -126,11 +125,11 @@ export default component$(() => {
       .data(monthly)
       .enter()
       .append('rect')
-      .attr('width', ([, values]) => debitScale(sumAmounts(values.get('Debit'))))
+      .attr('width', ([, values]) => debitScale(sumAmounts(values.get(MovementType.Debit))))
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)))
       .attr('x', barsStart)
-      .attr('fill', color('Debit'));
+      .attr('fill', color(MovementType.Debit));
 
     wrapper
       .selectAll()
@@ -140,9 +139,9 @@ export default component$(() => {
       .attr('alignment-baseline', 'hanging')
       .attr('text-anchor', 'end')
       .attr('y', ([key]) => Number(y(key)))
-      .attr('x', ([, values]) => Number(max([debitScale(sumAmounts(values.get('Debit'))), 30])) + barsStart)
+      .attr('x', ([, values]) => Number(max([debitScale(sumAmounts(values.get(MovementType.Debit))), 30])) + barsStart)
       .classed('debit', true)
-      .text(([, values]) => `-${sumAmounts(values.get('Debit')).toFixed(2)}лв`);
+      .text(([, values]) => `-${sumAmounts(values.get(MovementType.Debit)).toFixed(2)}лв`);
 
     // credit
     wrapper
@@ -150,11 +149,11 @@ export default component$(() => {
       .data(monthly)
       .enter()
       .append('rect')
-      .attr('width', ([, values]) => creditScale(sumAmounts(values.get('Credit'))))
+      .attr('width', ([, values]) => creditScale(sumAmounts(values.get(MovementType.Credit))))
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
       .attr('x', barsStart)
-      .attr('fill', color('Credit'));
+      .attr('fill', color(MovementType.Credit));
 
     wrapper
       .selectAll()
@@ -164,9 +163,9 @@ export default component$(() => {
       .attr('alignment-baseline', 'hanging')
       .attr('text-anchor', 'end')
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
-      .attr('x', ([, values]) => Number(max([creditScale(sumAmounts(values.get('Credit'))), 30])) + barsStart)
+      .attr('x', ([, values]) => Number(max([creditScale(sumAmounts(values.get(MovementType.Credit))), 30])) + barsStart)
       .classed('credit', true)
-      .text(([, values]) => `+${sumAmounts(values.get('Credit')).toFixed(2)}лв`);
+      .text(([, values]) => `+${sumAmounts(values.get(MovementType.Credit)).toFixed(2)}лв`);
 
     // credit By type
     const creditByTypeColor = d3.scaleOrdinal(d3.schemeTableau10).domain(monthlyCreditOrDebit.flatMap(ms => ms.map(m => m.description)));
@@ -182,7 +181,7 @@ export default component$(() => {
       // add rectangles for each credit type
       .selectAll('rect')
       .data(([, perMonth]) => {
-        const credits = perMonth.get('Credit') ?? [];
+        const credits = perMonth.get(MovementType.Credit) ?? [];
         const stackFn = d3.stack().keys(credits.map((c) => c.description));
         const stacked = stackFn([credits.reduce((acc, c) => ({ ...acc, [c.description]: c.amount }), {})]);
         return stacked;

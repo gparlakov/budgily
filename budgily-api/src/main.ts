@@ -22,7 +22,6 @@ const app = express();
 
 const server = new ApolloServer({
   typeDefs: schema.toString(),
-  // schema: schema,
   resolvers: {
     Query: {
       ...root.Query,
@@ -38,7 +37,7 @@ const server = new ApolloServer({
 server.start()
 .then(() => {
   // Specify the path where we'd like to mount our server
-  app.use('/graphql', cors<cors.CorsRequest>(), json(), expressMiddleware(server));
+  app.use('/graphql', cors<cors.CorsRequest>({origin: 'http://localhost:4200', }), json(), expressMiddleware(server));
 
   app.listen(port, host, () => {
   console.log(`[ ready ] http://${host}:${port}`);

@@ -2,8 +2,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
-
-
 import { csvParse } from 'd3';
 import { dedupe as dedupeFn, defaultDSKMapper } from '@codedoc1/budgily-data';
 
@@ -18,7 +16,9 @@ import report2 from './report-11_2021-11_2022.xml'
 import report3 from './report-2020-debit-card-income.csv';
 
 
-const parser = new XMLParser();
+const parser = new XMLParser({
+  unpairedTags: ["br"]
+});
 
 // essentially - load the files once in memory and keep as long as app is alive
 // TODO - error handling and retries
