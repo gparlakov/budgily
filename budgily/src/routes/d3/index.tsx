@@ -12,16 +12,22 @@ import {
 
 import * as d3 from 'd3';
 import { max, scaleOrdinal } from 'd3';
-import { getDSKReportFiles, getDskReports, Movement, MovementType } from '@codedoc1/budgily-data';
+import { getDSKReportFiles, getDskReports } from '../../core/dsk-reports';
+import { Movement, MovementType } from '../../core/types';
 
 import global from './index.scss?inline';
 
 export default component$(() => {
   useStyles$(global);
+  const fetch = useSignal<'fetch' | undefined>();
   const dskMovements = useResource$<Movement[]>(({ track }) => {
-    track(() => store.refetch);
-
-    return fetch()
+    track(() => fetch.value);
+    if (fetch.value) {
+      return getDskReports(getDSKReportFiles(window.location)).then((movements) =>
+        movements.sort((a, b) => b.date.valueOf() - a.date.valueOf())
+      );
+    }
+    return [];
   });
   const svgRef = useSignal<Element>();
   const store = useStore<{
@@ -37,14 +43,12 @@ export default component$(() => {
     positionX?: string;
     positionY?: string;
     text?: string;
-    refetch: number
   }>({
     width: 800,
     height: 1200,
     padding: 10,
     monthsWidth: 80,
     debounceTime: 300,
-    refetch: 1
   });
 
   const debouncedSVGResize = $(() => {

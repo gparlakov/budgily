@@ -1,13 +1,18 @@
 import { csv, group } from 'd3';
 import { getXmls } from './get-xml';
-import { Movement, MovementType } from './types';
 import { DSKExport, defaultDSKMapper } from '../dsk/dsk-handler';
-import { ApolloClient, ApolloQueryResult, QueryResult, gql, useQuery } from '@apollo/client';
+import { Movement } from '@codedoc1/budgily-data';
+
+export interface ClientContext {
+  uri: string;
+  name: string;
+  version: string;
+}
 
 
 export const dedupe = (all: Movement[]): Movement[] => {
   // group by date,amount, and type to remove duplications from multiple files i.e. same debit reported from multiple files
-  const groups = group(all, (a) => `${a.amount}-${a.date.toString()}-${a.type}`);
+  const groups = group(all, (a) => `${a.amount}-${a.date?.toString()}-${a.type}`);
   return [...groups.values()].map((v) => v[0]);
 };
 export function getDskReports(
@@ -22,20 +27,28 @@ export function getDskReports(
     .then(dedupe);
 }
 
-
-
-export function getDskReportsV2<T>(client: ApolloClient<T>, controller?: AbortController): QueryResult<Movement[]> {
-  return useQuery<Movement[]>(
-    gql`{
-    query GetAllMovements {
-      movements {
-        date,
-        amount,
-        description,
-        type
-      }
-    }
-  }`, {client: client, initialFetchPolicy: 'standby'})
+export function getDskReportsV2(clientContext: ClientContext, controller?: AbortController): Promise<Movement[]> {
+  return fetch(
+    clientContext.uri,
+    {
+      method: "POST",
+      headers: {
+        // "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: `{
+        query GetAllMovements {
+          movements {
+            date,
+            amount,
+            description,
+            type
+          }
+        }
+      }`,
+      signal: controller?.signal
+    })
+      .then(r => r.json() as Promise<Movement[]>)
 
 }
 

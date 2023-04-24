@@ -15,7 +15,7 @@ import { Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data'
 import * as d3 from 'd3';
 import { max, scaleOrdinal } from 'd3';
 
-import { apolloClientContext } from '../../core/apollo-client.context';
+import { clientContext } from '../../core/client.context';
 import { debounce } from '../../core/debounce';
 import global from './index.scss?inline';
 
@@ -28,19 +28,19 @@ export default component$(() => {
   const svgRef = useSignal<Element>();
   const store = useStore<ReportsViewModel>(initialReportsVM());
   const initialFetch = store.refetch;
+  const clientx = useContext(clientContext);
 
   useTask$(async ({ track }) => {
-    const client = useContext(apolloClientContext);
+
     track(() => store.refetch);
 
     const controller = new AbortController();
-    const response = await debouncedGetAllMovements(client, controller);
-    if(response.error) {
-      // context with user message
-      // store.
-    } else {
-      store.movements = response.data.map(d => ({...d, date: new Date(d.date)}));
-    }
+    store.movements = await debouncedGetAllMovements(clientx, controller).then(response => response?.map(d => ({...d, date: new Date(d.date)})) ?? [])
+    .catch((e) => {
+      // tell users
+      console.log(e)
+      return [];
+    })
 
     return () => {
       controller.abort();
@@ -183,8 +183,8 @@ export default component$(() => {
       .selectAll('rect')
       .data(([, perMonth]) => {
         const credits = perMonth.get('Credit') ?? [];
-        const stack = d3.stack().keys(credits.map((c) => c.description));
-        const stacked = stack([credits.reduce((acc, c) => ({ ...acc, [c.description]: c.amount }), {})]);
+        const stackFn = d3.stack().keys(credits.map((c) => c.description));
+        const stacked = stackFn([credits.reduce((acc, c) => ({ ...acc, [c.description]: c.amount }), {})]);
         return stacked;
       })
       .join('rect')
@@ -216,7 +216,7 @@ export default component$(() => {
 
   return (
     <>
-      <Resource
+      {/* <Resource
         value={dskMovements}
         onResolved={(f) => {
           store.movements = f;
@@ -228,7 +228,7 @@ export default component$(() => {
           );
         }}
         onPending={() => <div>Loading ....</div>}
-      />
+      /> */}
       <svg width={store.width} height={store.height} ref={svgRef} />
       <div class="sizer"></div>
       <div class="hover" style={{display: store.showOver ? 'block' : 'none', top: store.positionY, left: store.positionX }} >{store.text}</div>

@@ -7,8 +7,8 @@ import cors from 'cors';
 import express from 'express';
 import { getDskMovements } from './dsk/dsk-movements';
 
-import { join } from 'node:path';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
