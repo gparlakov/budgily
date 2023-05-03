@@ -1,5 +1,5 @@
+import { createHash } from 'node:crypto';
 import { Movement, MovementType } from '../../generated/graphql';
-import { ClientContext } from '../core/types';
 import { group } from 'd3';
 
 export type MovementTypeDSK = 'Debit' | 'Credit';
@@ -46,6 +46,14 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
   if (exports == null) {
     return [];
   }
+
+  const addHash = (x: Movement) => {
+    return {...x,
+      id: createHash('sha256')
+        .update(`${x.date}-${x.amount}-${x.type}-${x.description}`)
+        .digest('base64')};
+  }
+
   if (Array.isArray(exports)) {
     const isDebit = (x: Record<string, string>) => x['Дебит BGN'] !== '';
 
@@ -54,10 +62,12 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
       amount: getNumberFromBgString(isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']),
       type: isDebit(x) ? MovementType.Debit : MovementType.Credit,
       description: x['Основание'],
-    }));
+    }))
+    .map(addHash);
   }
 
-  return (exports?.AccountMovements?.AccountMovement ?? []).map((v) => {
+  return (exports?.AccountMovements?.AccountMovement ?? [])
+  .map((v) => {
     const date = getDateFromBGString(v.ValueDate);
 
     if (date.toString() === new Date('Invalid date').toString()) {
@@ -72,7 +82,8 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
       type: v.MovementType === 'Debit' ? MovementType.Debit : MovementType.Credit,
       amount,
     };
-  });
+  })
+  .map(addHash);
 }
 
 export const dedupe = (all: Movement[]): Movement[] => {

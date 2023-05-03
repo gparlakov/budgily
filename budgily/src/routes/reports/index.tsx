@@ -1,36 +1,31 @@
 import {
   $,
-  Resource,
   component$,
   useContext,
   useOnWindow,
   useSignal,
   useStore,
   useStyles$,
-  useTask$,
-  useVisibleTask$
+  useVisibleTask$,
 } from '@builder.io/qwik';
 
-import { Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data';
+import { MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import * as d3 from 'd3';
 import { max, scaleOrdinal } from 'd3';
 
-import { clientContext } from '../../core/client.context';
+
+import { clientContext as ClientContext } from '../../core/client.context';
 import { debounce } from '../../core/debounce';
 import global from './index.scss?inline';
 
 const debounceMovementsMillis = 300;
 
-
 export default component$(() => {
   useStyles$(global);
+  const clientContext = useContext(ClientContext);
 
   const svgRef = useSignal<Element>();
   const store = useStore<ReportsViewModel>(initialReportsVM());
-  const initialFetch = store.refetch;
-  const clientx = useContext(clientContext);
-
-
 
   const debouncedSVGResize = $(() => {
     const { width } = document.querySelector('.sizer')?.getBoundingClientRect() ?? store;
@@ -53,22 +48,31 @@ export default component$(() => {
     // track(() => store.movements); // for movements change - redraw
 
     const controller = new AbortController();
-    store.movements = await debouncedGetAllMovements(clientx, controller).then(response => {
-      if(response.errors) {
-        // error handling
-        console.log(response.errors);
-      }
-      return Array.isArray(response?.data?.movements) ? response.data?.movements.map(d => ({...d, date: new Date(Number(d.date))})) : [];
-    })
-    .catch((e) => {
-      // tell users
-      console.log(e)
-      return [];
-    })
+    store.movements = await debouncedGetAllMovements(clientContext, controller)
+      .then((response) => {
+        if (response.errors) {
+          // error handling
+          console.log(response.errors);
+        }
+        return Array.isArray(response?.data?.movements)
+          ? response.data?.movements.map((d) => ({
+              ...d,
+              amount: Number(d.amount),
+              description: d.description ?? '',
+              type: d.type === MovementType.Credit ? ('Credit' as const) : ('Debit' as const),
+              date: new Date(Number(d.date)),
+            }))
+          : [];
+      })
+      .catch((e) => {
+        // tell users
+        console.log(e);
+        return [];
+      });
 
-    if (store.refetch === initialFetch) {
+    if (!store.initialized) {
       debouncedSVGResize();
-      store.refetch = store.refetch + 1;
+      store.initialized = true;
     }
 
     // can't draw if missing stuff
@@ -92,15 +96,13 @@ export default component$(() => {
     const monthlyCreditOrDebitSums = monthlyCreditOrDebit.map(sumAmounts);
     const maxSum = max(monthlyCreditOrDebitSums) ?? 25000;
     const debitScale = d3
-    .scaleLinear()
-    // from 0 to the max of the monthly credit/debit sums
-    .domain([0, maxSum])
-    .range([0, width - padding - monthsWidth - padding]); // accounts for the bars starting at padding + monthsWidth
+      .scaleLinear()
+      // from 0 to the max of the monthly credit/debit sums
+      .domain([0, maxSum])
+      .range([0, width - padding - monthsWidth - padding]); // accounts for the bars starting at padding + monthsWidth
     const creditScale = debitScale;
 
-
-    const colorDomain: MovementType[] = [MovementType.Credit, MovementType.Debit];
-    const color = scaleOrdinal<MovementType, string>(['teal', 'orange']).domain(colorDomain);
+    const color = scaleOrdinal<'Credit' | 'Debit', string>(['teal', 'orange']).domain(['Credit', 'Debit']);
 
     const y = d3
       .scaleBand([padding, height - padding])
@@ -125,11 +127,11 @@ export default component$(() => {
       .data(monthly)
       .enter()
       .append('rect')
-      .attr('width', ([, values]) => debitScale(sumAmounts(values.get(MovementType.Debit))))
+      .attr('width', ([, values]) => debitScale(sumAmounts(values.get('Debit'))))
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)))
       .attr('x', barsStart)
-      .attr('fill', color(MovementType.Debit));
+      .attr('fill', color('Debit'));
 
     wrapper
       .selectAll()
@@ -139,9 +141,9 @@ export default component$(() => {
       .attr('alignment-baseline', 'hanging')
       .attr('text-anchor', 'end')
       .attr('y', ([key]) => Number(y(key)))
-      .attr('x', ([, values]) => Number(max([debitScale(sumAmounts(values.get(MovementType.Debit))), 30])) + barsStart)
+      .attr('x', ([, values]) => Number(max([debitScale(sumAmounts(values.get('Debit'))), 30])) + barsStart)
       .classed('debit', true)
-      .text(([, values]) => `-${sumAmounts(values.get(MovementType.Debit)).toFixed(2)}лв`);
+      .text(([, values]) => `-${sumAmounts(values.get('Debit')).toFixed(2)}лв`);
 
     // credit
     wrapper
@@ -149,11 +151,11 @@ export default component$(() => {
       .data(monthly)
       .enter()
       .append('rect')
-      .attr('width', ([, values]) => creditScale(sumAmounts(values.get(MovementType.Credit))))
+      .attr('width', ([, values]) => creditScale(sumAmounts(values.get('Credit'))))
       .attr('height', y.bandwidth() / 3)
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
       .attr('x', barsStart)
-      .attr('fill', color(MovementType.Credit));
+      .attr('fill', color('Credit'));
 
     wrapper
       .selectAll()
@@ -163,13 +165,15 @@ export default component$(() => {
       .attr('alignment-baseline', 'hanging')
       .attr('text-anchor', 'end')
       .attr('y', ([key]) => Number(y(key)) + y.bandwidth() / 3)
-      .attr('x', ([, values]) => Number(max([creditScale(sumAmounts(values.get(MovementType.Credit))), 30])) + barsStart)
+      .attr('x', ([, values]) => Number(max([creditScale(sumAmounts(values.get('Credit'))), 30])) + barsStart)
       .classed('credit', true)
-      .text(([, values]) => `+${sumAmounts(values.get(MovementType.Credit)).toFixed(2)}лв`);
+      .text(([, values]) => `+${sumAmounts(values.get('Credit')).toFixed(2)}лв`);
 
     // credit By type
-    const creditByTypeColor = d3.scaleOrdinal(d3.schemeTableau10).domain(monthlyCreditOrDebit.flatMap(ms => ms.map(m => m.description)));
-    const positionX = d3.scaleLinear([50, 200]).domain([0, 2000])
+    const creditByTypeColor = d3
+      .scaleOrdinal(d3.schemeTableau10)
+      .domain(monthlyCreditOrDebit.flatMap((ms) => ms.map((m) => m.description)));
+    const positionX = d3.scaleLinear([50, 200]).domain([0, 2000]);
     wrapper
       .selectAll()
       .data(monthly)
@@ -181,7 +185,7 @@ export default component$(() => {
       // add rectangles for each credit type
       .selectAll('rect')
       .data(([, perMonth]) => {
-        const credits = perMonth.get(MovementType.Credit) ?? [];
+        const credits = perMonth.get('Credit') ?? [];
         const stackFn = d3.stack().keys(credits.map((c) => c.description));
         const stacked = stackFn([credits.reduce((acc, c) => ({ ...acc, [c.description]: c.amount }), {})]);
         return stacked;
@@ -191,14 +195,19 @@ export default component$(() => {
       .attr('width', ([[start, end]]) => creditScale(end) - creditScale(start))
       .attr('x', ([[start]]) => creditScale(start) + barsStart)
       .attr('fill', (x) => creditByTypeColor(x.key))
-      .on('mouseenter', ({clientX, clientY}, x) => {
+      .on('mouseenter', ({ clientX, clientY }, x) => {
         store.showOver = true;
         // give it 10px to avoid flickering
         store.positionX = `${positionX(clientX)}px`;
         store.positionY = `${clientY + 10}px`;
         store.text = `+${x[0].data[x.key]}лв. ${x.key}`;
       })
-      .on('mouseleave', () => {store.showOver = false;})
+      .on('mouseleave', () => {
+        store.showOver = false;
+      })
+      .on('click', () => {
+        // store.showId = x[0].data[x.key]
+      })
       ;
 
     // const creaditFromStacker = d3
@@ -230,7 +239,13 @@ export default component$(() => {
       /> */}
       <svg width={store.width} height={store.height} ref={svgRef} />
       <div class="sizer"></div>
-      <div class="hover" style={{display: store.showOver ? 'block' : 'none', top: store.positionY, left: store.positionX }} >{store.text}</div>
+      <div
+        class="hover"
+        style={{ display: store.showOver ? 'block' : 'none', top: store.positionY, left: store.positionX }}
+      >
+        {store.text}
+
+      </div>
     </>
   );
 });
@@ -242,19 +257,22 @@ function initialReportsVM(): ReportsViewModel {
     padding: 10,
     monthsWidth: 80,
     debounceTime: 300,
-    refetch: 1
+    initialized: false,
   };
 }
 
-export function sumAmounts(ms?: {amount: number}[]): number {
+export function sumAmounts(ms?: { amount: number }[]): number {
   return Array.isArray(ms) ? ms.map((a) => a.amount).reduce((a, b) => a + b, 0) : 0;
 }
 
 export const debouncedGetAllMovements = debounce(getDskReportsV2, debounceMovementsMillis);
 
-type MovementVm = Omit<Movement, 'date'> & {
+type MovementVm = {
+  amount: number;
+  description: string;
   date: Date;
-}
+  type: 'Credit' | 'Debit';
+};
 
 interface ReportsViewModel {
   movements?: MovementVm[];
@@ -268,5 +286,5 @@ interface ReportsViewModel {
   positionX?: string;
   positionY?: string;
   text?: string;
-  refetch: number;
+  initialized: boolean;
 }

@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@codedoc1/budgily-data": ["budgily-data/src/index.ts"]
+      "@codedoc1/budgily-data-client": ["budgily-data/src/index.client.ts"],
+      "@codedoc1/budgily-data": ["budgily-data/src/index.ts"],
     }
   },
   "exclude": ["node_modules", "tmp"]

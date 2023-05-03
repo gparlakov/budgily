@@ -20,6 +20,7 @@ export type Movement = {
   amount?: Maybe<Scalars['Float']>;
   date?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
   type?: Maybe<MovementType>;
 };
 
@@ -133,6 +134,7 @@ export type MovementResolvers<ContextType = any, ParentType extends ResolversPar
   amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
   date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   type?: Resolver<Maybe<ResolversTypes['MovementType']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };

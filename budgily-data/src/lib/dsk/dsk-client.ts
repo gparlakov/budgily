@@ -1,6 +1,5 @@
-import { Movement, MovementType } from '../../generated/graphql';
+import { Movement } from '../../generated/graphql';
 import { ClientContext } from '../core/types';
-import { group } from 'd3';
 
 export function getDskReportsV2(
   clientContext: ClientContext,

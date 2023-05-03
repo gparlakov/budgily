@@ -4,6 +4,7 @@ enum MovementType {
 }
 
 type Movement {
+  id: String
   amount: Float
   date: String
   description: String
