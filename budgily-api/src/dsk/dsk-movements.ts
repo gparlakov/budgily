@@ -17,7 +17,9 @@ import report3 from './report-2020-debit-card-income.csv';
 
 
 const parser = new XMLParser({
-  unpairedTags: ["br", "hr"]
+  unpairedTags: ["br", "hr"],
+  stopNodes: ["*.br"],
+  textNodeName: "$_text"
 });
 
 // essentially - load the files once in memory and keep as long as app is alive

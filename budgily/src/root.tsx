@@ -6,8 +6,6 @@ import {
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import globalStyles from './global.scss?inline';
 import { clientContext, createClientContext } from './core/client.context';
 

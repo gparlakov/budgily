@@ -4,11 +4,14 @@ enum MovementType {
 }
 
 type Movement {
-  id: String
-  amount: Float
-  date: String
-  description: String
-  type: MovementType
+  id: String!
+  amount: Float!
+  date: String!
+  description: String!
+  account: String
+  opposite: String
+  type: MovementType!
+  raw: String!
 }
 
 type Query {

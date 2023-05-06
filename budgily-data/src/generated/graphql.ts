@@ -17,11 +17,14 @@ export type Scalars = {
 
 export type Movement = {
   __typename?: 'Movement';
-  amount?: Maybe<Scalars['Float']>;
-  date?: Maybe<Scalars['String']>;
-  description?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  type?: Maybe<MovementType>;
+  account?: Maybe<Scalars['String']>;
+  amount: Scalars['Float'];
+  date: Scalars['String'];
+  description: Scalars['String'];
+  id: Scalars['String'];
+  opposite?: Maybe<Scalars['String']>;
+  raw: Scalars['String'];
+  type: MovementType;
 };
 
 export enum MovementType {
@@ -38,7 +41,7 @@ export type Query = {
 export type GetAllMovementsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllMovementsQuery = { __typename?: 'Query', movements?: Array<{ __typename?: 'Movement', date?: string | null, description?: string | null, amount?: number | null, type?: MovementType | null } | null> | null };
+export type GetAllMovementsQuery = { __typename?: 'Query', movements?: Array<{ __typename?: 'Movement', date: string, description: string, amount: number, type: MovementType } | null> | null };
 
 
 export const GetAllMovementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllMovements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"movements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]} as unknown as DocumentNode<GetAllMovementsQuery, GetAllMovementsQueryVariables>;
@@ -114,8 +117,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   Movement: ResolverTypeWrapper<Movement>;
-  Float: ResolverTypeWrapper<Scalars['Float']>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Float: ResolverTypeWrapper<Scalars['Float']>;
   MovementType: MovementType;
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -124,18 +127,21 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   Movement: Movement;
-  Float: Scalars['Float'];
   String: Scalars['String'];
+  Float: Scalars['Float'];
   Query: {};
   Boolean: Scalars['Boolean'];
 };
 
 export type MovementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Movement'] = ResolversParentTypes['Movement']> = {
-  amount?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
-  date?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  type?: Resolver<Maybe<ResolversTypes['MovementType']>, ParentType, ContextType>;
+  account?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  opposite?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  raw?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['MovementType'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
