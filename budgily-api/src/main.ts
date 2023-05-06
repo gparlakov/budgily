@@ -25,7 +25,7 @@ const server = new ApolloServer({
   resolvers: {
     Query: {
       ...root.Query,
-      movements: getDskMovements
+      movements: getDskMovements()
     }
   },
 });

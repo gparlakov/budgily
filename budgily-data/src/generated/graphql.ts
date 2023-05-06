@@ -27,6 +27,15 @@ export type Movement = {
   type: MovementType;
 };
 
+export type MovementFilter = {
+  amountMax?: InputMaybe<Scalars['Float']>;
+  amountMin?: InputMaybe<Scalars['Float']>;
+  fromDate?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Array<Scalars['String']>>;
+  search?: InputMaybe<Scalars['String']>;
+  toDate?: InputMaybe<Scalars['String']>;
+};
+
 export enum MovementType {
   Credit = 'CREDIT',
   Debit = 'DEBIT'
@@ -35,13 +44,18 @@ export enum MovementType {
 export type Query = {
   __typename?: 'Query';
   hello?: Maybe<Scalars['String']>;
-  movements?: Maybe<Array<Maybe<Movement>>>;
+  movements: Array<Maybe<Movement>>;
+};
+
+
+export type QueryMovementsArgs = {
+  filter?: InputMaybe<MovementFilter>;
 };
 
 export type GetAllMovementsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllMovementsQuery = { __typename?: 'Query', movements?: Array<{ __typename?: 'Movement', date: string, description: string, amount: number, type: MovementType } | null> | null };
+export type GetAllMovementsQuery = { __typename?: 'Query', movements: Array<{ __typename?: 'Movement', date: string, description: string, amount: number, type: MovementType } | null> };
 
 
 export const GetAllMovementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllMovements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"movements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]} as unknown as DocumentNode<GetAllMovementsQuery, GetAllMovementsQueryVariables>;
@@ -119,6 +133,7 @@ export type ResolversTypes = {
   Movement: ResolverTypeWrapper<Movement>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
+  MovementFilter: MovementFilter;
   MovementType: MovementType;
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -129,6 +144,7 @@ export type ResolversParentTypes = {
   Movement: Movement;
   String: Scalars['String'];
   Float: Scalars['Float'];
+  MovementFilter: MovementFilter;
   Query: {};
   Boolean: Scalars['Boolean'];
 };
@@ -147,7 +163,7 @@ export type MovementResolvers<ContextType = any, ParentType extends ResolversPar
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   hello?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  movements?: Resolver<Maybe<Array<Maybe<ResolversTypes['Movement']>>>, ParentType, ContextType>;
+  movements?: Resolver<Array<Maybe<ResolversTypes['Movement']>>, ParentType, ContextType, Partial<QueryMovementsArgs>>;
 };
 
 export type Resolvers<ContextType = any> = {

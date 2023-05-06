@@ -14,7 +14,16 @@ type Movement {
   raw: String!
 }
 
+input MovementFilter {
+  id: [String!]
+  amountMin: Float
+  amountMax: Float
+  search: String
+  fromDate: String
+  toDate: String
+}
+
 type Query {
   hello: String
-  movements: [Movement]
+  movements(filter: MovementFilter): [Movement]!
 }
