@@ -4,7 +4,7 @@ import { root } from '@codedoc1/budgily-data';
 import { json } from 'body-parser';
 import cors from 'cors';
 import express from 'express';
-import { getDskMovements } from './dsk/dsk-movements';
+import { getMovements } from './movements/movements';
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -25,7 +25,7 @@ const server = new ApolloServer({
   resolvers: {
     Query: {
       ...root.Query,
-      movements: getDskMovements(),
+      movements: getMovements(),
       categories: getCategories(),
     },
     Mutation: {
