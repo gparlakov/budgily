@@ -1,6 +1,6 @@
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
-import { root } from '@codedoc1/budgily-data';
+import { Resolvers, root } from '@codedoc1/budgily-data';
 import { json } from 'body-parser';
 import cors from 'cors';
 import express from 'express';
@@ -22,7 +22,10 @@ const app = express();
 
 const server = new ApolloServer({
   typeDefs: schema.toString(),
-  resolvers: {
+  resolvers: <Resolvers>{
+    Movement: {
+      categories: getCategories()
+    },
     Query: {
       ...root.Query,
       movements: getMovements(),

@@ -2,7 +2,7 @@ import { Category, Movement, MutationResolvers, QueryResolvers } from '@codedoc1
 import { max } from 'd3';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { BehaviorSubject } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { take, map } from 'rxjs/operators';
 
 const categoriesFileName = 'categories.json';
 const categories$ = new BehaviorSubject<Category[]>([]);
@@ -24,23 +24,25 @@ stat(categoriesFileName)
   });
 
 export function getCategories(): QueryResolvers['categories'] {
-  return (parent: unknown, context: unknown) => {
-    console.log('----', parent, context);
-    return categories$.pipe(take(1)).toPromise();
+  return (parent: Movement) => {
+    return categories$.pipe(
+      take(1),
+      map(cs => cs.filter(c => Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
+    ).toPromise();
   };
 }
 
-export function categoriesByMovementIds(ids: string[]) {
-  return categories$.value.filter(c => c.movementIds.some(id => ids.includes(id)));
-}
+// export function categoriesByMovementIds(ids: string[]) {
+//   return categories$.value.filter(c => c.movementIds.some(id => ids.includes(id)));
+// }
 
-export function appendCategories(ms: Movement[] = []): Movement[] {
-  const cats = categoriesByMovementIds(ms.map(m => m.id))
-  return ms.map(m => {
-    m.categories = cats.filter(c => c.movementIds.includes(m.id))
-    return m;
-  })
-}
+// export function appendCategories(ms: Movement[] = []): Movement[] {
+//   const cats = categoriesByMovementIds(ms.map(m => m.id))
+//   return ms.map(m => {
+//     m.categories = cats.filter(c => c.movementIds.includes(m.id))
+//     return m;
+//   })
+// }
 
 export function categorize(): MutationResolvers['categorize'] {
   return (_parent, args) => {

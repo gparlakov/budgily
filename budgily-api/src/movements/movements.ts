@@ -45,6 +45,7 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
           .filter(searchFilter)
       )
       .then(dedup)
-      .then(appendCategories);
+      // .then(appendCategories)
+      ;
   };
 }
