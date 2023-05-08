@@ -15,10 +15,30 @@ export type Scalars = {
   Float: number;
 };
 
+export type Categorize = {
+  category?: InputMaybe<CategoryInput>;
+  categoryId?: InputMaybe<Scalars['Int']>;
+  movementIds: Array<Scalars['String']>;
+};
+
+export type Category = {
+  __typename?: 'Category';
+  description?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  movementIds: Array<Scalars['String']>;
+  name: Scalars['String'];
+};
+
+export type CategoryInput = {
+  description: Scalars['String'];
+  name: Scalars['String'];
+};
+
 export type Movement = {
   __typename?: 'Movement';
   account?: Maybe<Scalars['String']>;
   amount: Scalars['Float'];
+  categories?: Maybe<Array<Maybe<Category>>>;
   date: Scalars['String'];
   description: Scalars['String'];
   id: Scalars['String'];
@@ -41,8 +61,19 @@ export enum MovementType {
   Debit = 'DEBIT'
 }
 
+export type Mutation = {
+  __typename?: 'Mutation';
+  categorize?: Maybe<Category>;
+};
+
+
+export type MutationCategorizeArgs = {
+  input?: InputMaybe<Categorize>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  categories: Array<Maybe<Category>>;
   hello?: Maybe<Scalars['String']>;
   movements: Array<Maybe<Movement>>;
 };
@@ -130,28 +161,47 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  Movement: ResolverTypeWrapper<Movement>;
+  Categorize: Categorize;
+  Int: ResolverTypeWrapper<Scalars['Int']>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Category: ResolverTypeWrapper<Category>;
+  CategoryInput: CategoryInput;
+  Movement: ResolverTypeWrapper<Movement>;
   Float: ResolverTypeWrapper<Scalars['Float']>;
   MovementFilter: MovementFilter;
   MovementType: MovementType;
+  Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  Movement: Movement;
+  Categorize: Categorize;
+  Int: Scalars['Int'];
   String: Scalars['String'];
+  Category: Category;
+  CategoryInput: CategoryInput;
+  Movement: Movement;
   Float: Scalars['Float'];
   MovementFilter: MovementFilter;
+  Mutation: {};
   Query: {};
   Boolean: Scalars['Boolean'];
+};
+
+export type CategoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = {
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  id?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  movementIds?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type MovementResolvers<ContextType = any, ParentType extends ResolversParentTypes['Movement'] = ResolversParentTypes['Movement']> = {
   account?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   amount?: Resolver<ResolversTypes['Float'], ParentType, ContextType>;
+  categories?: Resolver<Maybe<Array<Maybe<ResolversTypes['Category']>>>, ParentType, ContextType>;
   date?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -161,13 +211,20 @@ export type MovementResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  categorize?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, Partial<MutationCategorizeArgs>>;
+};
+
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  categories?: Resolver<Array<Maybe<ResolversTypes['Category']>>, ParentType, ContextType>;
   hello?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   movements?: Resolver<Array<Maybe<ResolversTypes['Movement']>>, ParentType, ContextType, Partial<QueryMovementsArgs>>;
 };
 
 export type Resolvers<ContextType = any> = {
+  Category?: CategoryResolvers<ContextType>;
   Movement?: MovementResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
 };
 
