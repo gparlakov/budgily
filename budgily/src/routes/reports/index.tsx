@@ -9,13 +9,14 @@ import {
   useVisibleTask$,
 } from '@builder.io/qwik';
 
-import { MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
+import { Category, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import * as d3 from 'd3';
 import { max, scaleOrdinal } from 'd3';
 
-
-import { clientContext as ClientContext } from '../../core/client.context';
+import { ClientContext } from '../../core/client.context';
 import { debounce } from '../../core/debounce';
+import { MovementDetails } from '../../components/movement-details/movement-details';
+
 import global from './index.scss?inline';
 
 const debounceMovementsMillis = 300;
@@ -46,8 +47,14 @@ export default component$(() => {
     track(() => svgRef.value); // will redraw when the ref updates
     track(() => store.width); // for a different window - redraw
     // track(() => store.movements); // for movements change - redraw
-
     const controller = new AbortController();
+
+    if (!store.initialized) {
+      debouncedSVGResize();
+      store.initialized = true;
+      return; // skip loading as the store will set the width and trigger this fn
+    }
+
     store.movements = await debouncedGetAllMovements(clientContext, controller)
       .then((response) => {
         if (response.errors) {
@@ -61,6 +68,8 @@ export default component$(() => {
               description: d.description ?? '',
               type: d.type === MovementType.Credit ? ('Credit' as const) : ('Debit' as const),
               date: new Date(Number(d.date)),
+              id: d.id,
+              categories: d.categories?.filter((c): c is Category => c != null).map((c) => ({ name: c.name })) ?? [],
             }))
           : [];
       })
@@ -69,11 +78,6 @@ export default component$(() => {
         console.log(e);
         return [];
       });
-
-    if (!store.initialized) {
-      debouncedSVGResize();
-      store.initialized = true;
-    }
 
     // can't draw if missing stuff
     // todo - error message or empty result?
@@ -172,7 +176,8 @@ export default component$(() => {
     // credit By type
     const creditByTypeColor = d3
       .scaleOrdinal(d3.schemeTableau10)
-      .domain(monthlyCreditOrDebit.flatMap((ms) => ms.map((m) => m.description)));
+      .domain(monthlyCreditOrDebit.flatMap((ms) => ms.flatMap((m) => m.categories.map((c) => c.name))));
+
     const positionX = d3.scaleLinear([50, 200]).domain([0, 2000]);
     wrapper
       .selectAll()
@@ -186,29 +191,32 @@ export default component$(() => {
       .selectAll('rect')
       .data(([, perMonth]) => {
         const credits = perMonth.get('Credit') ?? [];
-        const stackFn = d3.stack().keys(credits.map((c) => c.description));
-        const stacked = stackFn([credits.reduce((acc, c) => ({ ...acc, [c.description]: c.amount }), {})]);
+        const stackFn = d3.stack().keys(credits.map((c) => c.id));
+        const stacked = stackFn([credits.reduce((acc, c) => ({ ...acc, [c.id]: c.amount }), {})]);
         return stacked;
       })
       .join('rect')
       .attr('height', y.bandwidth() / 3)
       .attr('width', ([[start, end]]) => creditScale(end) - creditScale(start))
       .attr('x', ([[start]]) => creditScale(start) + barsStart)
-      .attr('fill', (x) => creditByTypeColor(x.key))
+      .attr('fill', (x) => {
+        const cat = allMovements.find((m) => m.id === x.key)?.categories[0] ?? {name: x.key};
+        return creditByTypeColor(cat.name)
+      })
       .on('mouseenter', ({ clientX, clientY }, x) => {
         store.showOver = true;
         // give it 10px to avoid flickering
         store.positionX = `${positionX(clientX)}px`;
         store.positionY = `${clientY + 10}px`;
-        store.text = `+${x[0].data[x.key]}лв. ${x.key}`;
+        const m = allMovements.find((m) => m.id === x.key);
+        store.text = `+${m?.amount}лв. ${m?.description}`;
       })
       .on('mouseleave', () => {
         store.showOver = false;
       })
-      .on('click', () => {
-        // store.showId = x[0].data[x.key]
-      })
-      ;
+      .on('click', (event, x) => {
+        store.selectedMovementId = x.key;
+      });
 
     // const creaditFromStacker = d3
     //   .stack()
@@ -244,8 +252,18 @@ export default component$(() => {
         style={{ display: store.showOver ? 'block' : 'none', top: store.positionY, left: store.positionX }}
       >
         {store.text}
-
       </div>
+      {store.selectedMovementId != null ? (
+        <MovementDetails
+          movementId={store.selectedMovementId}
+          onClose$={() => {
+            store.selectedMovementId = undefined;
+            store.width += Math.random() > 0.5 ? Math.random()*0.001 : -Math.random()*0.001;
+          }}
+        />
+      ) : (
+        <></>
+      )}
     </>
   );
 });
@@ -268,10 +286,12 @@ export function sumAmounts(ms?: { amount: number }[]): number {
 export const debouncedGetAllMovements = debounce(getDskReportsV2, debounceMovementsMillis);
 
 type MovementVm = {
+  categories: Array<{ name: string }>;
   amount: number;
   description: string;
   date: Date;
   type: 'Credit' | 'Debit';
+  id: string;
 };
 
 interface ReportsViewModel {
@@ -287,4 +307,6 @@ interface ReportsViewModel {
   positionY?: string;
   text?: string;
   initialized: boolean;
+
+  selectedMovementId?: string;
 }

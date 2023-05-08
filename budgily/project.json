@@ -6,9 +6,8 @@
   "targets": {
     "build": {
       "executor": "qwik-nx:build",
-      "dependsOn": ["budgily-data:build"],
       "options": {
-        "runSequence": ["budgily-data:build", "budgily:build.client", "budgily:build.ssr"],
+        "runSequence": ["budgily:build.client", "budgily:build.ssr"],
         "outputPath": "../dist/./budgily"
       },
       "configurations": {

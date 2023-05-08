@@ -7,7 +7,7 @@ import {
 import { RouterHead } from "./components/router-head/router-head";
 
 import globalStyles from './global.scss?inline';
-import { clientContext, createClientContext } from './core/client.context';
+import { ClientContext, createClientContext } from './core/client.context';
 
 export default component$(() => {
   /**
@@ -18,7 +18,7 @@ export default component$(() => {
    */
   useStyles$(globalStyles);
 
-  useContextProvider(clientContext, createClientContext());
+  useContextProvider(ClientContext, createClientContext());
 
   return (
     <QwikCityProvider>

@@ -1,10 +1,9 @@
-
 import { createContextId } from '@builder.io/qwik';
-import { ClientContext } from '@codedoc1/budgily-data-client';
+import { ClientContextType } from '@codedoc1/budgily-data-client';
 
-export const clientContext = createContextId<ClientContext>('GraphQlClientContext');
+export const ClientContext = createContextId<ClientContextType>('GraphQlClientContext');
 
-export const createClientContext: () => ClientContext = () => ({
+export const createClientContext: () => ClientContextType = () => ({
   uri: 'http://localhost:3000/graphql',
   name: 'Budgily',
   version: '0',
