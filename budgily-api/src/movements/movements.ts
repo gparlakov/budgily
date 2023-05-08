@@ -1,5 +1,4 @@
 import { isValidDate } from '../core/is-valid-date';
-import { appendCategories } from '../categories/categories';
 import { Movement, QueryResolvers, dedupe, defaultDSKMapper } from '@codedoc1/budgily-data';
 import { dskMovements } from '../dsk/dsk-movements';
 
@@ -45,7 +44,6 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
           .filter(searchFilter)
       )
       .then(dedup)
-      // .then(appendCategories)
       ;
   };
 }

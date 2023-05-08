@@ -32,18 +32,6 @@ export function getCategories(): QueryResolvers['categories'] {
   };
 }
 
-// export function categoriesByMovementIds(ids: string[]) {
-//   return categories$.value.filter(c => c.movementIds.some(id => ids.includes(id)));
-// }
-
-// export function appendCategories(ms: Movement[] = []): Movement[] {
-//   const cats = categoriesByMovementIds(ms.map(m => m.id))
-//   return ms.map(m => {
-//     m.categories = cats.filter(c => c.movementIds.includes(m.id))
-//     return m;
-//   })
-// }
-
 export function categorize(): MutationResolvers['categorize'] {
   return (_parent, args) => {
     const { category, categoryId, movementIds } = args.input;
