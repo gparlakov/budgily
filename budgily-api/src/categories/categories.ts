@@ -19,16 +19,22 @@ stat(categoriesFileName)
     return [];
   })
   .then((categories) => {
-    console.log('Categories in memory', categories)
-    categories$.next(categories)
+    console.log('Categories in memory', categories);
+    categories$.next(categories);
   });
 
 export function getCategories(): QueryResolvers['categories'] {
   return (parent: Movement) => {
-    return categories$.pipe(
-      take(1),
-      map(cs => cs.filter(c => Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
-    ).toPromise();
+    return categories$
+      .pipe(
+        take(1),
+        map((cs) =>
+          parent != null
+            ? cs.filter((c) => (Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
+            : cs
+        )
+      )
+      .toPromise();
   };
 }
 

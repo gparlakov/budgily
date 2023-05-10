@@ -1,4 +1,4 @@
-import { PropFunction } from '@builder.io/qwik';
+import { PropFunction, Signal } from '@builder.io/qwik';
 import { Category, Movement } from '@codedoc1/budgily-data-client';
 
 export interface MovementDetailsProps {
@@ -6,13 +6,21 @@ export interface MovementDetailsProps {
   onClose$?: PropFunction<() => void>;
 }
 
+interface CategoryVM {
+  id: string;
+  name: string;
+  movementIds: string[];
+  description?: string;
+}
+
 export interface MovementDetailsStore {
+  selectedCategory: CategoryVM;
   loading: boolean;
   movement?: {
     id: string;
     amount: number;
     date: string;
-    categories: { id?: number ; name: string; description: string }[];
+    categories: { id?: number | null ; name: string; description?: string | null }[];
     categoriesStr: string;
     raw: string;
     account?: string;
@@ -21,6 +29,8 @@ export interface MovementDetailsStore {
     type: string;
   };
   errorMessage?: string;
+  categories: CategoryVM[];
+  filteredCategories: CategoryVM[];
 }
 
 export function mapToVm({

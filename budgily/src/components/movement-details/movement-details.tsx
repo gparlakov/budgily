@@ -15,14 +15,16 @@ import {
 import { ClientContext } from '../../core/client.context';
 import styles from './movement-details.scss?inline';
 import { MovementDetailsProps, MovementDetailsStore, mapToVm } from './movement-details.types';
-import { categorize, getMovementById } from '@codedoc1/budgily-data-client';
+import { categorize, getCategories, getMovementById } from '@codedoc1/budgily-data-client';
+import { debounce } from '../../core/debounce';
 
 export const MovementDetails = component$(({ movementId, onClose$ }: MovementDetailsProps) => {
   const ctx = useContext(ClientContext);
   useStylesScoped$(styles);
 
-  const state = useStore<MovementDetailsStore>({ loading: true });
+  const state = useStore<MovementDetailsStore>({ loading: true, categories: [], filteredCategories: [] });
   const dialog = useSignal<HTMLDialogElement>();
+  const categoryInput = useSignal<string>();
 
   const movementResource = useResource$(({ track, cleanup }) => {
     track(() => movementId);
@@ -43,6 +45,17 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
     }
   });
 
+  const categoriesResource = useResource$(({ cleanup }) => {
+    const abort = new AbortController();
+    cleanup(() => abort.abort('cleanup categories resource'));
+
+    return getCategories(ctx, abort)().then((v) => {
+      const cats = v.data?.categories;
+      state.categories = cats ?? [];
+      return cats;
+    });
+  });
+
   useVisibleTask$(({ track }) => {
     track(() => dialog);
     if (dialog.value) {
@@ -50,18 +63,25 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
     }
   });
 
+  useVisibleTask$(({track}) => {
+    track(() => categoryInput.value);
+    track(() => state.categories);
+    const cat = categoryInput.value;
+    const filterCat = typeof cat === 'string' ? cat.toLocaleLowerCase() : undefined;
+
+    state.filteredCategories = filterCat != null ? state.categories.filter(c => c.name.toLocaleLowerCase().includes(filterCat)) : state.categories;
+  })
+
   const onCategorize = $(async (event: QwikSubmitEvent<HTMLFormElement>) => {
     const form = new FormData(event.target as HTMLFormElement);
     const category = form.get('category') as string;
-    const r = await categorize(ctx)(category, movementId as string);
+    alert(`will categorize ${category} with maybe id ${state.selectedCategory?.id ?? '---'}`)
+    // const r = await categorize(ctx)(category, movementId as string);
 
-    if(r.data) {
-      state.movement = {...state.movement, categoriesStr: r.data.categorize.name};
-    }
-
-
-
-  })
+    // if (r.data) {
+    //   state.movement = { ...state.movement, categoriesStr: r.data.categorize.name };
+    // }
+  });
 
   return (
     <>
@@ -91,13 +111,14 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
                   </div>
                 </div>
 
-                <form
-                  method="dialog"
-                  preventdefault:submit
-                  onSubmit$={onCategorize}
-                >
-                  <input type="text" name="category"></input>
-
+                <form method="dialog" preventdefault:submit onSubmit$={onCategorize}>
+                  <Resource
+                    value={categoriesResource}
+                    onPending={() => <>Loading categories...</>}
+                    onResolved={(v) => <>Categories: {v?.length ?? 0}</>}
+                    />
+                  <input type="text" name="category" autoComplete="off" bind:value={categoryInput}></input>
+                  {state.filteredCategories.map((c) => <div onClick$={() => {categoryInput.value = c.name; state.selectedCategory = c}}>{c.name}</div>)}
                   <input type="submit" value="Categorize"></input>
                 </form>
               </div>

@@ -44,7 +44,7 @@ export function getDskReportsV2(
 
 export function getMovementById(clientContext: ClientContextType, controller?: AbortController) {
   return (id: string) => {
-    return gqlCall<{movements: Movement[]}>(
+    return gqlCall<{ movements: Movement[] }>(
       JSON.stringify({
         query: `
         query GetAllMovements {
@@ -75,11 +75,31 @@ export function getMovementById(clientContext: ClientContextType, controller?: A
 
 export function categorize(clientContext: ClientContextType, controller?: AbortController) {
   return (name: string, movementId: string, description?: string) =>
-    gqlCall<{categorize: {name: string}}>(
+    gqlCall<{ categorize: { name: string } }>(
       JSON.stringify({
         query: `
         mutation Category {
           categorize(input: {category: {name: "${name}", description: "${description}" }, movementIds: ["${movementId}"]}) {
+            movementIds
+            id
+            name
+            description
+          }
+        }
+  `,
+      }),
+      clientContext,
+      controller
+    );
+}
+
+export function getCategories(clientContext: ClientContextType, controller?: AbortController) {
+  return () =>
+    gqlCall<{ categories: Array<{ name: string; movementIds: string[]; id: string; description?: string }> }>(
+      JSON.stringify({
+        query: `
+        query Categories {
+          categories {
             movementIds
             id
             name
