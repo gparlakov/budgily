@@ -21,6 +21,7 @@
     "graphql-playground-middleware-express": "^1.7.23",
     "qwik-nx": "0.15.2",
     "rollup-plugin-copy": "^3.4.0",
+    "tailwindcss": "^3.3.2",
     "tslib": "^2.3.0"
   },
   "devDependencies": {
@@ -40,6 +41,8 @@
     "@nrwl/node": "^15.9.2",
     "@nrwl/vite": "^15.9.2",
     "@nrwl/workspace": "15.9.2",
+    "@qwik-ui/headless": "^0.1.7",
+    "@qwik-ui/tailwind": "^0.0.3",
     "@types/compression": "^1.7.2",
     "@types/d3": "^7.4.0",
     "@types/eslint": "~8.21.3",

@@ -118,7 +118,7 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
                     onResolved={(v) => <>Categories: {v?.length ?? 0}</>}
                     />
                   <input type="text" name="category" autoComplete="off" bind:value={categoryInput}></input>
-                  {state.filteredCategories.map((c) => <div onClick$={() => {categoryInput.value = c.name; state.selectedCategory = c}}>{c.name}</div>)}
+                  {state.filteredCategories.map((c) => <div onClick$={() => {categoryInput.value = c.name; state.selectedCategory = c}} key={c.id}>{c.name}</div>)}
                   <input type="submit" value="Categorize"></input>
                 </form>
               </div>
