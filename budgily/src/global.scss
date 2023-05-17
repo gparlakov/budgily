@@ -24,87 +24,87 @@ body {
   padding: 20px 20px 40px 20px;
 }
 
-main {
-  max-width: 100%;
-  margin: 0 auto;
-  background-color: white;
-  border-radius: 5px;
-  box-shadow: 0px 0px 130px -50px var(--qwik-light-purple);
-  overflow: hidden;
-}
+// main {
+//   max-width: 100%;
+//   margin: 0 auto;
+//   background-color: white;
+//   border-radius: 5px;
+//   box-shadow: 0px 0px 130px -50px var(--qwik-light-purple);
+//   overflow: hidden;
+// }
 
-h1,
-h2 {
-  margin: 0 0 5px 0;
-}
+// h1,
+// h2 {
+//   margin: 0 0 5px 0;
+// }
 
-.lightning {
-  filter: hue-rotate(180deg);
-}
+// .lightning {
+//   filter: hue-rotate(180deg);
+// }
 
-section {
-  padding: 20px;
-  border-bottom: 10px solid var(--qwik-dark-blue);
-}
+// section {
+//   padding: 20px;
+//   border-bottom: 10px solid var(--qwik-dark-blue);
+// }
 
-ul {
-  list-style-type: square;
-  margin: 5px 0 30px 0;
-  padding-left: 25px;
-}
+// ul {
+//   list-style-type: square;
+//   margin: 5px 0 30px 0;
+//   padding-left: 25px;
+// }
 
-li {
-  padding: 8px 0;
-}
+// li {
+//   padding: 8px 0;
+// }
 
-li::marker {
-  color: var(--qwik-light-blue);
-}
+// li::marker {
+//   color: var(--qwik-light-blue);
+// }
 
-a,
-a:visited {
-  color: var(--qwik-dark-blue);
-}
+// a,
+// a:visited {
+//   color: var(--qwik-dark-blue);
+// }
 
-a:hover {
-  text-decoration: none;
-}
+// a:hover {
+//   text-decoration: none;
+// }
 
-table.commands {
-  margin: 0 0 30px 0;
-}
+// table.commands {
+//   margin: 0 0 30px 0;
+// }
 
-.commands td {
-  padding: 5px;
-}
+// .commands td {
+//   padding: 5px;
+// }
 
-.commands td:first-child {
-  white-space: nowrap;
-  padding-right: 20px;
-}
+// .commands td:first-child {
+//   white-space: nowrap;
+//   padding-right: 20px;
+// }
 
-code {
-  font-family: Menlo, Monaco, Courier New, monospace;
-  font-size: 0.9em;
-  background-color: rgb(224, 224, 224);
-  padding: 2px 4px;
-  border-radius: 3px;
-  border-bottom: 2px solid #bfbfbf;
-}
+// code {
+//   font-family: Menlo, Monaco, Courier New, monospace;
+//   font-size: 0.9em;
+//   background-color: rgb(224, 224, 224);
+//   padding: 2px 4px;
+//   border-radius: 3px;
+//   border-bottom: 2px solid #bfbfbf;
+// }
 
-footer {
-  padding: 15px;
-  text-align: center;
-  font-size: 0.8em;
-}
+// footer {
+//   padding: 15px;
+//   text-align: center;
+//   font-size: 0.8em;
+// }
 
-footer a {
-  text-decoration: none;
-}
+// footer a {
+//   text-decoration: none;
+// }
 
-footer a:hover {
-  text-decoration: underline;
-}
+// footer a:hover {
+//   text-decoration: underline;
+// }
 
 a.mindblow {
   margin: 0 auto;

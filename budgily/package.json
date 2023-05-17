@@ -1,11 +1,15 @@
 {
   "name": "budgily",
   "dependencies": {
+    "daisyui": "^2.51.6"
   },
   "scripts": {
     "build.server": "vite build -c adapters/express/vite.config.ts",
     "serve": "node ./dist/server/entry.express.js"
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.23",
+    "tailwindcss": "^3.3.1"
   }
 }
