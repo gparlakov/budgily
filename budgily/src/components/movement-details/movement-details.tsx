@@ -63,19 +63,22 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
     }
   });
 
-  useVisibleTask$(({track}) => {
+  useVisibleTask$(({ track }) => {
     track(() => categoryInput.value);
     track(() => state.categories);
     const cat = categoryInput.value;
     const filterCat = typeof cat === 'string' ? cat.toLocaleLowerCase() : undefined;
 
-    state.filteredCategories = filterCat != null ? state.categories.filter(c => c.name.toLocaleLowerCase().includes(filterCat)) : state.categories;
-  })
+    state.filteredCategories =
+      filterCat != null
+        ? state.categories.filter((c) => c.name.toLocaleLowerCase().includes(filterCat))
+        : state.categories;
+  });
 
   const onCategorize = $(async (event: QwikSubmitEvent<HTMLFormElement>) => {
     const form = new FormData(event.target as HTMLFormElement);
     const category = form.get('category') as string;
-    alert(`will categorize ${category} with maybe id ${state.selectedCategory?.id ?? '---'}`)
+    alert(`will categorize ${category} with maybe id ${state.selectedCategory?.id ?? '---'}`);
     // const r = await categorize(ctx)(category, movementId as string);
 
     // if (r.data) {
@@ -116,9 +119,21 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
                     value={categoriesResource}
                     onPending={() => <>Loading categories...</>}
                     onResolved={(v) => <>Categories: {v?.length ?? 0}</>}
-                    />
-                  <input type="text" name="category" autoComplete="off" bind:value={categoryInput}></input>
-                  {state.filteredCategories.map((c) => <div onClick$={() => {categoryInput.value = c.name; state.selectedCategory = c}} key={c.id}>{c.name}</div>)}
+                  />
+
+                  <select name="category" autoComplete="off" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-md max-h-48 overflow-y-auto">
+                    {state.filteredCategories.map((c) => (
+                      <option
+                        onInput$={() => {
+                          state.selectedCategory = c;
+                        }}
+                        class="px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white"
+                        key={c.id}
+                      >
+                        {c.name}
+                      </option>
+                    ))}
+                  </select>
                   <input type="submit" value="Categorize"></input>
                 </form>
               </div>

@@ -15,6 +15,11 @@ export default component$(() => {
       </div>
       <ul>
         <li>
+          <Link href="/reports/">
+            📌 reports
+          </Link>
+        </li>
+        <li>
           <Link href="/d3/">
             d3
           </Link>
@@ -22,6 +27,11 @@ export default component$(() => {
         <li>
           <Link href="/d3/ranked/">
             ranked(d3)
+          </Link>
+        </li>
+        <li>
+          <Link href="/d3/ranked/ranked-qwik-renders/">
+            ranked(qwik)
           </Link>
         </li>
         <li>
