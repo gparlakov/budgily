@@ -1,6 +1,4 @@
 import { component$, useStore, useTask$ } from '@builder.io/qwik';
-import { ButtonGroup, Accordion, AccordionItem, Badge, Breadcrumb, BreadcrumbItem } from '@qwik-ui/headless';
-import { Combobox, ComboboxItem } from '../combobox/combobox';
 
 interface AppStore {
   count: number;
@@ -19,13 +17,9 @@ export default component$(() => {
   });
   return (
     <>
+      <button onClick$={() => store.count++} class="mt-3 inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">+1</button>
       <DisplayCount store={store} />
       <DisplayDelayCount store={store} />
-        <button onClick$={() => store.count++}>+1</button>
-        <Combobox input={{placeholder: 'Test'}}>
-          <ComboboxItem onClick$={() => alert('1')}>Test 1</ComboboxItem>
-          <ComboboxItem onClick$={() => alert('2')}>Test 2</ComboboxItem>
-        </Combobox>
     </>
   );
 });

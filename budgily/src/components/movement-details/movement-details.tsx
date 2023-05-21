@@ -1,146 +1,43 @@
-import {
-  component$,
-  useContext,
-  useStore,
-  useStylesScoped$,
-  useTask$,
-  $,
-  useResource$,
-  Resource,
-  useSignal,
-  useVisibleTask$,
-  QwikSubmitEvent,
-} from '@builder.io/qwik';
+import { component$, useStylesScoped$ } from '@builder.io/qwik';
 
-import { ClientContext } from '../../core/client.context';
 import styles from './movement-details.scss?inline';
-import { MovementDetailsProps, MovementDetailsStore, mapToVm } from './movement-details.types';
-import { categorize, getCategories, getMovementById } from '@codedoc1/budgily-data-client';
-import { debounce } from '../../core/debounce';
 
-export const MovementDetails = component$(({ movementId, onClose$ }: MovementDetailsProps) => {
-  const ctx = useContext(ClientContext);
+export const MovementDetails = component$(() => {
   useStylesScoped$(styles);
 
-  const state = useStore<MovementDetailsStore>({ loading: true, categories: [], filteredCategories: [] });
-  const dialog = useSignal<HTMLDialogElement>();
-  const categoryInput = useSignal<string>();
-
-  const movementResource = useResource$(({ track, cleanup }) => {
-    track(() => movementId);
-    const abort = new AbortController();
-    cleanup(() => abort.abort('cleanup'));
-
-    const fn = getMovementById(ctx, abort);
-    if (typeof movementId === 'string') {
-      return fn(movementId).then((v) => {
-        state.loading = false;
-        if (v.data?.movements[0]) {
-          state.movement = mapToVm(v.data?.movements[0]);
-        } else {
-          state.errorMessage = JSON.stringify(v.errors);
-        }
-        return v;
-      });
-    }
-  });
-
-  const categoriesResource = useResource$(({ cleanup }) => {
-    const abort = new AbortController();
-    cleanup(() => abort.abort('cleanup categories resource'));
-
-    return getCategories(ctx, abort)().then((v) => {
-      const cats = v.data?.categories;
-      state.categories = cats ?? [];
-      return cats;
-    });
-  });
-
-  useVisibleTask$(({ track }) => {
-    track(() => dialog);
-    if (dialog.value) {
-      dialog.value.showModal();
-    }
-  });
-
-  useVisibleTask$(({ track }) => {
-    track(() => categoryInput.value);
-    track(() => state.categories);
-    const cat = categoryInput.value;
-    const filterCat = typeof cat === 'string' ? cat.toLocaleLowerCase() : undefined;
-
-    state.filteredCategories =
-      filterCat != null
-        ? state.categories.filter((c) => c.name.toLocaleLowerCase().includes(filterCat))
-        : state.categories;
-  });
-
-  const onCategorize = $(async (event: QwikSubmitEvent<HTMLFormElement>) => {
-    const form = new FormData(event.target as HTMLFormElement);
-    const category = form.get('category') as string;
-    alert(`will categorize ${category} with maybe id ${state.selectedCategory?.id ?? '---'}`);
-    // const r = await categorize(ctx)(category, movementId as string);
-
-    // if (r.data) {
-    //   state.movement = { ...state.movement, categoriesStr: r.data.categorize.name };
-    // }
-  });
-
-  return (
-    <>
-      <dialog ref={dialog} onClick$={[$(() => dialog.value?.close()), onClose$]}>
-        <h1>Movement: {movementId}</h1>
-        <Resource
-          value={movementResource}
-          onPending={() => <>Loading... {movementId}</>}
-          onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${movementId}`} </>}
-          onResolved={() => {
-            return (
-              <div onClick$={(event) => event.stopPropagation()}>
-                <div>
-                  <div>
-                    <label>Amount:</label> {state.movement?.type === 'CREDIT' ? '-' : '+'}
-                    {state.movement?.amount}
-                  </div>
-                  <div>
-                    <label>Description:</label> {state.movement?.description}
-                  </div>
-                  <div>
-                    <label>Categories:</label>
-                    {state.movement?.categoriesStr}
-                  </div>
-                  <div>
-                    <label>Raw:</label> {state.movement?.raw}
-                  </div>
-                </div>
-
-                <form method="dialog" preventdefault:submit onSubmit$={onCategorize}>
-                  <Resource
-                    value={categoriesResource}
-                    onPending={() => <>Loading categories...</>}
-                    onResolved={(v) => <>Categories: {v?.length ?? 0}</>}
-                  />
-
-                  <select name="category" autoComplete="off" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-md max-h-48 overflow-y-auto">
-                    {state.filteredCategories.map((c) => (
-                      <option
-                        onInput$={() => {
-                          state.selectedCategory = c;
-                        }}
-                        class="px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white"
-                        key={c.id}
-                      >
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                  <input type="submit" value="Categorize"></input>
-                </form>
-              </div>
-            );
-          }}
-        ></Resource>
-      </dialog>
-    </>
-  );
+  return <>MovementDetails works!</>;
 });
+
+
+// <rect
+//               key={x.id}
+//               {...x.coord}
+//               onMouseEnter$={(e, i) => {
+//                 (x as any).storedWidht = x.coord.width;
+//                 x.coord.width = `${parseInt(x.coord.width) * 2}`;
+//               }}
+//               onMouseLeave$={() => (x.coord.width = (x as any).storedWidht)}
+//               onClick$={() => {
+//                 store.selectedMovementId = x.id;
+//               }}
+//             ></rect>
+
+//             <div class="sizer"></div>
+//       <div
+//         class="hover"
+//         style={{ display: store.showOver ? 'block' : 'none', top: store.positionY, left: store.positionX }}
+//       >
+//         {store.text}
+//       </div>
+//       {store.selectedMovementId != null ? (
+//         <MovementDetails
+//           movementId={store.selectedMovementId}
+//           onClose$={() => {
+//             store.selectedMovementId = undefined;
+//             store.width += Math.random() > 0.5 ? Math.random() * 0.001 : -Math.random() * 0.001;
+//           }}
+//         />
+//       ) : (
+//         <></>
+//       )}
+

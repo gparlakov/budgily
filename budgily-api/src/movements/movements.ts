@@ -16,14 +16,14 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
 
     let fromDateFilter: Filter = passThrough;
     if (isValidDate(fromDate)) {
-      const parsedFromDate = Date.parse(fromDate).valueOf();
-      fromDateFilter = (m: Movement) => Date.parse(m.date).valueOf() > parsedFromDate;
+      const parsedFromDate = Date.parse(fromDate);
+      fromDateFilter = (m: Movement) => parseInt(m.date) > parsedFromDate
     }
 
     let toDateFilter: Filter = passThrough;
     if (isValidDate(toDate)) {
-      const parsedToDate = Date.parse(toDate).valueOf();
-      toDateFilter = (m: Movement) => Date.parse(m.date).valueOf() < parsedToDate;
+      const parsedToDate = Date.parse(toDate);
+      toDateFilter = (m: Movement) => parseInt(m.date) < parsedToDate;
     }
 
     let searchFilter: Filter = passThrough;

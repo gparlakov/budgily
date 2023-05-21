@@ -12,3 +12,9 @@
     display: initial;
   }
 }
+
+rect.focused {
+  // transform:scale(2, 1.5);
+  fill: 'aliceblue';
+  transition: cubic-bezier(0.165, 0.84, 0.44, 1);
+}

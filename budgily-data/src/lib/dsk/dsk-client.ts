@@ -4,8 +4,8 @@ import { ClientContextType } from '../core/types';
 export function getDskReportsV2(
   clientContext: ClientContextType,
   controller?: AbortController
-): Promise<{ data?: { movements: Movement[] }; errors?: unknown[] }> {
-  return fetch(clientContext.uri, {
+): (from: Date) => Promise<{ data?: { movements: Movement[] }; errors?: unknown[] }> {
+  return (from: Date) => fetch(clientContext.uri, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ export function getDskReportsV2(
     body: JSON.stringify({
       query: `
         query GetAllMovements {
-          movements {
+          movements(filter: {fromDate: "${from.toISOString()}" }) {
             date,
             amount,
             description,
