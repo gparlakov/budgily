@@ -1,11 +1,12 @@
 import { Movement } from '../../generated/graphql';
 import { ClientContextType } from '../core/types';
+import { gqlCall } from '../core/gql-call';
 
 export function getDskReportsV2(
   clientContext: ClientContextType,
   controller?: AbortController
-): (from: Date) => Promise<{ data?: { movements: Movement[] }; errors?: unknown[] }> {
-  return (from: Date) => fetch(clientContext.uri, {
+): (filter: {categories?: string[], from?: Date, to?: Date}) => Promise<{ data?: { movements: Movement[] }; errors?: unknown[] }> {
+  return ({from, categories, to} = {}) => fetch(clientContext.uri, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -14,7 +15,11 @@ export function getDskReportsV2(
     body: JSON.stringify({
       query: `
         query GetAllMovements {
-          movements(filter: {fromDate: "${from.toISOString()}" }) {
+          movements(filter: {${
+            from ? `fromDate: "${from.toISOString()}"`: '' }${
+            to ? `toDate: "${to.toISOString()}"`: '' }${
+            Array.isArray(categories) && categories.length > 0 ? `categories: "${categories}"`: '' }
+            }) {
             date,
             amount,
             description,
@@ -73,69 +78,4 @@ export function getMovementById(clientContext: ClientContextType, controller?: A
   };
 }
 
-export function categorize(clientContext: ClientContextType, controller?: AbortController) {
-  return (name: string, movementId: string, description?: string) =>
-    gqlCall<{ categorize: { name: string } }>(
-      JSON.stringify({
-        query: `
-        mutation Category {
-          categorize(input: {category: {name: "${name}", description: "${description}" }, movementIds: ["${movementId}"]}) {
-            movementIds
-            id
-            name
-            description
-          }
-        }
-  `,
-      }),
-      clientContext,
-      controller
-    );
-}
 
-export function getCategories(clientContext: ClientContextType, controller?: AbortController) {
-  return () =>
-    gqlCall<{ categories: Array<{ name: string; movementIds: string[]; id: string; description?: string }> }>(
-      JSON.stringify({
-        query: `
-        query Categories {
-          categories {
-            movementIds
-            id
-            name
-            description
-          }
-        }
-  `,
-      }),
-      clientContext,
-      controller
-    );
-}
-
-function gqlCall<T>(
-  body: string,
-  clientContext: ClientContextType,
-  controller?: AbortController
-): Promise<{ data?: T; errors?: unknown[] }> {
-  return fetch(clientContext.uri, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: body,
-    signal: controller?.signal,
-  }).then((r) => {
-    if (r.status === 200) {
-      return r.json();
-    }
-    console.log(r.headers);
-    return r.body
-      ?.getReader()
-      .read()
-      .then((v) => {
-        throw new Error(`An error occurred: , /n ${r.statusText} /n${String.fromCodePoint(...(v.value ?? []))}`);
-      });
-  });
-}

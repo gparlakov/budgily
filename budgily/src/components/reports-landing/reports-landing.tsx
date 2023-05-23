@@ -13,6 +13,7 @@ import {
 import { Series, group, scaleBand, scaleLinear, stack } from 'd3';
 import { Sizer } from '../sizer/sizer';
 import styles from './reports-landing.scss?inline';
+import { ReportsSvg } from '../reports-svg/reports-svg';
 
 export interface ReportsLandingProps {
   movements: MovementVm[];
@@ -34,43 +35,20 @@ export const ReportsLanding = component$(({ movements, maxSum, months }: Reports
     return useAxis({ ...store, movements, maxSum, months, monthsWidth: 50 });
   });
 
-  console.log('---render reports landing ');
   return (
     <>
       <Sizer onSize={resize} debounceTime={300}></Sizer>
       <Resource
         value={movementsRes}
-        onResolved={(ms) => (
-          <svg width={store.width} height={store.height}>
-            <g id="scale-x">
-              <text x={store.width / 2 - 40} y="15" fill="black">
-                Loaded movement: {ms.length}
-              </text>
-              {ms.map((m) => (
-                <Rect key={m.id} {...m.coord}></Rect>
-              ))}
-            </g>
-          </svg>
-        )}
-        onPending={() => (
-          <>
-            Pending: <PendingCounter />
-          </>
-        )}
+        onResolved={(ms) => <ReportsSvg height={store.height} width={store.width} movements={ms} />}
+        onPending={() => <>Pending: <PendingCounter /></>}
       ></Resource>
     </>
   );
 });
 
-export type RectProps = QwikIntrinsicElements['rect'] & { key: string };
-export const Rect = component$(({ key, ...props }: RectProps) => <rect key={key} {...props}
-
-></rect>);
-
 export const PendingCounter = component$(() => {
   const seconds = useSignal(0);
-
-  console.log('rerender pending');
 
   useVisibleTask$(() => {
     const timer = setInterval(() => (seconds.value += 1), 1000);
@@ -105,7 +83,7 @@ function useAxis({
   const amountAxisX = scaleLinear([padding + monthsWidth, width - monthsWidth - 2 * padding]).domain([0, maxSum]);
 
   const monthly = group(
-    movements,
+    movements.sort((a, b) => b.amount - a.amount),
     (m) => m.month,
     (m) => m.type
   );

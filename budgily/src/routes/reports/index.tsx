@@ -1,4 +1,4 @@
-import { Resource, component$, useContext, useId, useResource$, useSignal, useStyles$, $ } from '@builder.io/qwik';
+import { Resource, component$, useContext, useId, useResource$, useStore, useStyles$ } from '@builder.io/qwik';
 
 import { Category, ClientContextType, Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
@@ -6,6 +6,7 @@ import { group, max } from 'd3';
 import { ClientContext } from '../../core/client.context';
 import { debounce } from '../../core/debounce';
 
+import { MovementFilter } from '../../components/movement-filter/movement-filter';
 import { MovementVm, ReportsLanding } from '../../components/reports-landing/reports-landing';
 import global from './index.scss?inline';
 
@@ -14,13 +15,18 @@ export default component$(() => {
   useStyles$(global);
   const ctx = useContext(ClientContext);
 
-  const vm = useResource$(async () => {
+  const filter = useStore<{categories: string[], fromDate?: Date}>({categories: [], fromDate: new Date(2022, 8, 1)});
+  const vm = useResource$(async ({track}) => {
+    track(() => filter.categories)
+    console.log('--change', filter)
     const abort = new AbortController();
-    return mapToViewModel(await debouncedGetAllMovements(ctx, abort)(new Date(2022, 0, 1)));
+    return mapToViewModel(await debouncedGetAllMovements(ctx, abort)(filter));
   });
 
   return (
     <>
+
+      <MovementFilter filterStore={filter}></MovementFilter>
       <Resource
         value={vm}
         onResolved={({ errors, ...rest }) => (

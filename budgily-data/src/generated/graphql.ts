@@ -50,6 +50,7 @@ export type Movement = {
 export type MovementFilter = {
   amountMax?: InputMaybe<Scalars['Float']>;
   amountMin?: InputMaybe<Scalars['Float']>;
+  categories?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   fromDate?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Array<Scalars['String']>>;
   search?: InputMaybe<Scalars['String']>;
