@@ -1,34 +1,36 @@
-import { QwikIntrinsicElements, component$, useStylesScoped$ } from '@builder.io/qwik';
+import { QwikIntrinsicElements, component$, useId, useSignal, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
 
 import styles from './reports-svg.scss?inline';
+import { Axis, NumberValue } from 'd3';
 
 export interface ReportSvgProps {
   width: number;
   height: number;
   movements: {
-    id: string
-    coord: QwikIntrinsicElements['rect']
+    id: string;
+    amount: number;
+    description: string;
+    type: 'Credit' | 'Debit';
+    coord: QwikIntrinsicElements['rect'];
   }[]
 }
 
 export const ReportsSvg = component$(({ height, width, movements: ms }: ReportSvgProps) => {
   useStylesScoped$(styles);
 
+  const xScale = useSignal<any>();
+  // useVisibleTask$(() => {
+  //   amountAxis(xScale.value);
+  // })
+
   return <>
-    <svg width={width} height={height}>
-      <g id="scale-x">
-        <text x={width / 2 - 40} y="15" fill="black">
-          Loaded movement: {ms?.length}
-        </text>
-        {ms?.map((m) => (
-          <Rect key={m.id} {...m.coord}></Rect>
-        ))}
-      </g>
-    </svg>
+
   </>;
 });
 
-export type RectProps = QwikIntrinsicElements['rect'] & { key: string };
-export const Rect = component$(({ key, ...props }: RectProps) => <rect key={key} {...props}
-
-></rect>);
+export type RectProps = Omit<QwikIntrinsicElements['rect'], 'key'> & Omit<QwikIntrinsicElements['text'], 'key'> & {
+  key: string;
+  movement: { amount: number; description: string; type: 'Credit' | 'Debit' };
+};
+export const Rect = component$(({ movement, key, hidden, class: cs, ...props }: RectProps) =><rect key={key} {...props}></rect>);
+  {/* <text key={key} {...props} fill="black" textLength="40%" class="small-text">{`${movement.amount}лв ${movement.description}`}</text> */}
