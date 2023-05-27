@@ -12,7 +12,7 @@ import { join } from 'node:path';
 // @ts-ignore
 // eslint-disable-next-line @nrwl/nx/enforce-module-boundaries
 import schemaFileName from '../../budgily-data/schema/budgily.graphql'; // using the esbuild file loader the file will be copied to the output and the schemaFileName will be the new file name (it comes with a hash)
-import { categorize, getCategories } from './categories/categories';
+import { categorize, getCategoriesByMovement } from './categories/categories';
 const schema = readFileSync(join(__dirname, schemaFileName)).toString();
 
 const host = process.env.HOST ?? 'localhost';
@@ -23,13 +23,13 @@ const app = express();
 const server = new ApolloServer({
   typeDefs: schema.toString(),
   resolvers: <Resolvers>{
-    Movement: {
-      categories: getCategories()
-    },
+    // Movement: {
+    //   categories: getCategoriesByMovement()
+    // },
     Query: {
       ...root.Query,
       movements: getMovements(),
-      categories: getCategories(),
+      categories: getCategoriesByMovement(),
     },
     Mutation: {
       categorize: categorize()
@@ -43,7 +43,7 @@ const server = new ApolloServer({
 // instance before passing the instance to `expressMiddleware`
 server.start().then(() => {
   // Specify the path where we'd like to mount our server
-  app.use('/graphql', cors<cors.CorsRequest>({ origin: 'http://localhost:4200' }), json(), expressMiddleware(server));
+  app.use('/graphql', cors<cors.CorsRequest>({ origin: ['http://localhost:4200', 'http://localhost:4300'] }), json(), expressMiddleware(server));
 
   app.listen(port, host, () => {
     console.log(`[ ready ] http://${host}:${port}`);

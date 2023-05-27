@@ -2,6 +2,7 @@ import { isValidDate } from '../core/is-valid-date';
 import { Movement, QueryResolvers, dedupe, defaultDSKMapper } from '@codedoc1/budgily-data';
 import { dskMovements } from '../dsk/dsk-movements';
 import { filterValueAllCategories, filterValueNoCategory } from 'budgily-data/src/lib/core/types';
+import { getAllCategories } from '../categories/categories';
 
 type Filter = (m: Movement) => boolean;
 
@@ -40,14 +41,24 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
 
       const cats = categories.filter(c => c != filterValueAllCategories && c != filterValueNoCategory);
       const isCategory = cats.length > 0;
+
       categoryFilter = (m) => {
-         return ((m.categories == null || m.categories.length === 0) && (isNone || isAll)) ||
+         return isAll ||
+         (isNone && (m.categories == null || m.categories.length === 0)) ||
           (isCategory && m.categories?.some(c => cats.includes(c.id.toString())))
       }
     }
 
     return dskMovements()
       .then((fs) => fs.flatMap(mapper))
+      .then(ms => {
+        // include cats so we can filter by them
+        const cats = getAllCategories() ?? [];
+        return ms.map(m => {
+          m.categories = cats.filter(c => c.movementIds.includes(m.id)).map(({id, name}) => ({id, name, movementIds: []}));
+          return m;
+        })
+      })
       .then((ms) =>
         ms
           .filter(idFilter)

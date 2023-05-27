@@ -11,21 +11,21 @@ export interface ReportSvgProps {
   }[]
 }
 
-export const ReportsSvg = component$(({height, width, movements: ms}: ReportSvgProps) => {
+export const ReportsSvg = component$(({ height, width, movements: ms }: ReportSvgProps) => {
   useStylesScoped$(styles);
 
   return <>
-   <svg width={width} height={height}>
-            <g id="scale-x">
-              <text x={width / 2 - 40} y="15" fill="black">
-                Loaded movement: {ms.length}
-              </text>
-              {ms.map((m) => (
-                <Rect key={m.id} {...m.coord}></Rect>
-              ))}
-            </g>
-          </svg>
-        </>;
+    <svg width={width} height={height}>
+      <g id="scale-x">
+        <text x={width / 2 - 40} y="15" fill="black">
+          Loaded movement: {ms?.length}
+        </text>
+        {ms?.map((m) => (
+          <Rect key={m.id} {...m.coord}></Rect>
+        ))}
+      </g>
+    </svg>
+  </>;
 });
 
 export type RectProps = QwikIntrinsicElements['rect'] & { key: string };

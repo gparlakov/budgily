@@ -1,4 +1,4 @@
-import { Resource, component$, useContext, useId, useResource$, useStore, useStyles$ } from '@builder.io/qwik';
+import { Resource, component$, useContext, useId, useResource$, useStore, useStyles$, $ } from '@builder.io/qwik';
 
 import { Category, ClientContextType, Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
@@ -15,18 +15,18 @@ export default component$(() => {
   useStyles$(global);
   const ctx = useContext(ClientContext);
 
-  const filter = useStore<{categories: string[], fromDate?: Date}>({categories: [], fromDate: new Date(2022, 8, 1)});
-  const vm = useResource$(async ({track}) => {
-    track(() => filter.categories)
-    console.log('--change', filter)
+  const filter = useStore<{ categories: string[], fromDate?: Date }>({ categories: [], fromDate: new Date(2022, 8, 1) });
+  const vm = useResource$(async ({ track, cleanup }) => {
+    track(filter);
     const abort = new AbortController();
-    return mapToViewModel(await debouncedGetAllMovements(ctx, abort)(filter));
+    cleanup(() => abort.abort());
+    return debouncedGetAllMovements(ctx, abort)(filter).then(mapToViewModel);
   });
 
   return (
     <>
-
-      <MovementFilter filterStore={filter}></MovementFilter>
+      <MovementFilter filterStore={filter} ></MovementFilter>
+      <button onClick$={() => filter.categories =[...filter.categories]}>🔁</button>
       <Resource
         value={vm}
         onResolved={({ errors, ...rest }) => (
@@ -38,7 +38,7 @@ export default component$(() => {
         onPending={() => <>Loading...</>}
         onRejected={(e) => (
           <>
-            Could not load <hr /> {JSON.stringify(e)}
+            Could not load movements. Error follows (if any): <hr /> {JSON.stringify(e)}
           </>
         )}
       ></Resource>

@@ -23,7 +23,7 @@ stat(categoriesFileName)
     categories$.next(categories);
   });
 
-export function getCategories(): QueryResolvers['categories'] {
+export function getCategoriesByMovement(): QueryResolvers['categories'] {
   return (parent: Movement) => {
     return categories$
       .pipe(
@@ -36,6 +36,10 @@ export function getCategories(): QueryResolvers['categories'] {
       )
       .toPromise();
   };
+}
+
+export function getAllCategories() {
+  return categories$.value;
 }
 
 export function categorize(): MutationResolvers['categorize'] {

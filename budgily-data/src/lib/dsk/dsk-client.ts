@@ -18,7 +18,7 @@ export function getDskReportsV2(
           movements(filter: {${
             from ? `fromDate: "${from.toISOString()}"`: '' }${
             to ? `toDate: "${to.toISOString()}"`: '' }${
-            Array.isArray(categories) && categories.length > 0 ? `categories: "${categories}"`: '' }
+            Array.isArray(categories) && categories.length > 0 ? `categories: [${categories.map(c => `"${c}"`).join(',')}]`: '' }
             }) {
             date,
             amount,

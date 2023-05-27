@@ -25,8 +25,8 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@builder.io/qwik": "^1.0.0",
-    "@builder.io/qwik-city": "^1.0.0",
+    "@builder.io/qwik": "^1.1.4",
+    "@builder.io/qwik-city": "^1.1.4",
     "@graphql-codegen/cli": "3.3.1",
     "@graphql-codegen/client-preset": "^3.0.1",
     "@graphql-codegen/named-operations-object": "^2.3.1",
