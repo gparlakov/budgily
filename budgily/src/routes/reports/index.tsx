@@ -1,6 +1,6 @@
-import { noSerialize, Resource, component$, useContext, useId, useResource$, useStore, useStyles$, NoSerialize } from '@builder.io/qwik';
+import { noSerialize, Resource, component$, useContext, useId, useResource$, useStore, useStyles$, NoSerialize, useVisibleTask$ } from '@builder.io/qwik';
 
-import { Category, ClientContextType, Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
+import { Category, ClientContextType, Movement, MovementType, filterValueAllCategories, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
 
 import { ClientContext } from '../../core/client.context';
@@ -8,28 +8,24 @@ import { debounce } from '../../core/debounce';
 
 import { MovementFilter } from '../../components/movement-filter/movement-filter';
 import { ReportsLanding } from '../../components/reports-landing/reports-landing';
-import { MovementVm } from '../../core/movement.types';
+import { CategoryVM, MovementVm } from '../../core/movement.types';
 
 import global from './index.scss?inline';
 import { MovementDetails } from 'budgily/src/components/movement-details/movement-details';
+import { CategoriesFetcher } from 'budgily/src/components/categories-fetcher/categories-fetcher';
 
 const debounceMovementMillis = 300;
 export default component$(() => {
   useStyles$(global);
   const ctx = useContext(ClientContext);
 
-  const filter = useStore<{ categories: string[], fromDate?: Date }>({ categories: [], fromDate: new Date(2022, 8, 1) });
-  const appStore = useStore<{
-    selectedId?: string;
-    movements: NoSerialize<MovementVm[]>;
-    maxSum: number;
-    months: string[];
-  }>({ movements: noSerialize([]), maxSum: 0, months: [] });
+  const appStore = useStore<AppStore>({ movements: noSerialize([]), maxSum: 0, months: [], allCategories: noSerialize([]), filter: { categories: [], fromDate: new Date(2022, 8, 1) } });
+
   const vm = useResource$(async ({ track, cleanup }) => {
-    track(filter);
+    track(appStore.filter);
     const abort = new AbortController();
     cleanup(() => abort.abort());
-    return debouncedGetAllMovements(ctx, abort)(filter).then(mapToViewModel).then(({ errors, maxSum, months, movements }) => {
+    return debouncedGetAllMovements(ctx, abort)(appStore.filter).then(mapToViewModel).then(({ errors, maxSum, months, movements }) => {
       appStore.movements = noSerialize(movements);
       appStore.maxSum = maxSum;
       appStore.months = months;
@@ -37,10 +33,14 @@ export default component$(() => {
     });
   });
 
+  // when on client - initiate the fetch for all categories
+  useVisibleTask$(() => {appStore.filter.categories = [filterValueAllCategories];});
+
   return (
     <>
-      <MovementFilter filterStore={filter} ></MovementFilter>
-      <button onClick$={() => filter.categories = [...filter.categories]}>🔁</button> {/* this button and its onClick handler is a hack to make the change detection work */}
+      <CategoriesFetcher store={appStore}></CategoriesFetcher>
+      <MovementFilter filterStore={appStore} ></MovementFilter>
+      <button onClick$={() => appStore.filter.categories = [...appStore.filter.categories]}>🔁</button> {/* this button and its onClick handler is a hack to make the change detection work */}
       <Resource
         value={vm}
         onResolved={({ errors }) => (
@@ -56,7 +56,7 @@ export default component$(() => {
           </>
         )}
       ></Resource>
-      <MovementDetails movementId={appStore.selectedId} onClose$={() => appStore.selectedId = undefined}></MovementDetails>
+      <MovementDetails store={appStore} ></MovementDetails>
     </>
   );
 });
@@ -104,5 +104,19 @@ export function mapToViewModel({
     movements,
     maxSum,
     months: [...new Set(movements.map((m) => m.month))],
+  };
+}
+
+
+
+interface AppStore {
+  selectedId?: string;
+  movements: NoSerialize<MovementVm[]>;
+  maxSum: number;
+  months: string[];
+  allCategories: NoSerialize<CategoryVM[]>;
+  filter: {
+    categories: string[];
+    fromDate?: Date;
   };
 }

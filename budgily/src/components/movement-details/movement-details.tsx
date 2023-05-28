@@ -1,37 +1,37 @@
 import {
+  $,
+  QwikSubmitEvent,
+  Resource,
   component$,
   useContext,
+  useResource$,
+  useSignal,
   useStore,
   useStylesScoped$,
-  useTask$,
-  $,
-  useResource$,
-  Resource,
-  useSignal,
-  useVisibleTask$,
-  QwikSubmitEvent,
+  useVisibleTask$
 } from '@builder.io/qwik';
 
+import { getMovementById } from '@codedoc1/budgily-data-client';
 import { ClientContext } from '../../core/client.context';
 import styles from './movement-details.scss?inline';
 import { MovementDetailsProps, MovementDetailsStore, mapToVm } from './movement-details.types';
-import { categorize, getMovementById } from '@codedoc1/budgily-data-client';
 
-export const MovementDetails = component$(({ movementId, onClose$ }: MovementDetailsProps) => {
+export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
   const ctx = useContext(ClientContext);
   useStylesScoped$(styles);
 
   const state = useStore<MovementDetailsStore>({ loading: true });
   const dialog = useSignal<HTMLDialogElement>();
+  const catInput = useSignal<string>();
 
   const movementResource = useResource$(({ track, cleanup }) => {
-    track(() => movementId);
+    track(() => store.selectedId);
     const abort = new AbortController();
     cleanup(() => abort.abort('cleanup'));
 
     const fn = getMovementById(ctx, abort);
-    if (typeof movementId === 'string') {
-      return fn(movementId).then((v) => {
+    if (store.selectedId != null) {
+      return fn(store.selectedId).then((v) => {
         state.loading = false;
         if (v.data?.movements[0]) {
           state.movement = mapToVm(v.data?.movements[0]);
@@ -44,10 +44,9 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
   });
 
   useVisibleTask$(({ track }) => {
-    track(() => dialog);
-    console.log('---- modal modal')
-    if (dialog.value) {
-      console.log('---- opening modal')
+    track(dialog);
+    track(() => store.selectedId);
+    if (dialog.value && store.selectedId) {
       dialog.value.showModal();
     }
   });
@@ -55,7 +54,7 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
   const onCategorize = $(async (event: QwikSubmitEvent<HTMLFormElement>) => {
     const form = new FormData(event.target as HTMLFormElement);
     const category = form.get('category') as string;
-    // const r = await categorize(ctx)(category, movementId as string);
+    // const r = await categorize(ctx)(category, selectedId as string);
 
     // if(r.data) {
     //   state.movement = {...state.movement, categoriesStr: r.data.categorize.name};
@@ -65,16 +64,16 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
 
   return (
     <>
-    {movementId}
-      <dialog ref={dialog} onClick$={[$(() => dialog.value?.close()), onClose$]}>
-        <h1>Movement: {movementId}</h1>
+      <button ></button>
+      <dialog ref={dialog} onClick$={[$(() => dialog.value?.close()), $(() => { store.selectedId = undefined; })]}>
+        <h1>Movement: {store.selectedId}</h1>
         <Resource
           value={movementResource}
-          onPending={() => <>Loading... {movementId}</>}
-          onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${movementId}`} </>}
+          onPending={() => <>Loading... {store.selectedId}</>}
+          onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${store.selectedId}`} </>}
           onResolved={() => {
             return (
-              <div onClick$={(event) => event.stopPropagation()}>
+              <div onClick$={(event) => event.stopPropagation()} >
                 <div>
                   <div>
                     <label>Amount:</label> {state.movement?.type === 'CREDIT' ? '-' : '+'}
@@ -96,8 +95,13 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
                   method="dialog"
                   preventdefault:submit
                   onSubmit$={onCategorize}
+                  class="categorize-form"
                 >
-                  <input type="text" name="category"></input>
+                  <input type="text" name="category" autoComplete="off" bind:value={catInput}></input>
+                  {catInput}
+                  <ul>
+                    {store.categories?.map(c => <li key={c.id}>{c.name}</li>)}
+                  </ul>
 
                   <input type="submit" value="Categorize"></input>
                 </form>
@@ -109,3 +113,9 @@ export const MovementDetails = component$(({ movementId, onClose$ }: MovementDet
     </>
   );
 });
+
+function getCategories () {
+  return useResource$(() => {
+    return Promise.resolve([]);
+  })
+}

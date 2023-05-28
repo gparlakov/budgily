@@ -1,16 +1,12 @@
-import { PropFunction, Signal } from '@builder.io/qwik';
+import { NoSerialize } from '@builder.io/qwik';
 import { Category, Movement } from '@codedoc1/budgily-data-client';
+import { CategoryVM } from 'budgily/src/core/movement.types';
 
 export interface MovementDetailsProps {
-  movementId?: string;
-  onClose$?: PropFunction<() => void>;
-}
-
-interface CategoryVM {
-  id: string;
-  name: string;
-  movementIds: string[];
-  description?: string;
+  store: {
+    selectedId?: string;
+    allCategories: NoSerialize<CategoryVM[]>
+  }
 }
 
 type MovementDetailsMovement = {

@@ -23,12 +23,11 @@ export function categorize(clientContext: ClientContextType, controller?: AbortC
 
 export function getCategories(clientContext: ClientContextType, controller?: AbortController) {
   return () =>
-    gqlCall<{ categories: Array<{ name: string; movementIds: string[]; id: string; description?: string }> }>(
+    gqlCall<{ categories: Array<{ name: string; id: number; description?: string }> }>(
       JSON.stringify({
         query: `
         query Categories {
           categories {
-            movementIds
             id
             name
             description
