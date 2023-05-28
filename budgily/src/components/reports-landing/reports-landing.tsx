@@ -1,40 +1,42 @@
 import {
   $,
-  Resource,
+  NoSerialize,
   Signal,
   component$,
+  noSerialize,
   useId,
-  useResource$,
   useSignal,
   useStore,
   useStylesScoped$,
-  useVisibleTask$,
+  useVisibleTask$
 } from '@builder.io/qwik';
 
-import { Axis, NumberValue, Series, axisBottom, axisLeft, axisTop, group, scaleBand, scaleLinear, select, stack } from 'd3';
+import { Series, axisLeft, axisTop, group, scaleBand, scaleLinear, select, stack } from 'd3';
+import { MovementVm, MovementWithCoordinates } from '../../core/movement.types';
+import { Rect } from '../reports-svg/reports-svg';
 import { Sizer } from '../sizer/sizer';
 import styles from './reports-landing.scss?inline';
-import { Rect, ReportsSvg } from '../reports-svg/reports-svg';
-import { MovementVm, MovementWithCoordinates } from '../../core/movement.types';
 
-
+const monthsAxisWidth = 50;
 export interface ReportsViewModel {
-  movementsCoords: Array<MovementWithCoordinates>;
+  movementsCoords: NoSerialize<Array<MovementWithCoordinates>>;
 
-  width: number;
+  width?: number;
   height: number;
   padding: number;
-
-  selectedMovementId?: string;
 }
 
 export interface ReportsLandingProps {
-  movements: MovementVm[];
-  maxSum: number;
-  months: string[];
+
+  movementDetailsStore: {
+    selectedId?: string;
+    movements:NoSerialize<MovementVm[]>;
+    maxSum: number;
+    months: string[];
+  }
 }
 
-export const ReportsLanding = component$(({ movements, maxSum, months }: ReportsLandingProps) => {
+export const ReportsLanding = component$(({ movementDetailsStore }: ReportsLandingProps) => {
   useStylesScoped$(styles);
 
   const store = useStore<ReportsViewModel>(initialReportsVM(), { deep: false });
@@ -43,10 +45,10 @@ export const ReportsLanding = component$(({ movements, maxSum, months }: Reports
 
   useVisibleTask$(({ track }) => {
     track(() => store.width);
-    if(xAxis.value == null) {
+    if (store.width == null || xAxis.value == null) {
       return; // not ready to draw yet
     }
-    calculateCoordinatesAndRenderAxis({ store, movements, maxSum, months, monthsWidth: 50, xAxis, yAxis });
+    calculateCoordinatesAndRenderAxis({ store, movementDetailsStore, monthsWidth: monthsAxisWidth, xAxis, yAxis });
   });
 
   return (
@@ -54,14 +56,14 @@ export const ReportsLanding = component$(({ movements, maxSum, months }: Reports
       <Sizer onSize={$((size: number) => { store.width = size; })} debounceTime={300}></Sizer>
 
       <svg width={store.width} height={store.height}>
-        {store.movementsCoords && <g id="title"><text x={store.width - 150} y="45" fill="black">
+        {store.movementsCoords && <g id="title"><text x={Number(store.width) - 150} y="45" fill="black">
           Count: {store.movementsCoords.length}
         </text></g>}
-        <g ref={xAxis} transform="translate(0, 20)"></g>
-        <g ref={yAxis} transform="translate(50, 0)"></g>
+        <g ref={xAxis} transform={`translate(0, ${store.padding + 2})`}></g>
+        <g ref={yAxis} transform={`translate(${monthsAxisWidth + 10}, 0)`}></g>
         <g id="movements">
           {store.movementsCoords?.map((m) => (
-            <Rect key={m.id ?? useId()} {...m.coord} movement={m}></Rect>
+            <Rect key={m.id ?? useId()} {...m.coord} movement={m} onClick$={$(() => { movementDetailsStore.selectedId = m.id; })}></Rect>
           ))}
         </g>
       </svg>
@@ -83,29 +85,31 @@ export const PendingCounter = component$(() => {
 
 function calculateCoordinatesAndRenderAxis({
   store,
-  months,
-  movements,
+  movementDetailsStore: { months, movements: movementsMaybe, maxSum },
   monthsWidth,
-  maxSum,
   xAxis,
   yAxis
 }: {
-  months: string[];
-  maxSum: number;
-  movements: MovementVm[];
+  movementDetailsStore: {
+    months: string[];
+    maxSum: number;
+    movements: NoSerialize<MovementVm[]>;
+  },
   monthsWidth: number;
   xAxis: Signal<SVGGElement | undefined>;
   yAxis: Signal<SVGGElement | undefined>;
   store: ReportsViewModel;
 }) {
-  const { width, height, padding } = store;
+  const { width: widthMaybe, height, padding } = store;
+  const width = widthMaybe ?? 0;
+  const movements = Array.isArray(movementsMaybe) ? movementsMaybe : [];
 
   const y = scaleBand([padding, height - padding])
     .domain(months)
     .padding(0.2)
     .round(true);
 
-  const amountScaleX = scaleLinear([padding + monthsWidth, width - monthsWidth - 2 * padding]).domain([0, maxSum]);
+  const amountScaleX = scaleLinear([padding + monthsWidth, Number(width) - monthsWidth - 2 * padding]).domain([0, maxSum]);
 
   const monthly = group(
     movements.sort((a, b) => b.amount - a.amount),
@@ -134,7 +138,7 @@ function calculateCoordinatesAndRenderAxis({
   }, {} as Record<string, Record<MovementVm['type'], Series<Record<string, number>, string>[]>>);
 
   // give coordinates for the movements x,y,width,height,fill
-  store.movementsCoords = movements.map((m) => {
+  store.movementsCoords = noSerialize(movements.map((m) => {
     const [[start, end]] = stacks[m.month][m.type].find((x) => x.key === m.id) ?? [[0, 0]];
 
     const c = m as MovementWithCoordinates;
@@ -149,7 +153,7 @@ function calculateCoordinatesAndRenderAxis({
       stroke: 'blue',
     };
     return c;
-  });
+  }));
 
   // render amount axis how long is the
   if (xAxis.value) {
@@ -166,9 +170,8 @@ function calculateCoordinatesAndRenderAxis({
 
 function initialReportsVM(): ReportsViewModel {
   return {
-    width: 800,
     height: 600,
     padding: 10,
-    movementsCoords: [],
+    movementsCoords: noSerialize([]),
   };
 }

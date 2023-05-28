@@ -1,4 +1,4 @@
-import { Resource, component$, useContext, useId, useResource$, useStore, useStyles$, $ } from '@builder.io/qwik';
+import { noSerialize, Resource, component$, useContext, useId, useResource$, useStore, useStyles$, NoSerialize } from '@builder.io/qwik';
 
 import { Category, ClientContextType, Movement, MovementType, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
@@ -7,8 +7,11 @@ import { ClientContext } from '../../core/client.context';
 import { debounce } from '../../core/debounce';
 
 import { MovementFilter } from '../../components/movement-filter/movement-filter';
-import { MovementVm, ReportsLanding } from '../../components/reports-landing/reports-landing';
+import { ReportsLanding } from '../../components/reports-landing/reports-landing';
+import { MovementVm } from '../../core/movement.types';
+
 import global from './index.scss?inline';
+import { MovementDetails } from 'budgily/src/components/movement-details/movement-details';
 
 const debounceMovementMillis = 300;
 export default component$(() => {
@@ -16,22 +19,33 @@ export default component$(() => {
   const ctx = useContext(ClientContext);
 
   const filter = useStore<{ categories: string[], fromDate?: Date }>({ categories: [], fromDate: new Date(2022, 8, 1) });
+  const appStore = useStore<{
+    selectedId?: string;
+    movements: NoSerialize<MovementVm[]>;
+    maxSum: number;
+    months: string[];
+  }>({ movements: noSerialize([]), maxSum: 0, months: [] });
   const vm = useResource$(async ({ track, cleanup }) => {
     track(filter);
     const abort = new AbortController();
     cleanup(() => abort.abort());
-    return debouncedGetAllMovements(ctx, abort)(filter).then(mapToViewModel);
+    return debouncedGetAllMovements(ctx, abort)(filter).then(mapToViewModel).then(({ errors, maxSum, months, movements }) => {
+      appStore.movements = noSerialize(movements);
+      appStore.maxSum = maxSum;
+      appStore.months = months;
+      return { errors };
+    });
   });
 
   return (
     <>
       <MovementFilter filterStore={filter} ></MovementFilter>
-      <button onClick$={() => filter.categories =[...filter.categories]}>🔁</button>
+      <button onClick$={() => filter.categories = [...filter.categories]}>🔁</button> {/* this button and its onClick handler is a hack to make the change detection work */}
       <Resource
         value={vm}
-        onResolved={({ errors, ...rest }) => (
+        onResolved={({ errors }) => (
           <>
-            <ReportsLanding {...rest}></ReportsLanding>
+            <ReportsLanding movementDetailsStore={appStore}></ReportsLanding>
             {Array.isArray(errors) ? errors.map((e) => <span key={useId()}>{JSON.stringify(e)}</span>) : ''}{' '}
           </>
         )}
@@ -42,6 +56,7 @@ export default component$(() => {
           </>
         )}
       ></Resource>
+      <MovementDetails movementId={appStore.selectedId} onClose$={() => appStore.selectedId = undefined}></MovementDetails>
     </>
   );
 });

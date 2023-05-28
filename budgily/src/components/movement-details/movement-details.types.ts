@@ -13,24 +13,30 @@ interface CategoryVM {
   description?: string;
 }
 
+type MovementDetailsMovement = {
+  id: string;
+  amount: number;
+  date: string;
+  categories: {
+    id?: number | null;
+    name: string;
+    description?: string | null;
+  }[];
+  categoriesStr: string;
+  raw: string;
+  account?: string;
+  description?: string;
+  opposite?: string | null;
+  type: string;
+};
+
 export interface MovementDetailsStore {
-  selectedCategory: CategoryVM;
+  selectedCategory?: CategoryVM;
   loading: boolean;
-  movement?: {
-    id: string;
-    amount: number;
-    date: string;
-    categories: { id?: number | null ; name: string; description?: string | null }[];
-    categoriesStr: string;
-    raw: string;
-    account?: string;
-    description?: string;
-    opposite?: string | null;
-    type: string;
-  };
+  movement?: MovementDetailsMovement;
   errorMessage?: string;
-  categories: CategoryVM[];
-  filteredCategories: CategoryVM[];
+  categories?: CategoryVM[];
+  filteredCategories?: CategoryVM[];
 }
 
 export function mapToVm({
@@ -43,7 +49,7 @@ export function mapToVm({
   categories,
   opposite,
   type,
-}: Movement): MovementDetailsStore['movement'] {
+}: Movement): MovementDetailsMovement {
   const cats = categories?.filter((c): c is Category => c != null);
   const categoriesStr = Array.isArray(cats) && cats.length > 0 ? cats?.map((c) => c.name).join(',') : '-----';
 
