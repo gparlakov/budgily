@@ -23,6 +23,7 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
   const state = useStore<MovementDetailsStore>({ loading: true });
   const dialog = useSignal<HTMLDialogElement>();
   const catInput = useSignal<string>();
+  const selectedCategory = useSignal<{id: string, name: string}>();
 
   const movementResource = useResource$(({ track, cleanup }) => {
     track(() => store.selectedId);
@@ -66,7 +67,7 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
     <>
       <button ></button>
       <dialog ref={dialog} onClick$={[$(() => dialog.value?.close()), $(() => { store.selectedId = undefined; })]}>
-        <h1>Movement: {store.selectedId}</h1>
+        <h1 class="display-table"> <span class="px-10 font-bold display-table-cell">Movement</span> <span class="display-table-cell">{store.selectedId}</span></h1>
         <Resource
           value={movementResource}
           onPending={() => <>Loading... {store.selectedId}</>}
@@ -74,22 +75,29 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
           onResolved={() => {
             return (
               <div onClick$={(event) => event.stopPropagation()} >
-                <div>
-                  <div>
-                    <label>Amount:</label> {state.movement?.type === 'CREDIT' ? '-' : '+'}
-                    {state.movement?.amount}
-                  </div>
-                  <div>
-                    <label>Description:</label> {state.movement?.description}
-                  </div>
-                  <div>
-                    <label>Categories:</label>
-                    {state.movement?.categoriesStr}
-                  </div>
-                  <div>
-                    <label>Raw:</label> {state.movement?.raw}
-                  </div>
-                </div>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td class="px-10 font-bold">Amount</td>
+                      <td class="align-bottom hover:align-top">{state.movement?.type === 'Credit' ? '-' : '+'}
+                        {state.movement?.amount}</td>
+                    </tr>
+
+                    <tr>
+                      <td class="px-10 font-bold">Description</td>
+                      <td class="align-bottom hover:align-top"> {state.movement?.description}</td>
+                    </tr>
+
+                    <tr>
+                      <td class="px-10 font-bold">Categories</td>
+                      <td class="align-bottom hover:align-top">{state.movement?.categoriesStr}</td>
+                    </tr>
+                    <tr>
+                      <td class="px-10 font-bold">Raw</td>
+                      <td class="align-bottom hover:align-top"> {state.movement?.raw}</td>
+                    </tr>
+                  </tbody>
+                </table>
 
                 <form
                   method="dialog"
@@ -97,13 +105,21 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
                   onSubmit$={onCategorize}
                   class="categorize-form"
                 >
-                  <input type="text" name="category" autoComplete="off" bind:value={catInput}></input>
-                  {catInput}
-                  <ul>
-                    {store.categories?.map(c => <li key={c.id}>{c.name}</li>)}
-                  </ul>
+                  <div class="py-2 px-5 inline-block background-green-400 relative">
 
-                  <input type="submit" value="Categorize"></input>
+                    {selectedCategory.value && <span class="pill">{selectedCategory.value.name} <button onClick$={() => selectedCategory.value = undefined}>x</button></span>}
+                    <input type="text" placeholder="Select category" name="category" autoComplete="off" bind:value={catInput} class="input input-bordered w-full max-w-xs"></input>
+                    <div class="dropdown dropdown-top dropdown-end absolute top-3 right-5">
+                      <label tabIndex={0} class="btn btn-xs btn-ghost">
+                         <svg class="h-6 w-6 fill-current md:h-8 md:w-8" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+                      </label>
+                      <ul tabIndex={0} class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                        {store.allCategories?.map(c => <li key={c.id}><a onClick$={() => {selectedCategory.value = c;  catInput.value = c.name}}>{c.name}</a></li>)}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <input type="submit" value="Categorize" class="btn m-1 btn-ghost btn-xs"></input>
                 </form>
               </div>
             );
@@ -114,7 +130,7 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
   );
 });
 
-function getCategories () {
+function getCategories() {
   return useResource$(() => {
     return Promise.resolve([]);
   })
