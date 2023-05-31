@@ -17,13 +17,17 @@ import styles from './movement-details.scss?inline';
 import { MovementDetailsProps, MovementDetailsStore, mapToVm } from './movement-details.types';
 
 export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
+  // only temp
+  useVisibleTask$(() => {
+    store.selectedId = store.selectedId || "ffvNzzREbISXiW2JAQNHVnE7Gr3JL4ZyVkukbJNK7Gs=";
+  })
   const ctx = useContext(ClientContext);
   useStylesScoped$(styles);
 
   const state = useStore<MovementDetailsStore>({ loading: true });
   const dialog = useSignal<HTMLDialogElement>();
   const catInput = useSignal<string>();
-  const selectedCategory = useSignal<{id: string, name: string}>();
+  const selectedCategory = useSignal<{ id: string, name: string }>();
 
   const movementResource = useResource$(({ track, cleanup }) => {
     track(() => store.selectedId);
@@ -66,7 +70,15 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
   return (
     <>
       <button ></button>
-      <dialog ref={dialog} onClick$={[$(() => dialog.value?.close()), $(() => { store.selectedId = undefined; })]}>
+      <dialog ref={dialog}
+        class="min-h-500 pt-10 block"
+        onClick$={(ev) => {
+          if (ev.target === dialog.value) {
+            dialog.value?.close();
+            store.selectedId = undefined;
+          }
+        }
+        }>
         <h1 class="display-table"> <span class="px-10 font-bold display-table-cell">Movement</span> <span class="display-table-cell">{store.selectedId}</span></h1>
         <Resource
           value={movementResource}
@@ -74,7 +86,7 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
           onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${store.selectedId}`} </>}
           onResolved={() => {
             return (
-              <div onClick$={(event) => event.stopPropagation()} >
+              <div onClickCapture$={() => true} >
                 <table>
                   <tbody>
                     <tr>
@@ -111,10 +123,10 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
                     <input type="text" placeholder="Select category" name="category" autoComplete="off" bind:value={catInput} class="input input-bordered w-full max-w-xs"></input>
                     <div class="dropdown dropdown-top dropdown-end absolute top-3 right-5">
                       <label tabIndex={0} class="btn btn-xs btn-ghost">
-                         <svg class="h-6 w-6 fill-current md:h-8 md:w-8" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"></path></svg>
+                        <svg class="h-4 w-4 fill-current md:h-8 md:w-8 " xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24"><path d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" ></path></svg>
                       </label>
-                      <ul tabIndex={0} class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
-                        {store.allCategories?.map(c => <li key={c.id}><a onClick$={() => {selectedCategory.value = c;  catInput.value = c.name}}>{c.name}</a></li>)}
+                      <ul tabIndex={0} class="dropdown-content menu p-0 shadow bg-base-100 rounded-box w-52 max-h-16 ">
+                        {store.allCategories?.map(c => <li class="space-0.5" key={c.id}><a onClick$={() => { selectedCategory.value = c; catInput.value = c.name }}>{c.name}</a></li>)}
                       </ul>
                     </div>
                   </div>
