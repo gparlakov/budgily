@@ -11,7 +11,7 @@ export interface MovementDetailsProps {
   }
 }
 
-type MovementDetailsMovement = {
+export type MovementDetailsMovement = {
   id: string;
   amount: number;
   date: string;
