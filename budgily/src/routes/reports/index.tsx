@@ -1,6 +1,6 @@
-import { noSerialize, Resource, component$, useContext, useId, useResource$, useStore, useStyles$, NoSerialize, useVisibleTask$ } from '@builder.io/qwik';
+import { noSerialize, Resource, component$, useContext, useId, useResource$, useStore, useStyles$, NoSerialize, useVisibleTask$, QRL, $ } from '@builder.io/qwik';
 
-import { Category, ClientContextType, Movement, MovementType, filterValueAllCategories, getDskReportsV2 } from '@codedoc1/budgily-data-client';
+import { Category, ClientContextType, Movement, MovementType, filterValueAllCategories, filterValueNoCategory, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
 
 import { ClientContext } from '../../core/client.context';
@@ -19,7 +19,15 @@ export default component$(() => {
   useStyles$(global);
   const ctx = useContext(ClientContext);
 
-  const appStore = useStore<AppStore>({ movements: noSerialize([]), maxSum: 0, months: [], allCategories: noSerialize([]), filter: { categories: [], fromDate: new Date(2022, 8, 1) } });
+  const appStore = useStore<AppStore>({
+    movements: noSerialize([]),
+    maxSum: 0,
+    months: [],
+    allCategories: noSerialize([]),
+    filter: {
+      categories: [], fromDate: new Date(2022, 8, 1)
+    },
+  });
 
   const vm = useResource$(async ({ track, cleanup }) => {
     track(appStore.filter);
@@ -33,8 +41,28 @@ export default component$(() => {
     });
   });
 
+  const toggle$ = $((to: 'next' | 'previous') => {
+      if (appStore.movements && appStore.selectedId) {
+        const i = appStore.movements.findIndex(v => v.id === appStore.selectedId);
+        let next = to === 'next' ? i + 1 : i - 1;
+
+        if (next >= appStore.movements.length - 1) {
+          next = 0
+        } else if(next <= 0){
+          next = appStore.movements.length - 1;
+        }
+        appStore.selectedId = appStore.movements[next].id;
+      }
+  })
+
   // when on client - initiate the fetch for all categories
-  useVisibleTask$(() => {appStore.filter.categories = [filterValueAllCategories];});
+  useVisibleTask$(() => {
+    appStore.filter.categories = [filterValueNoCategory];
+    appStore.next = noSerialize(() => {
+      toggle$('next')
+    }),
+    appStore.previous = noSerialize(() => toggle$('previous'))
+   });
 
   return (
     <>
@@ -119,4 +147,6 @@ interface AppStore {
     categories: string[];
     fromDate?: Date;
   };
+  next?: NoSerialize<() => void>;
+  previous?: NoSerialize<() => void>
 }

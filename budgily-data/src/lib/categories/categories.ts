@@ -1,13 +1,27 @@
 import { gqlCall } from '../core/gql-call';
 import { ClientContextType } from '../core/types';
 
+
+export type CategorizeInput = {
+  name: string,
+  description?: string;
+  movementId: string;
+} | {
+  id: string;
+  movementId: string;
+}
+
 export function categorize(clientContext: ClientContextType, controller?: AbortController) {
-  return (name: string, movementId: string, description?: string) =>
-    gqlCall<{ categorize: { name: string } }>(
+  return ({ movementId, ...input }: CategorizeInput) => {
+    const catInput = 'id' in input
+    ? `categoryId: ${input.id}`  // existing
+    : `category: { name: "${input.name}", description: "${input.description}" }`; // new category
+
+    return gqlCall<{ categorize: { name: string, id?: string } }>(
       JSON.stringify({
         query: `
         mutation Category {
-          categorize(input: {category: {name: "${name}", description: "${description}" }, movementIds: ["${movementId}"]}) {
+          categorize(input: { ${catInput}, movementIds: ["${movementId}"]}) {
             movementIds
             id
             name
@@ -19,6 +33,7 @@ export function categorize(clientContext: ClientContextType, controller?: AbortC
       clientContext,
       controller
     );
+  }
 }
 
 export function getCategories(clientContext: ClientContextType, controller?: AbortController) {
