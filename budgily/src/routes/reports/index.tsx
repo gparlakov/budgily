@@ -1,6 +1,6 @@
-import { noSerialize, Resource, component$, useContext, useId, useResource$, useStore, useStyles$, NoSerialize, useVisibleTask$, QRL, $ } from '@builder.io/qwik';
+import { $, Resource, component$, noSerialize, useContext, useId, useResource$, useStore, useStyles$, useVisibleTask$ } from '@builder.io/qwik';
 
-import { Category, ClientContextType, Movement, MovementType, filterValueAllCategories, filterValueNoCategory, getDskReportsV2 } from '@codedoc1/budgily-data-client';
+import { Category, ClientContextType, Movement, MovementType, filterValueNoCategory, getDskReportsV2 } from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
 
 import { ClientContext } from '../../core/client.context';
@@ -8,11 +8,12 @@ import { debounce } from '../../core/debounce';
 
 import { MovementFilter } from '../../components/movement-filter/movement-filter';
 import { ReportsLanding } from '../../components/reports-landing/reports-landing';
-import { CategoryVM, MovementVm } from '../../core/movement.types';
+import { MovementVm } from '../../core/movement.types';
 
+import { CategoriesFetcher } from '../../components/categories-fetcher/categories-fetcher';
+import { MovementDetails } from '../../components/movement-details/movement-details';
+import { AppStore } from '../../core/app.store';
 import global from './index.scss?inline';
-import { MovementDetails } from 'budgily/src/components/movement-details/movement-details';
-import { CategoriesFetcher } from 'budgily/src/components/categories-fetcher/categories-fetcher';
 
 const debounceMovementMillis = 300;
 export default component$(() => {
@@ -133,20 +134,4 @@ export function mapToViewModel({
     maxSum,
     months: [...new Set(movements.map((m) => m.month))],
   };
-}
-
-
-
-interface AppStore {
-  selectedId?: string;
-  movements: NoSerialize<MovementVm[]>;
-  maxSum: number;
-  months: string[];
-  allCategories: NoSerialize<CategoryVM[]>;
-  filter: {
-    categories: string[];
-    fromDate?: Date;
-  };
-  next?: NoSerialize<() => void>;
-  previous?: NoSerialize<() => void>
 }

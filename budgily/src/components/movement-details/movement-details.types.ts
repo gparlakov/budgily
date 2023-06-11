@@ -1,13 +1,13 @@
-import { NoSerialize, QRL } from '@builder.io/qwik';
-import { Category, Movement } from '@codedoc1/budgily-data-client';
-import { CategoryVM } from 'budgily/src/core/movement.types';
+import { NoSerialize } from '@builder.io/qwik';
+import { Category, Movement, MovementType } from '@codedoc1/budgily-data-client';
+import { CategoryVM } from '../../core/movement.types';
 
 export interface MovementDetailsProps {
   store: {
     selectedId?: string;
     allCategories: NoSerialize<CategoryVM[]>
-    next: NoSerialize<() => void>;
-    previous: NoSerialize<() => void>;
+    next?: NoSerialize<() => void>;
+    previous?: NoSerialize<() => void>;
   }
 }
 
@@ -25,7 +25,7 @@ export type MovementDetailsMovement = {
   account?: string;
   description?: string;
   opposite?: string | null;
-  type: string;
+  type: 'credit' | 'debit';
 };
 
 export interface MovementDetailsStore {
@@ -59,7 +59,7 @@ export function mapToVm({
     account: account ?? '-',
     description,
     opposite,
-    type,
+    type: type === MovementType.Credit ? 'credit' : 'debit',
     categories: cats ?? [],
     categoriesStr,
   };
