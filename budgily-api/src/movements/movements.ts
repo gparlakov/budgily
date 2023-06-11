@@ -7,13 +7,12 @@ import { getAllCategories } from '../categories/categories';
 type Filter = (m: Movement) => boolean;
 
 const sortableString: Array<keyof Movement> = ['account', 'description', 'opposite', 'type'];
-const sortableNumb: Array<keyof Movement> = ['amount', 'date'];
 
 export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe): QueryResolvers['movements'] {
   const dedup = typeof dedupeCB === 'function' ? dedupeCB : dedupe;
   return (_: unknown, args) => {
     const { id, amountMax, amountMin, fromDate, search, toDate, categories } = args.filter ?? {};
-    const { currentPage, pageCount } = args.pagination ?? {};
+    const { currentPage, pageCount: perPage } = args.pagination ?? {};
     const { field, desc } = args.sort ?? {};
 
     const passThrough = () => true;
@@ -57,45 +56,62 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
       };
     }
 
-    return (
-      dskMovements()
-        .then((fs) => fs.flatMap(mapper))
-        .then((ms) => {
-          // include cats so we can filter by them
-          const cats = getAllCategories() ?? [];
-          return ms.map((m) => {
-            m.categories = cats
-              .filter((c) => c.movementIds.includes(m.id))
-              .map(({ id, name }) => ({ id, name, movementIds: [] }));
-            return m;
-          });
-        })
-        // .then(ms => {
-        //   if(typeof field === 'string') {
-        //     // if(sortableString.includes(field as keyof Movement)) {
-        //     //   const sorter = field === ''
+    return dskMovements()
+      .then((fs) => fs.flatMap(mapper))
+      .then((ms) => {
+        // include cats so we can filter by them
+        const cats = getAllCategories() ?? [];
+        return ms.map((m) => {
+          m.categories = cats
+            .filter((c) => c.movementIds.includes(m.id))
+            .map(({ id, name }) => ({ id, name, movementIds: [] }));
+          return m;
+        });
+      })
+      .then((ms) =>
+        ms
+          .filter(idFilter)
+          .filter(amountMinFilter)
+          .filter(amountMaxFilter)
+          .filter(categoryFilter)
+          .filter(fromDateFilter)
+          .filter(toDateFilter)
+          .filter(searchFilter)
+      )
+      .then(dedup)
+      .then((ms) => {
+        let sorter: (a: Movement, b: Movement) => number;
 
-        //     //   return ms.sort((a, b) => a[field]?.)
-        //     // }
+        if(sortableString.includes(field as keyof Movement)) {
+          sorter = (a: Movement, b: Movement) => a[field] == null ? b[field] == null ? 0 : -1 : (a[field] as string).localeCompare(b[field]);  
+        }
 
-        //   }
+        if(field === 'amount') {
+          sorter = (a: Movement, b: Movement) => a.amount == null ? b.amount == null ? 0 : -1 : a.amount - b.amount;
+        }
 
-        //   return ms;
-        // })
-        .then((ms) =>
-          ms
-            .filter(idFilter)
-            .filter(amountMinFilter)
-            .filter(amountMaxFilter)
-            .filter(categoryFilter)
-            .filter(fromDateFilter)
-            .filter(toDateFilter)
-            .filter(searchFilter)
-        )
-        .then(dedup)
-        .then((r) => {
-          return { movements: r, sort: args.sort, page: {currentPage: 1, pageCount: 1, totalCount: r.length, count: r.length} } as MovementsQueryResponse;
-        })
-    );
+        if(field === 'date') {
+          sorter = (a, b) => !isValidDate(a.date) ? !isValidDate(b.date) ? 0 : -1 : Date.parse(a.date) - Date.parse(b.date);
+        }
+        
+        return typeof sorter === 'function' ?  ms.sort((a, b) => desc ? sorter(b, a) : sorter(a, b)) : ms;
+      })
+      .then((r) => {
+        const results = r.length ?? 0;
+        const zeroBasedPage = Number(currentPage) - 1 < 0 ? 0 : Number(currentPage) - 1;
+
+        const itemsPerPage = perPage != null && Number(perPage) > 0 && Number(perPage) < results ? Number(perPage) : results;
+        const currentPageNumber = results > 0 && perPage * zeroBasedPage < results ? zeroBasedPage + 1 : 1;
+        const countReturning = itemsPerPage * currentPageNumber < results ? itemsPerPage : results - (itemsPerPage * (currentPageNumber - 1));
+
+        const startIndex = (currentPageNumber - 1 ) * itemsPerPage;
+        const endIndex = startIndex + countReturning + 1;
+
+        return {
+          movements: r.slice(startIndex, endIndex),
+          sort: args.sort,
+          page: { currentPage: currentPageNumber, pageCount: itemsPerPage, totalCount: results, count: countReturning },
+        } as MovementsQueryResponse;
+      });
   };
 }

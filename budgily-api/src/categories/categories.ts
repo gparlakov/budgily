@@ -19,7 +19,7 @@ stat(categoriesFileName)
     return [];
   })
   .then((categories) => {
-    console.log('Categories in memory', categories);
+    // console.log('Categories in memory', categories);
     categories$.next(categories);
   });
 
