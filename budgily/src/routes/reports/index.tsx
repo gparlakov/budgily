@@ -1,6 +1,24 @@
-import { $, Resource, component$, noSerialize, useContext, useId, useResource$, useStore, useStyles$, useVisibleTask$ } from '@builder.io/qwik';
+import {
+  $,
+  Resource,
+  component$,
+  noSerialize,
+  useContext,
+  useId,
+  useResource$,
+  useStore,
+  useStyles$,
+  useVisibleTask$,
+} from '@builder.io/qwik';
 
-import { Category, ClientContextType, Movement, MovementType, filterValueNoCategory, getDskReportsV2 } from '@codedoc1/budgily-data-client';
+import {
+  Category,
+  ClientContextType,
+  Movement,
+  MovementType,
+  filterValueNoCategory,
+  getDskReportsV2,
+} from '@codedoc1/budgily-data-client';
 import { group, max } from 'd3';
 
 import { ClientContext } from '../../core/client.context';
@@ -26,7 +44,8 @@ export default component$(() => {
     months: [],
     allCategories: noSerialize([]),
     filter: {
-      categories: [], fromDate: new Date(2022, 8, 1)
+      categories: [],
+      fromDate: new Date(2022, 8, 1),
     },
   });
 
@@ -34,48 +53,54 @@ export default component$(() => {
     track(appStore.filter);
     const abort = new AbortController();
     cleanup(() => abort.abort());
-    return debouncedGetAllMovements(ctx, abort)(appStore.filter).then(mapToViewModel).then(({ errors, maxSum, months, movements }) => {
-      appStore.movements = noSerialize(movements);
-      appStore.maxSum = maxSum;
-      appStore.months = months;
-      return { errors };
-    });
+    return debouncedGetAllMovements(
+      ctx,
+      abort
+    )(appStore.filter)
+      .then(mapToViewModel)
+      .then(({ errors, maxSum, months, movements }) => {
+        appStore.movements = noSerialize(movements);
+        appStore.maxSum = maxSum;
+        appStore.months = months;
+        return { errors };
+      });
   });
 
   const toggle$ = $((to: 'next' | 'previous') => {
-      if (appStore.movements && appStore.selectedId) {
-        const i = appStore.movements.findIndex(v => v.id === appStore.selectedId);
-        let next = to === 'next' ? i + 1 : i - 1;
+    if (appStore.movements && appStore.selectedId) {
+      const i = appStore.movements.findIndex((v) => v.id === appStore.selectedId);
+      let next = to === 'next' ? i + 1 : i - 1;
 
-        if (next >= appStore.movements.length - 1) {
-          next = 0
-        } else if(next <= 0){
-          next = appStore.movements.length - 1;
-        }
-        appStore.selectedId = appStore.movements[next].id;
+      if (next >= appStore.movements.length - 1) {
+        next = 0;
+      } else if (next <= 0) {
+        next = appStore.movements.length - 1;
       }
-  })
+      appStore.selectedId = appStore.movements[next].id;
+    }
+  });
 
   // when on client - initiate the fetch for all categories
   useVisibleTask$(() => {
     appStore.filter.categories = [filterValueNoCategory];
-    appStore.next = noSerialize(() => {
-      toggle$('next')
-    }),
-    appStore.previous = noSerialize(() => toggle$('previous'))
-   });
+    (appStore.next = noSerialize(() => {
+      toggle$('next');
+    })),
+      (appStore.previous = noSerialize(() => toggle$('previous')));
+  });
 
   return (
     <>
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
-      <MovementFilter filterStore={appStore} ></MovementFilter>
-      <button onClick$={() => appStore.filter.categories = [...appStore.filter.categories]}>🔁</button> {/* this button and its onClick handler is a hack to make the change detection work */}
+      <MovementFilter filterStore={appStore}></MovementFilter>
+      <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])}>🔁</button>{' '}
+      {/* this button and its onClick handler is a hack to make the change detection work */}
       <Resource
         value={vm}
         onResolved={({ errors }) => (
           <>
             <ReportsLanding movementDetailsStore={appStore}></ReportsLanding>
-            {Array.isArray(errors) ? errors.map((e) => <span key={useId()}>{JSON.stringify(e)}</span>) : ''}{' '}
+            {Array.isArray(errors) ? errors.map((e,i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>) : ''}{' '}
           </>
         )}
         onPending={() => <>Loading...</>}
@@ -85,7 +110,7 @@ export default component$(() => {
           </>
         )}
       ></Resource>
-      <MovementDetails store={appStore} ></MovementDetails>
+      <MovementDetails store={appStore}></MovementDetails>
     </>
   );
 });
@@ -101,11 +126,11 @@ export function mapToViewModel({
   data,
   errors,
 }: {
-  data?: { movements: Movement[] | undefined };
+  data?: { movements: { movements: Movement[] | undefined } };
   errors?: unknown[] | undefined;
 }) {
   const movements: MovementVm[] =
-    data?.movements?.map((d) => {
+    data?.movements?.movements?.map((d) => {
       const date = new Date(Number(d.date));
       return {
         amount: Number(d.amount),

@@ -25,9 +25,37 @@ input MovementFilter {
   categories: [String]
 }
 
+input PaginationInput {
+  currentPage: Int
+  pageCount: Int
+}
+
+type Pagination {
+  totalCount: Int!
+  count: Int!
+  currentPage: Int! 
+  pageCount: Int!
+}
+
+input SortInput {
+  field: String!
+  desc: Boolean
+}
+
+type Sort {
+  field: String!
+  desc: Boolean
+}
+
+type MovementsQueryResponse {
+  movements: [Movement]!
+  page: Pagination!
+  sort: Sort
+}
+
 type Query {
   hello: String
-  movements(filter: MovementFilter): [Movement]!
+  movements(filter: MovementFilter, pagination: PaginationInput, sort: SortInput): MovementsQueryResponse
   categories: [Category]!
 }
 

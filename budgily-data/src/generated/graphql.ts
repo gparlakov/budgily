@@ -62,6 +62,13 @@ export enum MovementType {
   Debit = 'DEBIT'
 }
 
+export type MovementsQueryResponse = {
+  __typename?: 'MovementsQueryResponse';
+  movements: Array<Maybe<Movement>>;
+  page: Pagination;
+  sort?: Maybe<Sort>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   categorize?: Maybe<Category>;
@@ -72,25 +79,51 @@ export type MutationCategorizeArgs = {
   input?: InputMaybe<Categorize>;
 };
 
+export type Pagination = {
+  __typename?: 'Pagination';
+  count: Scalars['Int'];
+  currentPage: Scalars['Int'];
+  pageCount: Scalars['Int'];
+  totalCount: Scalars['Int'];
+};
+
+export type PaginationInput = {
+  currentPage?: InputMaybe<Scalars['Int']>;
+  pageCount?: InputMaybe<Scalars['Int']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   categories: Array<Maybe<Category>>;
   hello?: Maybe<Scalars['String']>;
-  movements: Array<Maybe<Movement>>;
+  movements?: Maybe<MovementsQueryResponse>;
 };
 
 
 export type QueryMovementsArgs = {
   filter?: InputMaybe<MovementFilter>;
+  pagination?: InputMaybe<PaginationInput>;
+  sort?: InputMaybe<SortInput>;
+};
+
+export type Sort = {
+  __typename?: 'Sort';
+  desc?: Maybe<Scalars['Boolean']>;
+  field: Scalars['String'];
+};
+
+export type SortInput = {
+  desc?: InputMaybe<Scalars['Boolean']>;
+  field: Scalars['String'];
 };
 
 export type GetAllMovementsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetAllMovementsQuery = { __typename?: 'Query', movements: Array<{ __typename?: 'Movement', date: string, description: string, amount: number, type: MovementType } | null> };
+export type GetAllMovementsQuery = { __typename?: 'Query', movements?: { __typename?: 'MovementsQueryResponse', movements: Array<{ __typename?: 'Movement', date: string, description: string, amount: number, type: MovementType } | null> } | null };
 
 
-export const GetAllMovementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllMovements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"movements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]} as unknown as DocumentNode<GetAllMovementsQuery, GetAllMovementsQueryVariables>;
+export const GetAllMovementsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllMovements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"movements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"movements"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]}}]} as unknown as DocumentNode<GetAllMovementsQuery, GetAllMovementsQueryVariables>;
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -171,9 +204,14 @@ export type ResolversTypes = {
   Float: ResolverTypeWrapper<Scalars['Float']>;
   MovementFilter: MovementFilter;
   MovementType: MovementType;
+  MovementsQueryResponse: ResolverTypeWrapper<MovementsQueryResponse>;
   Mutation: ResolverTypeWrapper<{}>;
+  Pagination: ResolverTypeWrapper<Pagination>;
+  PaginationInput: PaginationInput;
   Query: ResolverTypeWrapper<{}>;
+  Sort: ResolverTypeWrapper<Sort>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  SortInput: SortInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -186,9 +224,14 @@ export type ResolversParentTypes = {
   Movement: Movement;
   Float: Scalars['Float'];
   MovementFilter: MovementFilter;
+  MovementsQueryResponse: MovementsQueryResponse;
   Mutation: {};
+  Pagination: Pagination;
+  PaginationInput: PaginationInput;
   Query: {};
+  Sort: Sort;
   Boolean: Scalars['Boolean'];
+  SortInput: SortInput;
 };
 
 export type CategoryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Category'] = ResolversParentTypes['Category']> = {
@@ -212,21 +255,45 @@ export type MovementResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type MovementsQueryResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['MovementsQueryResponse'] = ResolversParentTypes['MovementsQueryResponse']> = {
+  movements?: Resolver<Array<Maybe<ResolversTypes['Movement']>>, ParentType, ContextType>;
+  page?: Resolver<ResolversTypes['Pagination'], ParentType, ContextType>;
+  sort?: Resolver<Maybe<ResolversTypes['Sort']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   categorize?: Resolver<Maybe<ResolversTypes['Category']>, ParentType, ContextType, Partial<MutationCategorizeArgs>>;
+};
+
+export type PaginationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Pagination'] = ResolversParentTypes['Pagination']> = {
+  count?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  currentPage?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  pageCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   categories?: Resolver<Array<Maybe<ResolversTypes['Category']>>, ParentType, ContextType>;
   hello?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  movements?: Resolver<Array<Maybe<ResolversTypes['Movement']>>, ParentType, ContextType, Partial<QueryMovementsArgs>>;
+  movements?: Resolver<Maybe<ResolversTypes['MovementsQueryResponse']>, ParentType, ContextType, Partial<QueryMovementsArgs>>;
+};
+
+export type SortResolvers<ContextType = any, ParentType extends ResolversParentTypes['Sort'] = ResolversParentTypes['Sort']> = {
+  desc?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  field?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
   Category?: CategoryResolvers<ContextType>;
   Movement?: MovementResolvers<ContextType>;
+  MovementsQueryResponse?: MovementsQueryResponseResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Pagination?: PaginationResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Sort?: SortResolvers<ContextType>;
 };
 
 

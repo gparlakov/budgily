@@ -1,8 +1,10 @@
 query GetAllMovements {
   movements {
-    date
-    description
-    amount
-    type
+    movements {
+      date
+      description
+      amount
+      type
+    }
   }
 }
