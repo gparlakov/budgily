@@ -27,13 +27,13 @@ import { debounce } from '../../core/debounce';
 
 import { MovementFilter } from '../../components/movement-filter/movement-filter';
 import { ReportsLanding } from '../../components/reports-landing/reports-landing';
-import { MovementVm } from '../../core/movement.types';
 
 import { CategoriesFetcher } from '../../components/categories-fetcher/categories-fetcher';
 import { MovementDetails } from '../../components/movement-details/movement-details';
 import { AppStore } from '../../core/app.store';
 import global from './index.scss?inline';
 import { MovementsGrid } from 'budgily/src/components/movements-grid/movements-grid';
+import { debouncedGetAllMovements, mapToViewModel } from 'budgily/src/core/movements.fetch';
 
 const debounceMovementMillis = 300;
 export default component$(() => {
@@ -58,7 +58,8 @@ export default component$(() => {
     cleanup(() => abort.abort());
     return debouncedGetAllMovements(
       ctx,
-      abort
+      abort,
+      debounceMovementMillis
     )(appStore.filter)
       .then(mapToViewModel)
       .then(({ errors, maxSum, months, movements }) => {
@@ -105,7 +106,7 @@ export default component$(() => {
         value={vm}
         onResolved={({ errors }) => (
           <>
-            {view.value === 'chart' ? <ReportsLanding movementDetailsStore={appStore}></ReportsLanding> : <MovementsGrid></MovementsGrid>}
+            {view.value === 'chart' ? <ReportsLanding movementDetailsStore={appStore}></ReportsLanding> : <MovementsGrid appStore={appStore}></MovementsGrid>}
             {Array.isArray(errors) ? errors.map((e, i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>) : ''}{' '}
           </>
         )}
@@ -120,49 +121,3 @@ export default component$(() => {
     </>
   );
 });
-
-export function sumAmounts(ms?: { amount: number }[]): number {
-  return Array.isArray(ms) ? ms.map((a) => a.amount).reduce((a, b) => a + b, 0) : 0;
-}
-
-export const debouncedGetAllMovements = (ctx: ClientContextType, abort: AbortController) =>
-  debounce(getDskReportsV2(ctx, abort), debounceMovementMillis);
-
-export function mapToViewModel({
-  data,
-  errors,
-}: {
-  data?: { movements: { movements: Movement[] | undefined } };
-  errors?: unknown[] | undefined;
-}) {
-  const movements: MovementVm[] =
-    data?.movements?.movements?.map((d) => {
-      const date = new Date(Number(d.date));
-      return {
-        amount: Number(d.amount),
-        description: d.description ?? '',
-        type: d.type === MovementType.Credit ? ('Credit' as const) : ('Debit' as const),
-        date: date,
-        id: d.id,
-        categories: d.categories?.filter((c): c is Category => c != null).map((c) => ({ name: c.name })) ?? [],
-        month: `${date.getMonth() + 1}-${date.getFullYear()}`,
-      } as MovementVm;
-    }) ?? [];
-
-  const monthly = group(
-    movements,
-    (m) => m.month,
-    (m) => m.type
-  );
-
-  const monthlyCreditOrDebit = [...monthly.values()].flatMap((m) => [...m.values()]);
-  const monthlyCreditOrDebitSums = monthlyCreditOrDebit.map(sumAmounts);
-  const maxSum = max(monthlyCreditOrDebitSums) ?? 25000;
-
-  return {
-    errors: errors?.map((e) => (typeof e === 'string' ? e : JSON.stringify(e))),
-    movements,
-    maxSum,
-    months: [...new Set(movements.map((m) => m.month))],
-  };
-}

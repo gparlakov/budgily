@@ -1,16 +1,29 @@
-import { Movement, Pagination, Sort } from '../../generated/graphql';
+import { Movement, MovementFilter, Pagination, Sort } from '../../generated/graphql';
 import { ClientContextType } from '../core/types';
 import { gqlCall } from '../core/gql-call';
 
+type MovementsFilter = Omit<MovementFilter, 'fromDate' | 'toDate'> & {
+  from?: Date;
+  to?: Date;
+};
+
+/**
+ *
+ * @param clientContext search: "ТРАНСФЕР*"}, sort: {field: "amount", desc: true}`
+ * @param controller
+ * @returns
+ */
+
+/** */
 export function getDskReportsV2(
   clientContext: ClientContextType,
   controller?: AbortController
-): (filter: {
-  categories?: string[];
-  from?: Date;
-  to?: Date;
-}) => Promise<{ data?: { movements: { movements: Movement[]; page: Pagination; sort: Sort } }; errors?: unknown[] }> {
-  return ({ from, categories, to } = {}) =>
+): (
+  filter?: MovementsFilter,
+  sort?: { field?: string; desc?: boolean },
+  page?: { page?: number; size?: number }
+) => Promise<{ data?: { movements: { movements: Movement[]; page: Pagination; sort: Sort } }; errors?: unknown[] }> {
+  return ({ from, categories, to, search, amountMin, amountMax } = {}, { field, desc } = {}, { page, size } = {}) =>
     fetch(clientContext.uri, {
       method: 'POST',
       headers: {
@@ -20,14 +33,21 @@ export function getDskReportsV2(
       body: JSON.stringify({
         query: `
         query GetAllMovements {
-          movements(filter: {${from ? `fromDate: "${from.toISOString()}"` : ''}${
+          movements(filter: {${from ? `fromDate: "${from.toISOString()}"` : ''} ${
           to ? `toDate: "${to.toISOString()}"` : ''
-        }${
+        } ${
           Array.isArray(categories) && categories.length > 0
             ? `categories: [${categories.map((c) => `"${c}"`).join(',')}]`
             : ''
-        }
-            }) {
+        } ${typeof search === 'string' ? `search: "${search}"` : ''} ${
+          Number(amountMax) > 0 ? `amountMax: ${Number(amountMax)}` : ''
+        } ${Number(amountMin) > 0 ? `amountMin: ${Number(amountMin)}` : ''}
+      } ${
+        Number(page) > 0
+          ? `pagination: { pageCount: ${Number(size) > 0 ? Number(size) : 10}, currentPage: ${Number(page)}}`
+          : ''
+      } ${typeof field === 'string' ? `sort: { field: "${field}", desc: ${Boolean(desc)}}` : ''}
+            ) {
               movements {
                 date,
                 amount,
@@ -41,7 +61,7 @@ export function getDskReportsV2(
               page {
                 totalCount
                 count
-                currentPage 
+                currentPage
                 pageCount
               }
               sort {
