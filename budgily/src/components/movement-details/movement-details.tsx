@@ -1,5 +1,6 @@
 import {
   $,
+  QRL,
   QwikKeyboardEvent,
   Resource,
   Signal,
@@ -18,7 +19,7 @@ import { ClientContext } from '../../core/client.context';
 import styles from './movement-details.scss?inline';
 import { MovementDetailsMovement, MovementDetailsProps, MovementDetailsStore, mapToVm } from './movement-details.types';
 
-export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
+export const MovementDetails = component$(({ store: appStore }: MovementDetailsProps) => {
   const ctx = useContext(ClientContext);
   useStylesScoped$(styles);
 
@@ -31,69 +32,47 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
     if (newCat.value) {
       return { name: newCat.value, new: true };
     } else if (existingCat.value) {
-      return { name: store.allCategories?.find((c) => c.id === existingCat.value)?.name, new: false };
+      return { name: appStore.allCategories?.find((c) => c.id === existingCat.value)?.name, new: false };
     }
   });
 
-  const movementResource = useMovements(store, ctx, state);
+  const movementResource = resourceMovementForId(appStore, ctx, state);
 
-  useVisibleTask$(({ track }) => {
-    track(dialog);
-    track(() => store.selectedId);
-    if (dialog.value && store.selectedId && !dialog.value.open) {
-      dialog.value.showModal();
-    }
-  });
+  toggleDialogOnSelectedMovementId(dialog, appStore);
 
-  const onCategorize = onCategorizeHandler(ctx, newCat, store, state, existingCat);
+  const onCategorize = onCategorizeHandler(ctx, newCat, appStore, state, existingCat);
 
-  const onKey = $(({ key, altKey }: QwikKeyboardEvent) => {
-    if (altKey && key === 'Enter') {
-      onCategorize();
-    } else if (key === 'ArrowLeft') {
-      typeof store.previous === 'function' && store.previous();
-      Promise.resolve().then(() => newCatInput.value?.focus());
-    } else if (key === 'ArrowRight') {
-      typeof store.next === 'function' && store.next();
-
-      Promise.resolve().then(() => newCatInput.value?.focus());
-    }
-  });
+  const onKey = keyboardNavigationAndCategorization(onCategorize, appStore, newCatInput);
 
   return (
     <>
       <dialog
         ref={dialog}
-        class="block"
+        class="modal"
         onClick$={(ev) => {
           if (ev.target === dialog.value) {
             dialog.value?.close();
-            store.selectedId = undefined;
+            appStore.selectedId = undefined;
           }
         }}
       >
-        <div>
+        <div class="modal-box w-11/12 max-w-7xl">
           <h1 class="display-table">
             {' '}
             <span class="px-10 font-bold display-table-cell">Movement</span>{' '}
-            <span class="display-table-cell">{store.selectedId}</span>
+            <span class="display-table-cell">{appStore.selectedId}</span>
           </h1>
           <Resource
             value={movementResource}
-            // onPending={() => (
-            //   <>
-            //     <Details movement={state.movement} />
-            //   </>
-            // )}
-            onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${store.selectedId}`} </>}
+            onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${appStore.selectedId}`} </>}
             onResolved={() => {
               return (
-                <div class="h-100 pb-20" window:onKeyUp$={(key) => onKey(key)}>
+                <div class="h-100 pb-20" window: onKeyUp$={(key) => onKey(key)}>
                   <Details movement={state.movement} />
 
                   <form
                     method="dialog"
-                    preventdefault:submit
+                    preventdefault: submit
                     onSubmit$={onCategorize}
                     class="categorize-form py-2 px-5 block background-green-400 relative"
                   >
@@ -106,12 +85,12 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
                       placeholder="New category"
                       name="category"
                       autoComplete="off"
-                      bind:value={newCat}
+                      bind: value={newCat}
                       class="input input-bordered w-full max-w-xs"
                       ref={newCatInput}
                     ></input>
-                    <select class="select select-bordered" bind:value={existingCat}>
-                      {store.allCategories?.map((c) => (
+                    <select class="select select-bordered" bind: value={existingCat}>
+                      {appStore.allCategories?.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
                         </option>
@@ -122,14 +101,14 @@ export const MovementDetails = component$(({ store }: MovementDetailsProps) => {
                   <button
                     class="btn btn-ghost absolute left-0 top-40"
                     title="previous"
-                    onClick$={() => store.previous && store.previous()}
+                    onClick$={() => appStore.previous && appStore.previous()}
                   >
                     &lt;
                   </button>
                   <button
                     class="btn btn-ghost absolute right-0 top-40"
                     title="next"
-                    onClick$={() => store.next && store.next()}
+                    onClick$={() => appStore.next && appStore.next()}
                   >
                     &gt;
                   </button>
@@ -169,6 +148,22 @@ export const Details = (state: { movement?: MovementDetailsMovement }) => (
   </table>
 );
 
+function keyboardNavigationAndCategorization(onCategorize: QRL<() => Promise<void>>, appStore: MovementDetailsProps['store'], newCatInput: Signal<HTMLInputElement | undefined>) {
+  return $(({ key, altKey }: QwikKeyboardEvent) => {
+    if (altKey && key === 'Enter') {
+      onCategorize();
+    } else if (key === 'ArrowLeft') {
+      typeof appStore.previous === 'function' && appStore.previous();
+      Promise.resolve().then(() => newCatInput.value?.focus());
+    } else if (key === 'ArrowRight') {
+      typeof appStore.next === 'function' && appStore.next();
+
+      Promise.resolve().then(() => newCatInput.value?.focus());
+    }
+  });
+}
+
+
 function onCategorizeHandler(
   ctx: ClientContextType,
   newCat: Signal<string | undefined>,
@@ -185,23 +180,42 @@ function onCategorizeHandler(
       createdCat && createdCat.id && store.allCategories?.push(createdCat);
       newCat.value = undefined;
       state.movement &&
-        (state.movement.categoriesStr = `${createdCat?.name}${
-          state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
-        }`);
+        (state.movement.categoriesStr = `${createdCat?.name}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
+          }`);
     } else if (existingCat.value) {
       // existing selected;
       await mutationFn({ id: existingCat.value, movementId: store.selectedId as string });
       const existingCatName = store.allCategories && store.allCategories.find((c) => c.id === existingCat.value)?.name;
 
       state.movement &&
-        (state.movement.categoriesStr = `${existingCatName}${
-          state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
-        }`);
+        (state.movement.categoriesStr = `${existingCatName}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
+          }`);
     }
   });
 }
 
-function useMovements(store: MovementDetailsProps['store'], ctx: ClientContextType, state: MovementDetailsStore) {
+function toggleDialogOnSelectedMovementId(dialog: Signal<HTMLDialogElement | undefined>, appStore: MovementDetailsProps['store']) {
+  useVisibleTask$(({ track, cleanup }) => {
+    track(dialog);
+    track(() => appStore.selectedId);
+
+    if (dialog.value) {
+      if (appStore.selectedId && !dialog.value.open) {
+        dialog.value.showModal();
+      } else {
+        dialog.value.close();
+      }
+    }
+
+    cleanup(() => {
+      if (dialog.value) {
+        dialog.value.close();
+      }
+    });
+  });
+}
+
+function resourceMovementForId(store: MovementDetailsProps['store'], ctx: ClientContextType, state: MovementDetailsStore) {
   return useResource$(({ track, cleanup }) => {
     track(() => store.selectedId);
     const abort = new AbortController();
@@ -211,8 +225,8 @@ function useMovements(store: MovementDetailsProps['store'], ctx: ClientContextTy
     if (store.selectedId != null) {
       return fn(store.selectedId).then((v) => {
         state.loading = false;
-        if (v.data?.movements[0]) {
-          state.movement = mapToVm(v.data?.movements[0]);
+        if (v.data?.movements.movements[0]) {
+          state.movement = mapToVm(v.data?.movements.movements[0]);
         } else {
           state.errorMessage = JSON.stringify(v.errors);
         }

@@ -6,6 +6,7 @@ import {
   useContext,
   useId,
   useResource$,
+  useSignal,
   useStore,
   useStyles$,
   useVisibleTask$,
@@ -32,6 +33,7 @@ import { CategoriesFetcher } from '../../components/categories-fetcher/categorie
 import { MovementDetails } from '../../components/movement-details/movement-details';
 import { AppStore } from '../../core/app.store';
 import global from './index.scss?inline';
+import { MovementsGrid } from 'budgily/src/components/movements-grid/movements-grid';
 
 const debounceMovementMillis = 300;
 export default component$(() => {
@@ -48,6 +50,7 @@ export default component$(() => {
       fromDate: new Date(2022, 8, 1),
     },
   });
+  const view = useSignal<'chart' | 'grid'>('chart');
 
   const vm = useResource$(async ({ track, cleanup }) => {
     track(appStore.filter);
@@ -83,24 +86,27 @@ export default component$(() => {
   // when on client - initiate the fetch for all categories
   useVisibleTask$(() => {
     appStore.filter.categories = [filterValueNoCategory];
-    (appStore.next = noSerialize(() => {
+
+    appStore.next = noSerialize(() => {
       toggle$('next');
-    })),
-      (appStore.previous = noSerialize(() => toggle$('previous')));
+    })
+
+    appStore.previous = noSerialize(() => toggle$('previous'));
   });
 
   return (
     <>
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
       <MovementFilter filterStore={appStore}></MovementFilter>
-      <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])}>🔁</button>{' '}
-      {/* this button and its onClick handler is a hack to make the change detection work */}
+      <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁</button>
+      <button class="btn btn-sm" onClick$={() => view.value = 'chart'}>Chart</button>
+      <button class="btn btn-sm" onClick$={() => view.value = 'grid'}>Table</button>
       <Resource
         value={vm}
         onResolved={({ errors }) => (
           <>
-            <ReportsLanding movementDetailsStore={appStore}></ReportsLanding>
-            {Array.isArray(errors) ? errors.map((e,i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>) : ''}{' '}
+            {view.value === 'chart' ? <ReportsLanding movementDetailsStore={appStore}></ReportsLanding> : <MovementsGrid></MovementsGrid>}
+            {Array.isArray(errors) ? errors.map((e, i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>) : ''}{' '}
           </>
         )}
         onPending={() => <>Loading...</>}
