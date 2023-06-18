@@ -18,14 +18,19 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
     <Resource value={movements} onResolved={(ms) => <>
       {ms.map(m => <div>{m.description}</div>)}
       <div class="w-2/12 inline-block" >
-        <select onChange$={(_, b) => { grid.size = Number(b.value) > 0 ? Number(b.value) : 20 }}>
+        <select onChange$={(_, b) => {
+          const v = Number(b.value) > 0 ? Number(b.value) : 20;
+
+          grid.size = v;
+        }}>
           <option value="10" selected={grid.size === 10}>10</option>
-          <option value="10" selected={grid.size === 20}>20</option>
-          <option value="10" selected={grid.size === 50}>50</option>
-          <option value="10" selected={grid.size === 100}>100</option></select>
-        per page
+          <option value="20" selected={grid.size === 20}>20</option>
+          <option value="50" selected={grid.size === 50}>50</option>
+          <option value="100" selected={grid.size === 100}>100</option></select>
+
+          / {grid.totalCount}
       </div>
-      <div class="w-10/12 inline-block"> <Pagination pages={grid.totalPages} page={grid.page}> test mest</Pagination></div>
+      <div class="w-10/12 inline-block"> <Pagination pages={grid.totalPages} page={grid.page} onPaging$={(page: number) => { if(page != grid.page) grid.page = page }} /></div>
     </>} />
   </>;
 });
@@ -44,7 +49,8 @@ export interface MovementsGrid {
 function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid, { filter }: MovementsGridProps['appStore']) {
 
   return useResource$(({ track, cleanup }) => {
-    track(grid);
+    track(() => grid.page);
+    track(() => grid.size);
     track(filter)
     const abort = new AbortController();
     cleanup(() => abort.abort('cleanup'));
@@ -54,8 +60,8 @@ function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid,
       const { page, movements } = v.data?.movements ?? {};
       if (page) {
         grid.page = page.currentPage;
-        grid.size = page.pageCount;
-        grid.totalPages = Math.ceil(page.totalCount / (Number(page.count) || 1));
+        grid.totalPages = Math.ceil(page.totalCount / (Number(grid.size) || 1));
+        grid.totalCount = page.totalCount;
       }
       if (movements) {
         return movements.map(mapToVm);
