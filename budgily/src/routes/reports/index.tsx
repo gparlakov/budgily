@@ -5,11 +5,10 @@ import {
   noSerialize,
   useContext,
   useResource$,
-  useServerData,
   useSignal,
   useStore,
   useStyles$,
-  useVisibleTask$,
+  useVisibleTask$
 } from '@builder.io/qwik';
 
 import {
@@ -40,7 +39,6 @@ export default component$(() => {
     allCategories: noSerialize([]),
     filter: {
       categories: [],
-      from: new Date(2022, 8, 1),
     },
   });
 
@@ -55,7 +53,7 @@ export default component$(() => {
       ctx,
       abort,
       debounceMovementMillis
-    )(appStore.filter)
+    )(appStore.filter, { field: 'date', desc: true })
       .then(mapToViewModel)
       .then(({ errors, maxSum, months, movements }) => {
         appStore.movements = noSerialize(movements);
@@ -95,7 +93,7 @@ export default component$(() => {
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
       <MovementFilter filterStore={appStore}></MovementFilter>
       <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁</button>
-      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value ='chart'}>Chart</button>
+      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value = 'chart'}>Chart</button>
       <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value = 'grid'}>Table</button>
       <Resource
         value={vm}

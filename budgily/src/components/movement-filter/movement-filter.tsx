@@ -1,18 +1,17 @@
-import { NoSerialize, component$, useComputed$, useSignal, useStylesScoped$ } from '@builder.io/qwik';
+import { NoSerialize, component$, useComputed$, useId, useSignal, useStore, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
 
 import {
   filterValueAllCategories,
   filterValueNoCategory,
+  validDateString
 } from '@codedoc1/budgily-data-client';
 
 import { CategoryVM } from 'budgily/src/core/movement.types';
 import styles from './movement-filter.scss?inline';
+import { AppStore } from 'budgily/src/core/app.store';
 
 export interface MovementFilterProps {
-  filterStore: {
-    filter: { categories: string[]; },
-    allCategories: NoSerialize<CategoryVM[]>;
-  };
+  filterStore: AppStore;
 }
 export const MovementFilter = component$(({ filterStore }: MovementFilterProps) => {
   useStylesScoped$(styles);
@@ -20,22 +19,20 @@ export const MovementFilter = component$(({ filterStore }: MovementFilterProps) 
   return (
     <>
       <CategoryFilter filterStore={filterStore} />
+      <DateRangeFilter filterStore={filterStore} />
     </>
   );
 });
 
 export interface CategoryFilterProps {
-  filterStore: {
-    filter: { categories: string[]; },
-    allCategories: NoSerialize<CategoryVM[]>;
-  };
+  filterStore: AppStore;
 }
 export const CategoryFilter = component$(({ filterStore }: CategoryFilterProps) => {
 
   const cats = [
-    { id: filterValueAllCategories, name: 'All',selected: filterStore.filter.categories?.includes(filterValueAllCategories) },
+    { id: filterValueAllCategories, name: 'All', selected: filterStore.filter.categories?.includes(filterValueAllCategories) },
     { id: filterValueNoCategory, name: 'No category', selected: filterStore.filter.categories?.includes(filterValueNoCategory) },
-    ...(filterStore.allCategories as CategoryVM[]).map(c => ({...c, selected: filterStore.filter.categories?.includes(c.id)}))
+    ...(filterStore.allCategories as CategoryVM[]).map(c => ({ ...c, selected: filterStore.filter.categories?.includes(c.id) }))
   ];
   const ids = useSignal<string[]>([]);
 
@@ -56,6 +53,36 @@ export const CategoryFilter = component$(({ filterStore }: CategoryFilterProps) 
           </option>
         ))}
       </select>
+    </div>
+  );
+});
+
+export interface DateRangeFilterProps {
+  filterStore: AppStore;
+}
+export const DateRangeFilter = component$(({ filterStore }: DateRangeFilterProps) => {
+
+  const fromId = useId();
+  const toId = useId();
+  const { from, to } = filterStore.filter;
+  const fromV = useSignal(from != null ? from.toISOString() : undefined)
+  const toV = useSignal(to != null ? to.toISOString() : undefined);
+
+  useVisibleTask$(({track}) => {
+    track(fromV);
+    track(toV);
+
+    filterStore.filter.from = validDateString(fromV.value) ? new Date(fromV.value!) : undefined;
+    filterStore.filter.to = validDateString(toV.value) ? new Date(toV.value!) : undefined;
+  })
+
+  return (
+    <div class="py-2 px-5 inline-block ">
+      <label for={fromId}>From: </label>
+      <input type="date" bind: value={fromV} id={fromId} />
+
+      <label for={toId}>To: </label>
+      <input type="date" bind: value={toV} id={toId} />
     </div>
   );
 });

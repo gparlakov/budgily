@@ -112,7 +112,7 @@ function calculateCoordinatesAndRenderAxis({
   const amountScaleX = scaleLinear([padding + monthsWidth, Number(width) - monthsWidth - 2 * padding]).domain([0, maxSum]);
 
   const monthly = group(
-    movements.sort((a, b) => b.amount - a.amount),
+    [...movements].sort((a, b) => b.amount - a.amount),
     (m) => m.month,
     (m) => m.type
   );
@@ -122,7 +122,6 @@ function calculateCoordinatesAndRenderAxis({
     const creditStack = stack().keys(credits.map((c) => c.id))([
       credits.reduce((acc, c) => ({ ...acc, [c.id]: c.amount }), {}),
     ]);
-    // console.log(creditStack)
 
     const debits = vs?.get('Debit') ?? [];
     const debitStack = stack().keys(debits.map((c) => c.id))([
@@ -149,7 +148,7 @@ function calculateCoordinatesAndRenderAxis({
       width: `${amountScaleX(end) - amountScaleX(start)}`,
 
       height: `${y.bandwidth() / 2}`,
-      fill: m.type === 'Credit' ? 'red' : 'green',
+      fill: m.type === 'Credit' ? 'green' : 'red',
       stroke: 'blue',
     };
     return c;

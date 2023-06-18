@@ -83,7 +83,7 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
         let sorter: (a: Movement, b: Movement) => number;
 
         if(sortableString.includes(field as keyof Movement)) {
-          sorter = (a: Movement, b: Movement) => a[field] == null ? b[field] == null ? 0 : -1 : (a[field] as string).localeCompare(b[field]);  
+          sorter = (a: Movement, b: Movement) => a[field] == null ? b[field] == null ? 0 : -1 : (a[field] as string).localeCompare(b[field]);
         }
 
         if(field === 'amount') {
@@ -91,9 +91,9 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
         }
 
         if(field === 'date') {
-          sorter = (a, b) => !isValidDate(a.date) ? !isValidDate(b.date) ? 0 : -1 : Date.parse(a.date) - Date.parse(b.date);
+          sorter = (a, b) => !isValidDate(a.date) ? !isValidDate(b.date) ? 0 : -1 : Number(a.date) - Number(b.date)
         }
-        
+
         return typeof sorter === 'function' ?  ms.sort((a, b) => desc ? sorter(b, a) : sorter(a, b)) : ms;
       })
       .then((r) => {
