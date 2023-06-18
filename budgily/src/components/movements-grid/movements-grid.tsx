@@ -11,7 +11,7 @@ import styles from './movements-grid.scss?inline';
 export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
   useStylesScoped$(styles);
   const ctx = useContext(ClientContext);
-  const grid = useStore<MovementsGrid>({ page: 1, size: 20 })
+  const grid = useStore<MovementsGrid>({ page: 1, size: 20, selected: [], allIds: [] })
   const movements = resourceMovementsPaginated(ctx, grid, appStore);
 
   return <>
@@ -20,7 +20,8 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
         <table class="table table-xs table-pin-rows">
           <thead>
             <tr>
-              <th></th>
+              <th><input type="checkbox" checked={grid.selected.length > 0 && grid.selected.length === grid.allIds.length}
+                onClick$={() => grid.selected.length > 0 ? grid.selected = [] : grid.selected = [...grid.allIds]} /> </th>
               <th>Amount</th>
               <th>Description</th>
               <th>Type</th>
@@ -28,8 +29,12 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
             </tr>
           </thead>
           <tbody>
-            {ms.map(m => <tr>
-              <th></th>
+            {ms.map(m => <tr key={m.id}>
+              <th><input type="checkbox" value={m.id}
+                checked={grid.selected.includes(m.id)}
+                onClick$={() => {
+                  grid.selected = grid.selected.includes(m.id) ? grid.selected.filter(s => s === m.id) : [...grid.selected, m.id]
+                }} /></th>
               <td>{m.amount}</td>
               <td>{m.description}</td>
               <td>{m.type}</td>
@@ -61,10 +66,12 @@ export interface MovementsGridProps {
 }
 
 export interface MovementsGrid {
+  allIds: string[];
   page: number;
   size: number;
   totalPages?: number;
   totalCount?: number;
+  selected: string[];
 }
 
 function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid, { filter }: MovementsGridProps['appStore']) {
@@ -85,6 +92,7 @@ function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid,
         grid.totalCount = page.totalCount;
       }
       if (movements) {
+        grid.allIds = movements.map(m => m.id);
         return movements.map(mapToVm);
       }
 
