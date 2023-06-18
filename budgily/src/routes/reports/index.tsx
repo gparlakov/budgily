@@ -4,8 +4,8 @@ import {
   component$,
   noSerialize,
   useContext,
-  useId,
   useResource$,
+  useServerData,
   useSignal,
   useStore,
   useStyles$,
@@ -13,33 +13,26 @@ import {
 } from '@builder.io/qwik';
 
 import {
-  Category,
-  ClientContextType,
-  Movement,
-  MovementType,
-  filterValueNoCategory,
-  getDskReportsV2,
+  filterValueNoCategory
 } from '@codedoc1/budgily-data-client';
-import { group, max } from 'd3';
 
 import { ClientContext } from '../../core/client.context';
-import { debounce } from '../../core/debounce';
 
 import { MovementFilter } from '../../components/movement-filter/movement-filter';
 import { ReportsLanding } from '../../components/reports-landing/reports-landing';
 
+import { MovementsGrid } from 'budgily/src/components/movements-grid/movements-grid';
+import { debouncedGetAllMovements, mapToViewModel } from 'budgily/src/core/movements.fetch';
 import { CategoriesFetcher } from '../../components/categories-fetcher/categories-fetcher';
 import { MovementDetails } from '../../components/movement-details/movement-details';
 import { AppStore } from '../../core/app.store';
 import global from './index.scss?inline';
-import { MovementsGrid } from 'budgily/src/components/movements-grid/movements-grid';
-import { debouncedGetAllMovements, mapToViewModel } from 'budgily/src/core/movements.fetch';
+
 
 const debounceMovementMillis = 300;
 export default component$(() => {
   useStyles$(global);
   const ctx = useContext(ClientContext);
-
   const appStore = useStore<AppStore>({
     movements: noSerialize([]),
     maxSum: 0,
@@ -47,10 +40,12 @@ export default component$(() => {
     allCategories: noSerialize([]),
     filter: {
       categories: [],
-      fromDate: new Date(2022, 8, 1),
+      from: new Date(2022, 8, 1),
     },
   });
-  const view = useSignal<'chart' | 'grid'>('chart');
+
+  const view = useTabStorage<View>('chart');
+
 
   const vm = useResource$(async ({ track, cleanup }) => {
     track(appStore.filter);
@@ -100,8 +95,8 @@ export default component$(() => {
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
       <MovementFilter filterStore={appStore}></MovementFilter>
       <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁</button>
-      <button class="btn btn-sm" onClick$={() => view.value = 'chart'}>Chart</button>
-      <button class="btn btn-sm" onClick$={() => view.value = 'grid'}>Table</button>
+      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value ='chart'}>Chart</button>
+      <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value = 'grid'}>Table</button>
       <Resource
         value={vm}
         onResolved={({ errors }) => (
@@ -121,3 +116,24 @@ export default component$(() => {
     </>
   );
 });
+
+type View = 'chart' | 'grid';
+
+function useTabStorage<T extends string>(def: T) {
+  const key = 'budgilyMovementsView';
+  const view = useSignal<T>(def);
+  // initialize on client
+  useVisibleTask$(() => {
+    view.value = (sessionStorage?.getItem(key) ?? def) as T;
+  });
+
+  // on change
+  useVisibleTask$(({ track }) => {
+    track(view);
+
+    const val = view.value ?? def;
+    sessionStorage?.setItem(key, val);
+  });
+
+  return view;
+}

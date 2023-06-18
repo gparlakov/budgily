@@ -2,7 +2,7 @@ import { Movement, MovementFilter, Pagination, Sort } from '../../generated/grap
 import { ClientContextType } from '../core/types';
 import { gqlCall } from '../core/gql-call';
 
-type MovementsFilter = Omit<MovementFilter, 'fromDate' | 'toDate'> & {
+export type MovementsFilter = Omit<MovementFilter, 'fromDate' | 'toDate'> & {
   from?: Date;
   to?: Date;
 };
