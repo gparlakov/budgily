@@ -16,7 +16,28 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
 
   return <>
     <Resource value={movements} onResolved={(ms) => <>
-      {ms.map(m => <div>{m.description}</div>)}
+      <div class="overflow-x-auto">
+        <table class="table table-xs table-pin-rows">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Amount</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ms.map(m => <tr>
+              <th></th>
+              <td>{m.amount}</td>
+              <td>{m.description}</td>
+              <td>{m.type}</td>
+              <td>{m.date}</td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
       <div class="w-2/12 inline-block" >
         <select onChange$={(_, b) => {
           const v = Number(b.value) > 0 ? Number(b.value) : 20;
@@ -28,9 +49,9 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
           <option value="50" selected={grid.size === 50}>50</option>
           <option value="100" selected={grid.size === 100}>100</option></select>
 
-          / {grid.totalCount}
+        / {grid.totalCount}
       </div>
-      <div class="w-10/12 inline-block"> <Pagination pages={grid.totalPages} page={grid.page} onPaging$={(page: number) => { if(page != grid.page) grid.page = page }} /></div>
+      <div class="w-10/12 inline-block"> <Pagination pages={grid.totalPages} page={grid.page} onPaging$={(page: number) => { if (page != grid.page) grid.page = page }} /></div>
     </>} />
   </>;
 });
