@@ -67,7 +67,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
             onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${appStore.selectedId}`} </>}
             onResolved={() => {
               return (
-                <div class="h-100 pb-20" window: onKeyUp$={(key) => onKey(key)}>
+                <div class="h-100 pb-20" onKeyUp$={(key) => onKey(key)}>
                   <Details movement={state.movement} />
 
                   <form
