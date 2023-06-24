@@ -1,4 +1,4 @@
-import { Resource, component$, useContext, useResource$, useStore, useStylesScoped$ } from '@builder.io/qwik';
+import { Resource, Signal, component$, useContext, useResource$, useStore, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
 
 import { ClientContextType } from '@codedoc1/budgily-data-client';
 import { Pagination } from '@qwik-ui/tailwind';
@@ -11,7 +11,7 @@ import styles from './movements-grid.scss?inline';
 export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
   useStylesScoped$(styles);
   const ctx = useContext(ClientContext);
-  const grid = useStore<MovementsGrid>({ page: 1, size: 20, selected: [], allIds: [] })
+  const grid = useStore<MovementsGrid>({ page: 1, size: 20, selected: useStore({allSelected: false, selected: {}}), allIds: [] })
   const movements = resourceMovementsPaginated(ctx, grid, appStore);
 
   return <>
@@ -20,8 +20,16 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
         <table class="table table-xs table-pin-rows">
           <thead>
             <tr>
-              <th><input type="checkbox" checked={grid.selected.length > 0 && grid.selected.length === grid.allIds.length}
-                onClick$={() => grid.selected.length > 0 ? grid.selected = [] : grid.selected = [...grid.allIds]} /> </th>
+              <th><input type="checkbox" checked={grid.selected.allSelected}
+                onClick$={() => {
+                  if(grid.selected.allSelected) {
+                    grid.selected.allSelected = false;
+                    grid.selected.selected = {}
+                  } else {
+                    grid.selected.allSelected = true;
+                    grid.selected.selected = grid.allIds.reduce((acc, n) => ({...acc, [n]: true}), {});
+                  }
+                }} /> </th>
               <th>Amount</th>
               <th>Description</th>
               <th>Type</th>
@@ -31,9 +39,9 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
           <tbody>
             {ms.map(m => <tr key={m.id}>
               <th><input type="checkbox" value={m.id}
-                checked={grid.selected.includes(m.id)}
+                checked={grid.selected.selected[m.id]}
                 onClick$={() => {
-                  grid.selected = grid.selected.includes(m.id) ? grid.selected.filter(s => s === m.id) : [...grid.selected, m.id]
+                  grid.selected.selected[m.id] = !Boolean(grid.selected.selected[m.id])
                 }} /></th>
               <td>{m.amount}</td>
               <td>{m.description}</td>
@@ -71,7 +79,7 @@ export interface MovementsGrid {
   size: number;
   totalPages?: number;
   totalCount?: number;
-  selected: string[];
+  selected: {allSelected: boolean, selected: Record<string, boolean>};
 }
 
 function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid, { filter }: MovementsGridProps['appStore']) {
@@ -93,6 +101,9 @@ function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid,
       }
       if (movements) {
         grid.allIds = movements.map(m => m.id);
+        grid.selected.allSelected = false;
+        grid.selected.selected = {};
+
         return movements.map(mapToVm);
       }
 
