@@ -1,4 +1,4 @@
-import { NoSerialize, component$, useComputed$, useId, useSignal, useStore, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
+import { NoSerialize, QwikIntrinsicElements, Signal, component$, useComputed$, useId, useSignal, useStore, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
 
 import {
   filterValueAllCategories,
@@ -9,6 +9,7 @@ import {
 import { CategoryVM } from 'budgily/src/core/movement.types';
 import styles from './movement-filter.scss?inline';
 import { AppStore } from 'budgily/src/core/app.store';
+import { debounce } from 'budgily/src/core/debounce';
 
 export interface MovementFilterProps {
   filterStore: AppStore;
@@ -20,6 +21,7 @@ export const MovementFilter = component$(({ filterStore }: MovementFilterProps) 
     <>
       <CategoryFilter filterStore={filterStore} />
       <DateRangeFilter filterStore={filterStore} />
+      <SearchFilter filterStore={filterStore} />
     </>
   );
 });
@@ -57,6 +59,29 @@ export const CategoryFilter = component$(({ filterStore }: CategoryFilterProps) 
   );
 });
 
+export interface SearchFilterProps {
+  filterStore: AppStore;
+}
+export const SearchFilter = component$(({ filterStore }: SearchFilterProps) => {
+
+  const v = useId();
+  const { search } = filterStore.filter;
+  const searchV = useSignal(search ?? undefined)
+
+  useVisibleTask$(({ track }) => {
+    track(searchV);
+    if (searchV.value != null && searchV.value != filterStore.filter.search) {
+      filterStore.filter.search = searchV.value;
+    };
+  });
+
+  return (
+    <div class="py-2 px-5 inline-block ">
+      <DebouncedInput debounce={300} output={searchV} type="text" value={searchV.value} id={v} class="input input-bordered input-sm w-lg" placeholder="search by description" />
+    </div>
+  );
+});
+
 export interface DateRangeFilterProps {
   filterStore: AppStore;
 }
@@ -68,7 +93,7 @@ export const DateRangeFilter = component$(({ filterStore }: DateRangeFilterProps
   const fromV = useSignal(from != null ? from.toISOString() : undefined)
   const toV = useSignal(to != null ? to.toISOString() : undefined);
 
-  useVisibleTask$(({track}) => {
+  useVisibleTask$(({ track }) => {
     track(fromV);
     track(toV);
 
@@ -78,11 +103,32 @@ export const DateRangeFilter = component$(({ filterStore }: DateRangeFilterProps
 
   return (
     <div class="py-2 px-5 inline-block ">
-      <label for={fromId}>From: </label>
-      <input type="date" bind: value={fromV} id={fromId} />
+      <label for={fromId}>Range </label><input type="date" bind: value={fromV} id={fromId} class="input input-bordered input-sm" />
 
-      <label for={toId}>To: </label>
-      <input type="date" bind: value={toV} id={toId} />
+      <span>-</span><input type="date" bind: value={toV} id={toId} class="input input-bordered input-sm" />
     </div>
   );
+});
+
+export type DebouncedInputProps = QwikIntrinsicElements['input'] & {
+  debounce: number;
+  output: Signal<string | undefined | null>;
+}
+export const DebouncedInput = component$(({ output, debounce, ...rest }: DebouncedInputProps) => {
+
+  const input = useSignal<string | undefined>(undefined);
+  useVisibleTask$(({ cleanup, track }) => {
+    track(input);
+
+    const timeout = setTimeout(() => {
+
+      if (input.value != output.value) {
+        output.value = input.value;
+      }
+    }, debounce)
+
+    cleanup(() => clearTimeout(timeout));
+  },{ strategy: 'intersection-observer' });
+
+  return <input {...rest} bind:value={input} />;
 });
