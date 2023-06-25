@@ -33,7 +33,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                     grid.selected.selected = grid.allIds.reduce((acc, n) => ({ ...acc, [n]: true }), {});
                     appStore.selectedId = grid.allIds;
                   }
-                }} />  <button class="" onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids"><img src="/public/copy.svg" width="10" height="10" /></button> </th>
+                }} />  <button onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids"><img src="/copy.svg" width="10" height="10" /></button> </th>
               <th>Amount</th>
               <th>Description</th>
               <th>Type</th>
