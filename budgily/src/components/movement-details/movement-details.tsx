@@ -55,6 +55,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
             appStore.selectedId = undefined;
           }
         }}
+        onKeyUp$={(key) => onKey(key)}
       >
         <div class="modal-box w-11/12 max-w-7xl">
           <h1 class="display-table">
@@ -67,7 +68,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
             onRejected={(e) => <> {e.message ?? `Unknown error occurred loading ${appStore.selectedId}`} </>}
             onResolved={() => {
               return (
-                <div class="h-100 pb-20" onKeyUp$={(key) => onKey(key)}>
+                <div class="h-100 pb-20">
                   <Details movement={state.movement} />
 
                   <form
@@ -202,6 +203,7 @@ function toggleDialogOnSelectedMovementId(dialog: Signal<HTMLDialogElement | und
     if (dialog.value) {
       if (appStore.selectedId && !dialog.value.open) {
         dialog.value.showModal();
+        dialog.value.focus();
       } else {
         dialog.value.close();
       }

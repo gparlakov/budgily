@@ -3,7 +3,8 @@ import { ClientContextType } from './types';
 export function gqlCall<T>(
   body: string,
   clientContext: ClientContextType,
-  controller?: AbortController): Promise<{ data?: T; errors?: unknown[]; }> {
+  controller?: AbortController
+): Promise<{ data?: T; errors?: unknown[] }> {
   return fetch(clientContext.uri, {
     method: 'POST',
     headers: {

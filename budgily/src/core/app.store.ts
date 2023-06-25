@@ -8,7 +8,7 @@ export type MovementsFilter = Omit<Filter, 'fromDate' | 'toDate'> & {
 };
 
 export interface AppStore {
-  selectedId?: string;
+  selectedId?: string | string[];
   movements: NoSerialize<MovementVm[]>;
   maxSum: number;
   months: string[];

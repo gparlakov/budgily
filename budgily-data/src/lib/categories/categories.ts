@@ -1,27 +1,31 @@
 import { gqlCall } from '../core/gql-call';
 import { ClientContextType } from '../core/types';
 
-
-export type CategorizeInput = {
-  name: string,
-  description?: string;
-  movementId: string;
-} | {
-  id: string;
-  movementId: string;
-}
+export type CategorizeInput =
+  | {
+      name: string;
+      description?: string;
+      movementId: string | string[];
+    }
+  | {
+      id: string;
+      movementId: string | string[];
+    };
 
 export function categorize(clientContext: ClientContextType, controller?: AbortController) {
   return ({ movementId, ...input }: CategorizeInput) => {
-    const catInput = 'id' in input
-    ? `categoryId: ${input.id}`  // existing
-    : `category: { name: "${input.name}", description: "${input.description}" }`; // new category
+    const catInput =
+      'id' in input
+        ? `categoryId: ${input.id}` // existing
+        : `category: { name: "${input.name}", description: "${input.description}" }`; // new category
 
-    return gqlCall<{ categorize: { name: string, id?: string } }>(
+    return gqlCall<CategorizeResponse>(
       JSON.stringify({
         query: `
         mutation Category {
-          categorize(input: { ${catInput}, movementIds: ["${movementId}"]}) {
+          categorize(input: { ${catInput}, movementIds: ["${
+          Array.isArray(movementId) ? movementId.join('","') : movementId
+        }"]}) {
             movementIds
             id
             name
@@ -33,8 +37,10 @@ export function categorize(clientContext: ClientContextType, controller?: AbortC
       clientContext,
       controller
     );
-  }
+  };
 }
+
+export interface CategorizeResponse { categorize: { name: string; id?: string } };
 
 export function getCategories(clientContext: ClientContextType, controller?: AbortController) {
   return () =>

@@ -1,54 +1,66 @@
-import { Resource, Signal, component$, useContext, useResource$, useStore, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
+import { Resource, component$, noSerialize, useContext, useResource$, useStore, useStylesScoped$ } from '@builder.io/qwik';
 
 import { ClientContextType } from '@codedoc1/budgily-data-client';
 import { Pagination } from '@qwik-ui/tailwind';
 import { AppStore } from 'budgily/src/core/app.store';
 import { ClientContext } from 'budgily/src/core/client.context';
 import { debouncedGetAllMovements } from 'budgily/src/core/movements.fetch';
+import { Categorize } from '../categorize/categorize';
 import { mapToVm } from '../movement-details/movement-details.types';
 import styles from './movements-grid.scss?inline';
 
 export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
   useStylesScoped$(styles);
   const ctx = useContext(ClientContext);
-  const grid = useStore<MovementsGrid>({ page: 1, size: 20, selected: useStore({allSelected: false, selected: {}}), allIds: [] })
+  const grid = useStore<MovementsGrid>({ page: 1, size: 20, selected: useStore({ allSelected: false, selected: {} }), allIds: [], refresh: 1 })
   const movements = resourceMovementsPaginated(ctx, grid, appStore);
-
+  const onCategorize = noSerialize(() => { grid.refresh += 1 })
   return <>
     <Resource value={movements} onResolved={(ms) => <>
+      <Categorize store={appStore} onCategorize={onCategorize} />
       <div class="overflow-x-auto">
         <table class="table table-xs table-pin-rows">
           <thead>
             <tr>
               <th><input type="checkbox" checked={grid.selected.allSelected}
                 onClick$={() => {
-                  if(grid.selected.allSelected) {
+                  if (grid.selected.allSelected) {
                     grid.selected.allSelected = false;
                     grid.selected.selected = {}
+                    appStore.selectedId = undefined;
                   } else {
                     grid.selected.allSelected = true;
-                    grid.selected.selected = grid.allIds.reduce((acc, n) => ({...acc, [n]: true}), {});
+                    grid.selected.selected = grid.allIds.reduce((acc, n) => ({ ...acc, [n]: true }), {});
+                    appStore.selectedId = grid.allIds;
                   }
-                }} /> </th>
+                }} />  <button class="" onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids"><img src="/public/copy.svg" width="10" height="10" /></button> </th>
               <th>Amount</th>
               <th>Description</th>
               <th>Type</th>
               <th>Date</th>
+              <th>Categories</th>
             </tr>
           </thead>
           <tbody>
-            {ms.map(m => <tr key={m.id}>
+            {ms.map(m => <tr key={m.id} class={m.type}>
               <th><input type="checkbox" value={m.id}
                 checked={grid.selected.selected[m.id]}
                 onClick$={() => {
                   grid.selected.selected[m.id] = !Boolean(grid.selected.selected[m.id])
+                  appStore.selectedId = Object.keys(grid.selected.selected);
                 }} /></th>
-              <td>{m.amount}</td>
+              <td>{m.type === 'credit' ? '+' : '-'} {m.amount}</td>
               <td>{m.description}</td>
               <td>{m.type}</td>
               <td>{m.date}</td>
+              <td>{m.categories?.map(c => c.name).join(',')}</td>
             </tr>)}
           </tbody>
+          <tfoot>
+            <th></th>
+            <td colSpan={5}>Total: {ms.reduce((acc, n) => n.type === 'debit' ? acc - n.amount : acc + n.amount, 0)}
+            </td>
+          </tfoot>
         </table>
       </div>
       <div class="w-2/12 inline-block" >
@@ -79,7 +91,8 @@ export interface MovementsGrid {
   size: number;
   totalPages?: number;
   totalCount?: number;
-  selected: {allSelected: boolean, selected: Record<string, boolean>};
+  selected: { allSelected: boolean, selected: Record<string, boolean> };
+  refresh: number;
 }
 
 function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid, { filter }: MovementsGridProps['appStore']) {
@@ -87,6 +100,7 @@ function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid,
   return useResource$(({ track, cleanup }) => {
     track(() => grid.page);
     track(() => grid.size);
+    track(() => grid.refresh);
     track(filter)
     const abort = new AbortController();
     cleanup(() => abort.abort('cleanup'));

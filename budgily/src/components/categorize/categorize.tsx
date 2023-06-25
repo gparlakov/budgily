@@ -1,13 +1,16 @@
-import { Signal, component$, useStylesScoped$, $, useComputed$, useSignal } from '@builder.io/qwik';
+import { Signal, component$, useStylesScoped$, $, useComputed$, useSignal, useContext, NoSerialize } from '@builder.io/qwik';
 
 import styles from './categorize.scss?inline';
-import { ClientContextType, categorize } from '@codedoc1/budgily-data-client';
+import { CategorizeResponse, ClientContextType, categorize } from '@codedoc1/budgily-data-client';
 import { AppStore } from 'budgily/src/core/app.store';
-import { MovementDetailsStore } from '../movement-details/movement-details.types';
+import { ClientContext } from 'budgily/src/core/client.context';
+
 export type CategorizeProps = {
-  store: AppStore
+  store: AppStore;
+  onCategorize: NoSerialize<(r: CategorizeResponse) => void>;
 }
-export const Categorize = component$(({store: appStore}: CategorizeProps) => {
+
+export const Categorize = component$(({ store: appStore, onCategorize: onCategorizeCallback }: CategorizeProps) => {
   useStylesScoped$(styles);
 
   const newCatInput = useSignal<HTMLInputElement>();
@@ -21,7 +24,7 @@ export const Categorize = component$(({store: appStore}: CategorizeProps) => {
     }
   });
 
-  const onCategorize = onCategorizeHandler(ctx, newCat, appStore, undefined, existingCat)
+  const onCategorize = onCategorizeHandler(useContext(ClientContext), newCat, existingCat, appStore, onCategorizeCallback)
 
   return <form
     method="dialog"
@@ -57,29 +60,30 @@ export const Categorize = component$(({store: appStore}: CategorizeProps) => {
 function onCategorizeHandler(
   ctx: ClientContextType,
   newCat: Signal<string | undefined>,
+  existingCat: Signal<string | undefined>,
   store: CategorizeProps['store'],
-  state: MovementDetailsStore,
-  existingCat: Signal<string | undefined>
+  onCategorize: NoSerialize<(r: CategorizeResponse) => void>
 ) {
   return $(async () => {
-    const mutationFn = categorize(ctx);
-    if (newCat.value) {
-      // new category
-      const result = await mutationFn({ name: newCat.value, movementId: store.selectedId as string });
-      const createdCat = result.data?.categorize;
-      createdCat && createdCat.id && store.allCategories?.push(createdCat);
-      newCat.value = undefined;
-      state.movement &&
-        (state.movement.categoriesStr = `${createdCat?.name}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
-          }`);
-    } else if (existingCat.value) {
-      // existing selected;
-      await mutationFn({ id: existingCat.value, movementId: store.selectedId as string });
-      const existingCatName = store.allCategories && store.allCategories.find((c) => c.id === existingCat.value)?.name;
+    const ids = store.selectedId;
+    if (ids == null) {
+      return
+    }
 
-      state.movement &&
-        (state.movement.categoriesStr = `${existingCatName}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
-          }`);
+    const mutationFn = categorize(ctx);
+    const input = newCat.value ? { name: newCat.value, movementId: ids } : existingCat.value ? { id: existingCat.value, movementId: ids } : undefined;
+    if (input) {
+      await mutationFn(input)
+        .then(({ data }) => {
+          if (newCat.value && data?.categorize != null && data.categorize.id != null) {
+            store.allCategories?.push(data.categorize);
+          }
+          // delegate to callback if any
+          onCategorize && data && onCategorize(data)
+        })
+        .catch(e => {
+          console.log(e);
+        })
     }
   });
 }

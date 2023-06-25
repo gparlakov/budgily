@@ -93,13 +93,21 @@ export default component$(() => {
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
       <MovementFilter filterStore={appStore}></MovementFilter>
       <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁</button>
-      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value = 'chart'}>Chart</button>
-      <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-primary' : 'btn-accent'}`} onClick$={() => view.value = 'grid'}>Table</button>
+      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'chart'}>Chart</button>
+      <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'grid'}>Table</button>
       <Resource
         value={vm}
         onResolved={({ errors }) => (
           <>
-            {view.value === 'chart' ? <ReportsLanding movementDetailsStore={appStore}></ReportsLanding> : <MovementsGrid appStore={appStore}></MovementsGrid>}
+            {
+              view.value === 'chart' ?
+                <>
+                  <ReportsLanding movementDetailsStore={appStore}></ReportsLanding>
+                  <MovementDetails store={appStore}></MovementDetails>
+                </>
+                :
+                <MovementsGrid appStore={appStore}></MovementsGrid>
+            }
             {Array.isArray(errors) ? errors.map((e, i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>) : ''}{' '}
           </>
         )}
@@ -110,7 +118,6 @@ export default component$(() => {
           </>
         )}
       ></Resource>
-      <MovementDetails store={appStore}></MovementDetails>
     </>
   );
 });
