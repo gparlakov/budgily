@@ -93,8 +93,8 @@ export default component$(() => {
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
       <MovementFilter filterStore={appStore}></MovementFilter>
       <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁</button>
-      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'chart'}>Chart</button>
-      <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'grid'}>Table</button>
+      <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'chart'}>📊 chart</button>
+      <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'grid'}>📑 grid</button>
 
       {view.value === 'chart' ?
         <Resource

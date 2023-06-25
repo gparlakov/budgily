@@ -18,7 +18,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
   return <>
 
     <div class="overflow-x-auto"><details class="collapse bg-base-300 collapse collapse-arrow collapse-sm">
-      <summary class="collapse-title text-xl/8">Categorize</summary>
+      <summary class="collapse-title text-xl/16 p-2.5 min-h-fit">Categorize</summary>
       <div class="collapse-content">
         <Categorize store={appStore} onCategorize={onCategorize} wide={true} />
       </div>
@@ -26,45 +26,64 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
       <table class="table table-xs table-pin-rows">
         <thead>
           <tr>
-            <th><input type="checkbox" checked={grid.selected.allSelected}
-              onClick$={() => {
-                if (grid.selected.allSelected) {
-                  grid.selected.allSelected = false;
-                  grid.selected.selected = {}
-                  appStore.selectedId = undefined;
-                } else {
-                  grid.selected.allSelected = true;
-                  grid.selected.selected = grid.allIds.reduce((acc, n) => ({ ...acc, [n]: true }), {});
-                  appStore.selectedId = grid.allIds;
-                }
-              }} />  <button onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids"><img src="/copy.svg" width="12" height="12" /></button> </th>
+            <th><label>
+              <input type="checkbox" class="checkbox checkbox-xs" checked={grid.selected.allSelected}
+                onClick$={() => {
+                  if (grid.selected.allSelected) {
+                    grid.selected.allSelected = false;
+                    grid.selected.selected = {}
+                    appStore.selectedId = undefined;
+                  } else {
+                    grid.selected.allSelected = true;
+                    grid.selected.selected = grid.allIds.reduce((acc, n) => ({ ...acc, [n]: true }), {});
+                    appStore.selectedId = grid.allIds;
+                  }
+                }} />
+            </label>
+              <button onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids">
+                <img src="/copy.svg" width="12" height="12" />
+              </button>
+              <span class="w-9 inline-block">{Object.entries(grid.selected.selected).filter(([, selected]) => selected).length}</span>
+            </th>
             <th>Amount</th>
             <th>Description</th>
             <th>Type</th>
             <th>Date</th>
             <th>Categories</th>
+            <th>Details</th>
           </tr>
         </thead>
         <Resource value={movements} onResolved={(ms) =>
           <>
             <tbody>
               {ms.map(m => <tr key={m.id} class={m.type}>
-                <th><input type="checkbox" value={m.id}
+                <th><input type="checkbox" class="checkbox checkbox-xs" value={m.id}
                   checked={grid.selected.selected[m.id]}
                   onClick$={() => {
                     grid.selected.selected[m.id] = !Boolean(grid.selected.selected[m.id])
-                    appStore.selectedId = Object.keys(grid.selected.selected);
+                    appStore.selectedId = Object.entries(grid.selected.selected).filter(([, selected]) => selected).map(([id]) => id);
                   }} /></th>
                 <td>{m.type === 'credit' ? '+' : '-'} {m.amount}</td>
                 <td>{m.description}</td>
                 <td>{m.type}</td>
-                <td>{m.date}</td>
+                <td>{new Date(Number(m.date)).toLocaleDateString()}</td>
                 <td>{m.categories?.map(c => c.name).join(',')}</td>
+                <td><div class="dropdown dropdown-bottom dropdown-left">
+                  <label tabIndex={0} class=""><img src="/copy.svg" width="12" height="12" /></label>
+                  <div tabIndex={0} class="dropdown-content z-[1] card card-compact w-64 p-2 shadow bg-primary text-primary-content">
+                    <div class="card-body">
+                      <p>Type - {m.type}</p>
+                      <p>Date - {new Date(Number(m.date)).toLocaleDateString()}</p>
+                      <p>Raw - {m.raw}</p>
+                    </div>
+                  </div>
+                </div>
+                </td>
               </tr>)}
             </tbody>
             <tfoot>
               <th></th>
-              <td colSpan={5}>Total: {ms.reduce((acc, n) => n.type === 'debit' ? acc - n.amount : acc + n.amount, 0)}
+              <td colSpan={5}>Total: {ms.reduce((acc, n) => n.type === 'debit' ? acc - n.amount : acc + n.amount, 0).toFixed(2)}
               </td>
             </tfoot>
           </>
