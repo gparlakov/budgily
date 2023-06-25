@@ -1,5 +1,4 @@
 import { component$, useStylesScoped$ } from '@builder.io/qwik';
-import { QwikLogo } from '../icons/qwik';
 import styles from './header.scss?inline';
 import { Link } from '@builder.io/qwik-city';
 
@@ -8,44 +7,67 @@ export default component$(() => {
 
   return (
     <header>
-      <div class="logo">
-        <a href=".">
-          <QwikLogo />
-        </a>
+      <div class="navbar bg-base-100">
+        <div class="navbar-start">
+          <div class="dropdown">
+            <label tabIndex={0} class="text-xl">
+              Budgily
+            </label>
+            <ul tabIndex={0} class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+              <li>
+                <Link href="/reports/chart">
+                  📊 chart
+                </Link>
+              </li>
+              <li>
+                <Link href="/reports/grid">
+                  📑  grid
+                </Link>
+              </li>
+
+              <li>
+                <a>Deprecated</a>
+                <ul class="p-2">
+                  <li><Link href="/deprecated/d3">d3</Link></li>
+                  <li><Link href="/deprecated/delay-count">delay-count</Link></li>
+                  <li><Link href="/deprecated/flower">flower</Link></li>
+                  <li><Link href="/deprecated/mouse-moves">mouse-moves</Link></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+        <div class="navbar-center hidden lg:flex">
+          <ul class="menu menu-horizontal px-1">
+            <li>
+              <Link href="/reports">
+                📊 chart
+              </Link>
+            </li>
+            <li>
+              <Link href="/reports">
+                📑  grid
+              </Link>
+            </li>
+            <li tabIndex={0}>
+              <details>
+                <summary>Deprecated</summary>
+                <ul class="p-2">
+                  <li><Link href="/deprecated/d3">d3</Link></li>
+                  <li><Link href="/deprecated/delay-count">delay-count</Link></li>
+                  <li><Link href="/deprecated/flower">flower</Link></li>
+                  <li><Link href="/deprecated/mouse-moves">mouse-moves</Link></li>
+                </ul>
+              </details>
+
+            </li>
+          </ul>
+        </div>
+        <div class="navbar-end">
+          /
+        </div>
       </div>
-      <ul>
-        <li>
-          <Link href="/reports/">
-            📌 reports
-          </Link>
-        </li>
-        <li>
-          <Link href="/d3/">
-            d3
-          </Link>
-        </li>
-        <li>
-          <Link href="/d3/ranked/">
-            ranked(d3)
-          </Link>
-        </li>
-        <li>
-          <Link href="/d3/ranked/ranked-qwik-renders/">
-            ranked(qwik)
-          </Link>
-        </li>
-        <li>
-          <Link href="/flower/">
-            Blow my mind 🤯
-          </Link>
-        </li>
-        <li>
-          <Link href="/delay-count/">delay counter</Link>
-        </li>
-        <li>
-          <Link href="/mouse-moves/">mouse mover</Link>
-        </li>
-      </ul>
     </header>
   );
 });

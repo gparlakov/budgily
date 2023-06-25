@@ -95,29 +95,27 @@ export default component$(() => {
       <button onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁</button>
       <button class={`btn btn-sm ${view.value === 'chart' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'chart'}>Chart</button>
       <button class={`btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'grid'}>Table</button>
-      <Resource
-        value={vm}
-        onResolved={({ errors }) => (
-          <>
-            {
-              view.value === 'chart' ?
-                <>
-                  <ReportsLanding movementDetailsStore={appStore}></ReportsLanding>
-                  <MovementDetails store={appStore}></MovementDetails>
-                </>
-                :
-                <MovementsGrid appStore={appStore}></MovementsGrid>
-            }
-            {Array.isArray(errors) ? errors.map((e, i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>) : ''}{' '}
-          </>
-        )}
-        onPending={() => <>Loading...</>}
-        onRejected={(e) => (
-          <>
-            Could not load movements. Error follows (if any): <hr /> {JSON.stringify(e)}
-          </>
-        )}
-      ></Resource>
+
+      {view.value === 'chart' ?
+        <Resource
+          value={vm}
+          onResolved={({ errors }) => {
+            return Array.isArray(errors)
+              ? <>{errors.map((e, i) => <span key={`error-index-key-${i}`}>{JSON.stringify(e)}</span>)}</>
+              : <>
+                <ReportsLanding movementDetailsStore={appStore}></ReportsLanding>
+                <MovementDetails store={appStore}></MovementDetails>
+              </>
+          }
+          }
+          onPending={() => <>Loading...</>}
+          onRejected={(e) => (
+            <>
+              Could not load movements. Error follows (if any): <hr /> {JSON.stringify(e)}
+            </>
+          )}
+        ></Resource>
+        : <MovementsGrid appStore={appStore}></MovementsGrid>}
     </>
   );
 });

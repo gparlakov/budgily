@@ -4,8 +4,7 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 export default component$(() => {
   return (
     <div>
-      Welcome to Qwik!;;
-
+      Welcome to Budgily!
     </div>
   );
 });

@@ -4,7 +4,7 @@ import { CategoryVM } from '../../core/movement.types';
 
 export interface MovementDetailsProps {
   store: {
-    selectedId?: string;
+    selectedId?: string | string[];
     allCategories: NoSerialize<CategoryVM[]>
     next?: NoSerialize<() => void>;
     previous?: NoSerialize<() => void>;

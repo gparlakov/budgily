@@ -8,9 +8,10 @@ import { ClientContext } from 'budgily/src/core/client.context';
 export type CategorizeProps = {
   store: AppStore;
   onCategorize: NoSerialize<(r: CategorizeResponse) => void>;
+  wide?: boolean;
 }
 
-export const Categorize = component$(({ store: appStore, onCategorize: onCategorizeCallback }: CategorizeProps) => {
+export const Categorize = component$(({ store: appStore, onCategorize: onCategorizeCallback, wide }: CategorizeProps) => {
   useStylesScoped$(styles);
 
   const newCatInput = useSignal<HTMLInputElement>();
@@ -32,7 +33,7 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
     onSubmit$={onCategorize}
     class="categorize-form py-2 px-5 block background-green-400 relative"
   >
-    <div>
+    <div class={wide ? 'inline-block w-1/3' : ''}>
       Category: {category.value?.name}
       <sup>{category.value && (category.value.new ? 'new' : 'existing')}</sup>
     </div>
@@ -52,7 +53,7 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
         </option>
       ))}
     </select>
-    <input type="submit" value="Categorize" class="btn block m-1 btn-success"></input>
+    <input type="submit" value="Categorize" class={`btn ${wide ? 'inline-block' : 'block'} m-1 btn-success`} />
   </form>;
 });
 
