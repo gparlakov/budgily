@@ -50,50 +50,51 @@ export function defaultDSKMapper(exports?: DSKExport): Movement[] {
   }
 
   const addHash = (x: Movement) => {
-    return {...x,
-      id: createHash('sha256')
-        .update(`${x.date}-${x.amount}-${x.type}-${x.description}`)
-        .digest('base64')};
-  }
+    return {
+      ...x,
+      id: createHash('sha256').update(`${x.date}-${x.amount}-${x.type}-${x.description}`).digest('base64'),
+    };
+  };
 
   if (Array.isArray(exports)) {
     const isDebit = (x: Record<'Дебит BGN' | 'Кредит BGN', string>) => x['Дебит BGN'] !== '';
 
-    return exports.map((x) => ({
-      id: '',
-      date: getDateFromBGString(x.Дата).valueOf().toString(),
-      amount: getNumberFromBgString(isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']),
-      type: isDebit(x) ? MovementType.Debit : MovementType.Credit,
-      description: readParsedValue(x['Основание']),
-      account: x['Номер сметка на наредителя / получателя'],
-      raw: JSON.stringify(x),
-      opposite: readParsedValue(x['Наредител/Получател'])
-    }))
-    .map(addHash);
+    return exports
+      .map((x) => ({
+        id: '',
+        date: getDateFromBGString(x.Дата).valueOf().toString(),
+        amount: getNumberFromBgString(isDebit(x) ? x['Дебит BGN'] : x['Кредит BGN']),
+        type: isDebit(x) ? MovementType.Debit : MovementType.Credit,
+        description: readParsedValue(x['Основание']),
+        account: x['Номер сметка на наредителя / получателя'],
+        raw: JSON.stringify(x),
+        opposite: readParsedValue(x['Наредител/Получател']),
+      }))
+      .map(addHash);
   }
 
   return (exports?.AccountMovements?.AccountMovement ?? [])
-  .map((v) => {
-    const date = getDateFromBGString(v.ValueDate);
+    .map((v) => {
+      const date = getDateFromBGString(v.ValueDate);
 
-    if (date.toString() === new Date('Invalid date').toString()) {
-      throw new Error(`could not parse ${v.ValueDate}`);
-    }
+      if (date.toString() === new Date('Invalid date').toString()) {
+        throw new Error(`could not parse ${v.ValueDate}`);
+      }
 
-    const amount = getNumberFromBgString(v.Amount);
+      const amount = getNumberFromBgString(v.Amount);
 
-    return {
-      id: '',
-      date: date.valueOf().toString(),
-      description: readParsedValue(v.Reason),
-      account: v.OppositeSideAccount,
-      type: v.MovementType === 'Debit' ? MovementType.Debit : MovementType.Credit,
-      amount,
-      raw: JSON.stringify(v),
-      opposite: readParsedValue(v.OppositeSideName)
-    };
-  })
-  .map(addHash);
+      return {
+        id: '',
+        date: date.valueOf().toString(),
+        description: readParsedValue(v.Reason),
+        account: v.OppositeSideAccount,
+        type: v.MovementType === 'Debit' ? MovementType.Debit : MovementType.Credit,
+        amount,
+        raw: JSON.stringify(v),
+        opposite: readParsedValue(v.OppositeSideName),
+      };
+    })
+    .map(addHash);
 }
 
 export const dedupe = (all: Movement[]): Movement[] => {

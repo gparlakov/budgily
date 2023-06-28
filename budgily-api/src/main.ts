@@ -43,7 +43,7 @@ const server = new ApolloServer({
 // instance before passing the instance to `expressMiddleware`
 server.start().then(() => {
   // Specify the path where we'd like to mount our server
-  app.use('/graphql', cors<cors.CorsRequest>({ origin: ['http://localhost:4200', 'http://localhost:4300'] }), json(), expressMiddleware(server));
+  app.use('/graphql', cors<cors.CorsRequest>({ origin: ['http://localhost:4200', 'http://localhost:4300', 'http://localhost:8888'] }), json(), expressMiddleware(server));
 
   app.listen(port, host, () => {
     console.log(`[ ready ] http://${host}:${port}`);

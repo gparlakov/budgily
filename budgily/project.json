@@ -20,6 +20,10 @@
       "options": {
         "outputPath": "../dist/./budgily",
         "configFile": "./budgily/vite.config.ts"
+      },
+      "configurations": {
+        "preview": {},
+        "express": {}
       }
     },
     "build.ssr": {

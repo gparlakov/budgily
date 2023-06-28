@@ -1,4 +1,4 @@
-import { NoSerialize, QwikIntrinsicElements, Signal, component$, useComputed$, useId, useSignal, useStore, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
+import { QwikIntrinsicElements, Signal, component$, useId, useSignal, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
 
 import {
   filterValueAllCategories,
@@ -6,10 +6,9 @@ import {
   validDateString
 } from '@codedoc1/budgily-data-client';
 
+import { AppStore } from 'budgily/src/core/app.store';
 import { CategoryVM } from 'budgily/src/core/movement.types';
 import styles from './movement-filter.scss?inline';
-import { AppStore } from 'budgily/src/core/app.store';
-import { debounce } from 'budgily/src/core/debounce';
 
 export interface MovementFilterProps {
   filterStore: AppStore;

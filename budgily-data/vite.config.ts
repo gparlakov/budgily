@@ -44,7 +44,7 @@ export default defineConfig({
     },
     rollupOptions: {
       // External packages that should not be bundled into your library.
-      external: ['node:fs'],
+      external: ['node:fs', 'node:crypto'],
       plugins: [
         copy({
           targets: [

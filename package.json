@@ -3,7 +3,10 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "express.ps": "npx nx run budgily:build -c express && $env:DIST_DIR = \"${PWD}\\dist\\budgily\\client\" node .\\dist\\budgily\\server\\entry.express",
+    "server": "npx nx run budgily-api:build:production && node dist/budgily-api/main.js",
+    "client.express.ps": "npx nx run budgily:build:express && $env:DIST_DIR = \"${PWD}\\dist\\budgily\\client\" node .\\dist\\budgily\\server\\entry.express",
+    "client.express.sh": "npx nx run budgily:build:express && PORT=8888 DIST_DIR=\"$(pwd)/budgily/dist/client/\" node ./budgily/dist/server/entry.express.js",
+    "client": "npm run client.express.sh",
     "codegen": "graphql-codegen --config codegen.ts"
   },
   "private": true,
