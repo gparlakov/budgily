@@ -17,7 +17,7 @@ const schema = readFileSync(join(__dirname, schemaFileName)).toString();
 
 const host = process.env.HOST ?? 'localhost';
 const port = process.env.PORT ? Number(process.env.PORT) : 3000;
-
+const allowCORS = process.env.CORS ?? '';
 const app = express();
 
 const server = new ApolloServer({
@@ -42,8 +42,10 @@ const server = new ApolloServer({
 // Note you must call `server.start()` on the `ApolloServer`
 // instance before passing the instance to `expressMiddleware`
 server.start().then(() => {
+  const originsAllowed = ['http://localhost:4200', 'http://localhost:4300', 'http://localhost:8888', allowCORS];
+  console.log('allowed CORS from ', originsAllowed)
   // Specify the path where we'd like to mount our server
-  app.use('/graphql', cors<cors.CorsRequest>({ origin: ['http://localhost:4200', 'http://localhost:4300', 'http://localhost:8888'] }), json(), expressMiddleware(server));
+  app.use('/graphql', cors<cors.CorsRequest>({ origin: originsAllowed }), json(), expressMiddleware(server));
 
   app.listen(port, host, () => {
     console.log(`[ ready ] http://${host}:${port}`);

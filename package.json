@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "server": "npx nx run budgily-api:build:production && node dist/budgily-api/main.js",
+    "server": "npx nx run budgily-api:build:production && HOST=\"192.168.0.26\" PORT=3000 CORS=\"http://192.168.0.26:8888\" node dist/budgily-api/main.js",
     "client.express.ps": "npx nx run budgily:build:express && $env:DIST_DIR = \"${PWD}\\dist\\budgily\\client\" node .\\dist\\budgily\\server\\entry.express",
-    "client.express.sh": "npx nx run budgily:build:express && PORT=8888 DIST_DIR=\"$(pwd)/budgily/dist/client/\" node ./budgily/dist/server/entry.express.js",
+    "client.express.sh": "npx nx run budgily:build:express && PORT=8888 API_URL=\"http://192.168.0.26:3000/graphql\" DIST_DIR=\"$(pwd)/budgily/dist/client/\" node ./budgily/dist/server/entry.express.js",
     "client": "npm run client.express.sh",
     "codegen": "graphql-codegen --config codegen.ts"
   },
