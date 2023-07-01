@@ -6,10 +6,9 @@ import { useNavigate, type DocumentHead } from "@builder.io/qwik-city";
 export default component$(() => {
   const nav = useNavigate()
   useVisibleTask$(() => {
-    console.log('ll')
     nav('/reports');
   });
-  return <></>;
+  return <><button class="btn btn-accent" onClick$={() => nav('/reports')}> visit /reports </button></>;
 });
 
 export const head: DocumentHead = {

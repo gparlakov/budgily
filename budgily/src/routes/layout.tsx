@@ -5,7 +5,7 @@ export default component$(() => {
   return (
     <>
       <main>
-        <Header />
+        {/* <Header /> */}
         <section>
           <Slot />
         </section>

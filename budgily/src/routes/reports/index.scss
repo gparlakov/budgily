@@ -1,4 +1,5 @@
-.debit, .credit {
+.debit,
+.credit {
   font-size: 0.6rem;
 }
 
@@ -17,4 +18,52 @@ rect.focused {
   // transform:scale(2, 1.5);
   fill: 'aliceblue';
   transition: cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+.hide-text .hidden-text {
+  display:none;
+}
+.hide-text:hover .hidden-text {
+  display:inline;
+}
+
+// @-moz-keyframes slide /* Firefox */
+// {
+// from {height: 0;}
+// to {height: 300px;}
+// }
+
+// @-webkit-keyframes slide /* Safari and Chrome */
+// {
+// from {height: 0;}
+// to {height: 300px;}
+// }
+
+// @-o-keyframes slide /* Opera */
+// {
+// from {background: red;}
+// to {background: yellow;}
+// }
+
+// @-ms-keyframes slide /* IE10 */
+// {
+// from {height: 0;}
+// to {height: 300px;}
+// }
+
+// @-webkit-keyframes slide {
+//   from {
+//     display: none;
+//   }
+//   to {
+//     display: inline;
+//   }
+// }
+
+@keyframes slide {
+  from {
+    display: none;
+  }
+  to {
+    display: inline;
+  }
 }
