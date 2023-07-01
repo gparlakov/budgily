@@ -1,12 +1,15 @@
-import { component$ } from "@builder.io/qwik";
-import type { DocumentHead } from "@builder.io/qwik-city";
+import { component$, useVisibleTask$ } from "@builder.io/qwik";
+import { useNavigate, type DocumentHead } from "@builder.io/qwik-city";
+
+
 
 export default component$(() => {
-  return (
-    <div>
-      Welcome to Budgily!
-    </div>
-  );
+  const nav = useNavigate()
+  useVisibleTask$(() => {
+    console.log('ll')
+    nav('/reports');
+  });
+  return <></>;
 });
 
 export const head: DocumentHead = {
