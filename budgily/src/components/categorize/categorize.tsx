@@ -1,4 +1,4 @@
-import { Signal, component$, useStylesScoped$, $, useComputed$, useSignal, useContext, NoSerialize } from '@builder.io/qwik';
+import { Signal, component$, useStylesScoped$, $, useComputed$, useSignal, useContext, NoSerialize, QwikIntrinsicElements, useStore } from '@builder.io/qwik';
 
 import styles from './categorize.scss?inline';
 import { CategorizeResponse, ClientContextType, categorize } from '@codedoc1/budgily-data-client';
@@ -24,8 +24,9 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
       return { name: appStore.allCategories?.find((c) => c.id === existingCat.value)?.name, new: false };
     }
   });
+  const loading = useSignal<boolean>(false);
 
-  const onCategorize = onCategorizeHandler(useContext(ClientContext), newCat, existingCat, appStore, onCategorizeCallback)
+  const onCategorize = onCategorizeHandler(useContext(ClientContext), newCat, existingCat, appStore, onCategorizeCallback, loading)
 
   return <form
     method="dialog"
@@ -37,23 +38,28 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
       Category: {category.value?.name}
       <sup>{category.value && (category.value.new ? 'new' : 'existing')}</sup>
     </div>
-    <input
-      type="text"
-      placeholder="New category"
-      name="category"
-      autoComplete="off"
-      bind: value={newCat}
-      class="input input-bordered w-full max-w-xs"
-      ref={newCatInput}
-    ></input>
-    <select class="select select-bordered" bind: value={existingCat}>
-      {appStore.allCategories?.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.name}
-        </option>
-      ))}
-    </select>
-    <input type="submit" value="Categorize" class={`btn ${wide ? 'inline-block' : 'block'} m-1 btn-success`} />
+    <div class="join">
+      <input
+        type="text"
+        placeholder="New category"
+        name="category"
+        autoComplete="off"
+        bind: value={newCat}
+        class="input input-bordered w-full max-w-xs"
+        ref={newCatInput}
+      ></input>
+      <select class="select select-bordered" bind: value={existingCat}>
+        {appStore.allCategories?.map((c) => (
+          <option key={c.id} value={c.id} selected={c.id === existingCat.value}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+    </div>
+
+   <button type="submit" class={`btn ${wide ? 'inline-block' : 'block'} m-1 btn-success`}>
+   {loading.value ? <span class="loading loading-spinner"></span> : 'Categorize' }
+   </button>
   </form>;
 });
 
@@ -63,7 +69,8 @@ function onCategorizeHandler(
   newCat: Signal<string | undefined>,
   existingCat: Signal<string | undefined>,
   store: CategorizeProps['store'],
-  onCategorize: NoSerialize<(r: CategorizeResponse) => void>
+  afterCategorize: NoSerialize<(r: CategorizeResponse) => void>
+  , loading: Signal<boolean>
 ) {
   return $(async () => {
     const ids = store.selectedId;
@@ -74,18 +81,59 @@ function onCategorizeHandler(
     const mutationFn = categorize(ctx);
     const input = newCat.value ? { name: newCat.value, movementId: ids } : existingCat.value ? { id: existingCat.value, movementId: ids } : undefined;
     if (input) {
+      loading.value = true;
       await mutationFn(input)
         .then(({ data }) => {
+          loading.value = false;
           if (newCat.value && data?.categorize != null && data.categorize.id != null) {
             store.allCategories?.push(data.categorize);
+            newCat.value = '';
+            existingCat.value = data.categorize.id;
           }
           // delegate to callback if any
-          onCategorize && data && onCategorize(data)
+          afterCategorize && data && afterCategorize(data)
         })
         .catch(e => {
           console.log(e);
+          loading.value = false
         })
     }
   });
 }
 
+// export type ComboboxProps = QwikIntrinsicElements['div'] & {
+//   items: (search?: string) => Array<{
+//     id: string;
+//     value: string;
+//     displayStr: string;
+//   }>
+
+//   selectedValue?: string;
+// }
+
+
+// export const Combobox = component$(({ items, selectedValue }: ComboboxProps) => {
+
+//   const boxStore = useStore({
+//     selected: useSignal(selectedValue),
+//     input: useSignal(selectedValue && items().find(i => i.value === selectedValue)?.displayStr)
+//   })
+
+//   return <>
+//     <input
+//       type="text"
+//       placeholder="New category"
+//       name="category"
+//       autoComplete="off"
+//       bind: value={boxStore.selected}
+//       class="input input-bordered w-full max-w-xs"
+//     ></input>
+//     <select class="select select-bordered" bind: value={boxStore.selected}>
+//       {items(boxStore.input.value).map((c) => (
+//         <option key={c.id} value={c.id}>
+//           {c.displayStr}
+//         </option>
+//       ))}
+//     </select>
+//   </>
+// })
