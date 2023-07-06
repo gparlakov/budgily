@@ -1,2 +1,8 @@
 2023/07/01 11:13:15 [error] 83875#83875: *166 connect() failed (111: Unknown error) while connecting to upstream, client: 127.0.0.1, server: , request: "GET / HTTP/1.1", upstream: "http://127.0.0.1:8888/", host: "localhost"
 2023/07/01 11:13:18 [error] 83875#83875: *166 connect() failed (111: Unknown error) while connecting to upstream, client: 127.0.0.1, server: , request: "GET /service-worker.js HTTP/1.1", upstream: "http://127.0.0.1:8888/service-worker.js", host: "localhost", referrer: "http://localhost/service-worker.js"
+2023/07/05 17:55:52 [emerg] 11307#11307: bind() to 0.0.0.0:80 failed (98: Unknown error)
+2023/07/05 17:55:52 [emerg] 11307#11307: bind() to 0.0.0.0:80 failed (98: Unknown error)
+2023/07/05 17:55:52 [emerg] 11307#11307: bind() to 0.0.0.0:80 failed (98: Unknown error)
+2023/07/05 17:55:52 [emerg] 11307#11307: bind() to 0.0.0.0:80 failed (98: Unknown error)
+2023/07/05 17:55:52 [emerg] 11307#11307: bind() to 0.0.0.0:80 failed (98: Unknown error)
+2023/07/05 17:55:52 [emerg] 11307#11307: still could not bind()
