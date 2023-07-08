@@ -13,7 +13,6 @@ import report2 from './report-11_2021-11_2022.xml';
 // @ts-ignore
 import report3 from './report-2020-debit-card-income.csv';
 
-
 const parser = new XMLParser({
   unpairedTags: ['br', 'hr'],
   stopNodes: ['*.br'],
@@ -23,7 +22,7 @@ const parser = new XMLParser({
 // essentially - load the files once in memory and keep as long as app is alive
 // TODO - error handling and retries
 const filesPromise = [report, report1, report2, report3].map((file) =>
-  readFile(join(__dirname, file)).then((x) => (file.endsWith('xml') ? parser.parse(x) : csvParse(x.toString())))
+  readFile(`./${new URL(file, import.meta.url).pathname}`).then((x) => (file.endsWith('xml') ? parser.parse(x) : csvParse(x.toString())))
 );
 
 export function dskMovements() {
