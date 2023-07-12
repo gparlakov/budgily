@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { readFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { XMLParser } from 'fast-xml-parser';
 import { csvParse } from 'd3';
 
@@ -22,7 +21,7 @@ const parser = new XMLParser({
 // essentially - load the files once in memory and keep as long as app is alive
 // TODO - error handling and retries
 const filesPromise = [report, report1, report2, report3].map((file) =>
-  readFile(`./${new URL(file, import.meta.url).pathname}`).then((x) => (file.endsWith('xml') ? parser.parse(x) : csvParse(x.toString())))
+  readFile(new URL(file, import.meta.url).pathname).then((x) => (file.endsWith('xml') ? parser.parse(x) : csvParse(x.toString())))
 );
 
 export function dskMovements() {

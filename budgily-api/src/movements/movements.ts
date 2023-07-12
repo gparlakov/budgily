@@ -1,6 +1,6 @@
 import { isValidDate } from '../core/is-valid-date';
-import { Movement, MovementsQueryResponse, QueryResolvers, dedupe, defaultDSKMapper } from '@codedoc1/budgily-data';
-import { dskMovements } from '../dsk/dsk-movements';
+import { Movement, MovementsQueryResponse, QueryResolvers } from '@codedoc1/budgily-data';
+
 import { filterValueAllCategories, filterValueNoCategory } from 'budgily-data/src/lib/core/types';
 import { getAllCategories } from '../categories/categories';
 
@@ -8,8 +8,22 @@ type Filter = (m: Movement) => boolean;
 
 const sortableString: Array<keyof Movement> = ['account', 'description', 'opposite', 'type'];
 
-export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe): QueryResolvers['movements'] {
-  const dedup = typeof dedupeCB === 'function' ? dedupeCB : dedupe;
+let getAllMovements: () => Promise<Movement[]>;
+
+async function loadMovements(): Promise<Movement[]> {
+  const db = process.env.BUDGILY_DB_FILE ?? './db.json';
+  if(typeof getAllMovements != 'function') {
+    getAllMovements = await import('fs/promises').then(fs => {
+      return () => fs.readFile(db).then(v=> JSON.parse(v.toString()) as Movement[]);
+    });
+  }
+
+  return getAllMovements();
+
+}
+
+export function getMovements(): QueryResolvers['movements'] {
+
   return (_: unknown, args) => {
     const { id, amountMax, amountMin, fromDate, search, toDate, categories } = args.filter ?? {};
     const { currentPage, pageCount: perPage } = args.pagination ?? {};
@@ -56,11 +70,10 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
       };
     }
 
-    return dskMovements()
-      .then((fs) => fs.flatMap(mapper))
-      .then((ms) => {
+    return loadMovements()
+      .then(async (ms) => {
         // include cats so we can filter by them
-        const cats = getAllCategories() ?? [];
+        const cats = await getAllCategories() ?? [];
         return ms.map((m) => {
           m.categories = cats
             .filter((c) => c.movementIds.includes(m.id))
@@ -78,7 +91,6 @@ export function getMovements(mapper = defaultDSKMapper, dedupeCB?: typeof dedupe
           .filter(toDateFilter)
           .filter(searchFilter)
       )
-      .then(dedup)
       .then((ms) => {
         let sorter: (a: Movement, b: Movement) => number;
 

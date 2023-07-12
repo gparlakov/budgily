@@ -1,49 +1,43 @@
 import { Category, Movement, MutationResolvers, QueryResolvers } from '@codedoc1/budgily-data';
 import { max } from 'd3';
-import { readFile, stat, writeFile } from 'node:fs/promises';
-import { BehaviorSubject } from 'rxjs';
-import { take, map } from 'rxjs/operators';
 
-const categoriesFileName = 'categories.json';
-const categories$ = new BehaviorSubject<Category[]>([]);
+let getCats: () => Promise<Category[]>;
 
-stat(categoriesFileName)
-  .then(
-    (v) => v.isFile(),
-    () => false
-  )
-  .then((exists) => (exists ? readFile(categoriesFileName) : Buffer.from('[]')))
-  .then((b) => JSON.parse(b.toString()))
-  .catch((e) => {
-    console.log('---error while reading categories', e);
-    return [];
-  })
-  .then((categories) => {
-    // console.log('Categories in memory', categories);
-    categories$.next(categories);
-  });
+async function loadCategories(): Promise<Category[]> {
+  if (typeof getCats != 'function') {
+    getCats = await import('./read-categories').then((v) => v.readCats);
+  }
+
+  return getCats();
+}
+
+let storeCats: (c: Category[]) => void;
+async function storeCatsFn(c: Category[]): Promise<void> {
+  if (typeof storeCats != 'function') {
+    storeCats = await import('./store-categories').then((v) => v.storeCats);
+  }
+
+  storeCats(c);
+  getCats = () => Promise.resolve(c);
+}
 
 export function getCategoriesByMovement(): QueryResolvers['categories'] {
   return (parent: Movement) => {
-    return categories$
-      .pipe(
-        take(1),
-        map((cs) =>
-          parent != null
-            ? cs.filter((c) => (Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
-            : cs
-        )
-      )
-      .toPromise();
+    return loadCategories()
+      .then((cs) =>
+        parent != null
+          ? cs.filter((c) => (Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
+          : cs
+      );
   };
 }
 
 export function getAllCategories() {
-  return categories$.value;
+  return loadCategories();
 }
 
 export function categorize(): MutationResolvers['categorize'] {
-  return (_parent, args) => {
+  return async (_parent, args) => {
     const { category, categoryId, movementIds } = args.input;
     if (!Array.isArray(movementIds)) {
       throw new Error(`Expected an array of movements but got ${movementIds}`);
@@ -54,19 +48,20 @@ export function categorize(): MutationResolvers['categorize'] {
     if (typeof category === 'object' && category?.name == null) {
       throw new Error('Can not create a category without a name');
     }
-    if (typeof categoryId === 'number' && categories$.value.find((c) => c.id === categoryId) == null) {
+
+    let cats = await loadCategories().then((get) => get());
+
+    if (typeof categoryId === 'number' && cats.find((c) => c.id === categoryId) == null) {
       throw new Error(
         `Could not find category with id ${categoryId}. Please create a new one or provide a correct category id`
       );
     }
 
-    const cats = categories$.value;
-
     const isNewCategory = typeof category === 'object' && Array.isArray(movementIds) && category?.name != null;
     let id = categoryId;
     if (isNewCategory) {
       id = (max(cats.map((c) => c.id)) ?? 0) + 1;
-      categories$.next([
+      cats = [
         ...cats,
         {
           ...category,
@@ -75,19 +70,17 @@ export function categorize(): MutationResolvers['categorize'] {
           // add movementIds to category (set makes for unique ids only)
           movementIds: [...new Set([...movementIds, ...movementIds])],
         },
-      ]);
+      ];
     } else {
       id = categoryId;
-      categories$.next(
-        cats.map((c) =>
-          c.id === categoryId ? { ...c, movementIds: [...new Set([...c.movementIds, ...movementIds])] } : c
-        )
+      cats = cats.map((c) =>
+        c.id === categoryId ? { ...c, movementIds: [...new Set([...c.movementIds, ...movementIds])] } : c
       );
     }
 
-    // fire and forget write file - could break the file but
-    writeFile(categoriesFileName, JSON.stringify(categories$.value));
+    // fire and forget - server will keep running and finish the save
+    storeCatsFn(cats);
 
-    return categories$.value.find((c) => c.id === id);
+    return cats.find((c) => c.id === id);
   };
 }

@@ -50,6 +50,49 @@
         }
       }
     },
+    "build.tool": {
+      "executor": "@nrwl/esbuild:esbuild",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "platform": "node",
+        "outputPath": "dist/budgily-api",
+        "format": ["esm"],
+        "bundle": true,
+        "main": "budgily-api/src/import-tool.ts",
+        "tsConfig": "budgily-api/tsconfig.app.json",
+        "assets": ["budgily-api/src/assets"],
+        "generatePackageJson": false,
+        "esbuildOptions": {
+          "sourcemap": true,
+          "outExtension": {
+            ".js": ".mjs"
+          },
+          "loader": {
+            ".xml":"file",
+            ".csv":"file",
+            ".graphql":"file"
+          }
+        }
+      },
+      "configurations": {
+        "development": {},
+        "production": {
+          "esbuildOptions": {
+            "sourcemap": false,
+            "bundle": true,
+            "outExtension": {
+              ".js": ".mjs"
+            },
+            "loader": {
+              ".xml": "file",
+              ".csv": "file",
+              ".graphql":"file"
+            }
+          }
+        }
+      }
+    },
     "serve": {
       "executor": "@nrwl/js:node",
       "defaultConfiguration": "development",

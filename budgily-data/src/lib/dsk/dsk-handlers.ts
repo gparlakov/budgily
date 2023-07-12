@@ -40,7 +40,7 @@ export function getDateFromBGString(bgDate: string): Date {
   return date;
 }
 
-export function getNumberFromBgString(bgAmount: string) {
+function getNumberFromBgString(bgAmount: string) {
   return parseFloat(bgAmount.replace(',', '.'));
 }
 
