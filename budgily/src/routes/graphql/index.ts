@@ -55,7 +55,7 @@ export const onRequest: RequestHandler = async ({
   const server = await start();
 
   // from expressMiddleware node_modules/@apollo/server/src/express4/index.ts
-  server.assertStarted('expressMiddleware()');
+  server.assertStarted('QWIK Middleware');
 
   // This `any` is safe because the overload above shows that context can
   // only be left out if you're using BaseContext as your context, and {} is a
@@ -72,7 +72,7 @@ export const onRequest: RequestHandler = async ({
       body: body ?? {},
     };
 
-    server
+    return server
       .executeHTTPGraphQLRequest({
         httpGraphQLRequest,
         context: () => defaultContext(),
