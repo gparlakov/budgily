@@ -2,7 +2,7 @@ import { component$, useSignal, useStore } from '@builder.io/qwik';
 
 import { Form } from '@builder.io/qwik-city';
 import { readAndParseFiles } from './reader';
-import { VisualizeXML, visualizeFirstUniqueTagName } from './visalizer';
+import { VisualizeXML } from './visualizer';
 
 
 export default component$(() => {

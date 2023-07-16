@@ -1,7 +1,21 @@
-import { JSXChildren, component$ } from '@builder.io/qwik';
+import { JSXChildren, component$, useStylesScoped$ } from '@builder.io/qwik';
+import styles from './visualizer.scss?raw';
 
 export const VisualizeXML = component$(({ file }: { file: Document }) => {
-    return <div>{visualizeFirstUniqueTagName(file)}</div>
+    useStylesScoped$(styles)
+    // get locale by browser or position
+
+    // next steps
+    // allow selecting of the elements and mapping them to a movement
+    // Which is the date - parse the date
+    // which is the value - parse the value
+    // which is the type - credit / debit
+    // which is the description (allow multiple)
+    // which is the receiving account
+
+    // get the browser locale
+
+    return <div><div>Locale: {getLocale('en-us')}</div>{visualizeFirstUniqueTagName(file)}</div>
 })
 
 export function visualizeFirstUniqueTagName(document: Document): JSXChildren {
@@ -17,7 +31,7 @@ export function visualizeFirstUniqueTagName(document: Document): JSXChildren {
             const text = element.firstChild?.nodeName.includes('text') ? element.firstChild.textContent : '';
             console.log(text);
 
-            return <div class={`level-${level}`}>{
+            return <div class={`level-${level} highlight`} >{
                 Number(element.children?.length) > 0
                     ? <>
                         <span>{`<${tagName}>${text}`}</span> {
@@ -27,9 +41,7 @@ export function visualizeFirstUniqueTagName(document: Document): JSXChildren {
             }</div>
         }
 
-        return undefined
-
-
+        return undefined;
     }
 
     // Start traversal from the document root
