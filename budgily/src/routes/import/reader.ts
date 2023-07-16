@@ -15,27 +15,3 @@ export async function readAndParseFiles(input: HTMLInputElement): Promise<Docume
   );
 }
 
-
-export function visualizeFirstUniqueTagName(document: Document): void {
-  const uniqueTagNames: Set<string> = new Set();
-
-  // Recursive function to traverse the DOM tree
-  function traverseDOM(element: Element): void {
-    const tagName = element.tagName;
-    if (!uniqueTagNames.has(tagName)) {
-      // element('style', 'border: 2px solid red');
-      uniqueTagNames.add(tagName);
-      // Continue traversing child elements
-      const children = element.children;
-      for (let i = 0; i < children.length; i++) {
-        traverseDOM(children[i] as Element);
-      }
-
-    } else {
-      element.setAttribute('style', 'display:none');
-    }
-  }
-
-  // Start traversal from the document root
-  traverseDOM(document.documentElement);
-}
