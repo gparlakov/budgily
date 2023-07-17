@@ -6,6 +6,14 @@
     border: 1px dotted rgba(250, 10, 100, 0.8);
 }
 
+.hidden {
+    display: none;
+}
+
+.highlight:not(.highlight.probable):hover > .btn.hidden {
+    display: initial;
+}
+
 .level-1 {
   margin-left: 16px;
 }

@@ -1,12 +1,19 @@
-import { JSXChildren, component$, useSignal, useStylesScoped$ } from '@builder.io/qwik';
+import { JSXChildren, component$, useSignal, useStore, useStylesScoped$ } from '@builder.io/qwik';
 import styles from './visualizer.scss?raw';
 
-export const VisualizeXML = component$(({ file, signature, skip, first }: { file: Document, signature: DocumentSignature, skip?: number, first?: number }) => {
+interface VisualizerXMLProps {
+    file: Document;
+    signature: DocumentSignature;
+    skip?: number;
+    first?: number;
+}
+
+export const VisualizeXML = component$(({ file, signature, skip, first }: VisualizerXMLProps) => {
     useStylesScoped$(styles)
 
     const uniqueTagNames = Object.keys(signature.tagNameCounts);
     const multipleTagNames = Object.entries(signature.tagNameCounts).filter(([, value]) => value > 1).map(([k]) => k)
-    const skipTags = skip && skip > 0 ?  multipleTagNames.flatMap(t => {
+    const skipTags = skip && skip > 0 ? multipleTagNames.flatMap(t => {
         const s = new Array(skip)
         s.fill(t);
         return s;
@@ -19,6 +26,7 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: { file
     }) : uniqueTagNames;
 
     const probableMovementTag = useSignal(signature.probableMovementTag);
+    const state = useStore<{selectedTag?: string}>({});
 
 
     // Recursive function to traverse the DOM tree
@@ -27,9 +35,9 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: { file
 
         const skip = skipTags.findIndex(t => t === tagName);
 
-        if(skip >= 0) {
+        if (skip >= 0) {
             skipTags.splice(skip, 1);
-            return ; // skipping this element
+            return; // skipping this element
         }
 
         const t = tags.findIndex(t => t === tagName);
@@ -38,12 +46,12 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: { file
             tags.splice(t, 1); // don't render this element any more
             const text = element.firstChild?.nodeName.includes('text') ? element.firstChild.textContent : '';
 
-            return <div class={`level-${level} highlight ${probableMovementTag.value === tagName ? 'probable' : '' }`} >{
+            return <div class={`level-${level} highlight ${probableMovementTag.value === tagName ? 'probable' : ''}`} >{
                 Number(element.children?.length) > 0
                     ? <>
                         <span>{`<${tagName}>${text}`}</span> {
-                        probableMovementTag.value === tagName && <button class="btn ">YES</button>
-                        } {
+                            probableMovementTag.value === tagName && <button class="btn btn-sm" onClick$={() => state.selectedTag = probableMovementTag.value = tagName}>YES</button>
+                        } <button class="btn btn-sm hidden" onClick$={() => state.selectedTag = probableMovementTag.value = tagName}>This is it!</button> {
                             Array.from(element.children).map(c => traverseDOM(c, level + 1))
                         } <span>{`</${tagName}>`}</span></>
                     : `<${tagName}>${text}</${tagName}>`
@@ -57,7 +65,7 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: { file
     return <>{traverseDOM(file.documentElement, 0)}</>;
 });
 
-type TagsMap = Record<string, {parent?: string, children?: string[]}>;
+type TagsMap = Record<string, { parent?: string, children?: string[] }>;
 
 export interface DocumentSignature {
     tagNameCounts: Record<string, number>;
@@ -71,8 +79,8 @@ export function getXmlDocumentSignature(d: Document): DocumentSignature {
     // Recursive function to traverse the DOM tree
     function traverseDOM(element: Element) {
         const tagName = element.tagName;
-        if(!tagsMap[tagName]) {
-            tagsMap[tagName] = {parent: element.parentElement?.tagName, children: [...element.children].map(c => c.tagName)}
+        if (!tagsMap[tagName]) {
+            tagsMap[tagName] = { parent: element.parentElement?.tagName, children: [...element.children].map(c => c.tagName) }
         } else {
             // get unique child tag names and add them
             tagsMap[tagName].children = [...new Set([...(tagsMap[tagName].children ?? []), ...[...element.children].map(c => c.tagName)])]
@@ -92,6 +100,6 @@ export function getXmlDocumentSignature(d: Document): DocumentSignature {
         tagNameCounts: counts,
         tagsMap,
         probableMovementTag: firstElementWithMaxCount
-     };
+    };
 }
 
