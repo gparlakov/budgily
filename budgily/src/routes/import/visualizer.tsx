@@ -1,40 +1,49 @@
-import { JSXChildren, component$, useStylesScoped$ } from '@builder.io/qwik';
+import { JSXChildren, component$, useSignal, useStylesScoped$ } from '@builder.io/qwik';
 import styles from './visualizer.scss?raw';
 
-export const VisualizeXML = component$(({ file }: { file: Document }) => {
+export const VisualizeXML = component$(({ file, signature, skip, first }: { file: Document, signature: DocumentSignature, skip?: number, first?: number }) => {
     useStylesScoped$(styles)
-    // get locale by browser or position
 
-    // next steps
-    // allow selecting of the elements and mapping them to a movement
-    // Which is the date - parse the date
-    // which is the value - parse the value
-    // which is the type - credit / debit
-    // which is the description (allow multiple)
-    // which is the receiving account
+    const uniqueTagNames = Object.keys(signature.tagNameCounts);
+    const multipleTagNames = Object.entries(signature.tagNameCounts).filter(([, value]) => value > 1).map(([k]) => k)
+    const skipTags = skip && skip > 0 ?  multipleTagNames.flatMap(t => {
+        const s = new Array(skip)
+        s.fill(t);
+        return s;
+    }) : []
 
-    // get the browser locale
+    const tags = first && first > 0 ? uniqueTagNames.flatMap(t => {
+        const s = new Array(first)
+        s.fill(t);
+        return s;
+    }) : uniqueTagNames;
 
-    return <div><div>Locale: {getLocale('en-us')}</div>{visualizeFirstUniqueTagName(file)}</div>
-})
+    const probableMovementTag = useSignal(signature.probableMovementTag);
 
-export function visualizeFirstUniqueTagName(document: Document): JSXChildren {
-    const uniqueTagNames: Set<string> = new Set();
 
     // Recursive function to traverse the DOM tree
     function traverseDOM(element: Element, level: number): JSXChildren {
         const tagName = element.tagName;
-        if (level > 2) return;
 
-        if (!uniqueTagNames.has(tagName)) {
-            uniqueTagNames.add(tagName);
+        const skip = skipTags.findIndex(t => t === tagName);
+
+        if(skip >= 0) {
+            skipTags.splice(skip, 1);
+            return ; // skipping this element
+        }
+
+        const t = tags.findIndex(t => t === tagName);
+
+        if (t >= 0) {
+            tags.splice(t, 1); // don't render this element any more
             const text = element.firstChild?.nodeName.includes('text') ? element.firstChild.textContent : '';
-            console.log(text);
 
-            return <div class={`level-${level} highlight`} >{
+            return <div class={`level-${level} highlight ${probableMovementTag.value === tagName ? 'probable' : '' }`} >{
                 Number(element.children?.length) > 0
                     ? <>
                         <span>{`<${tagName}>${text}`}</span> {
+                        probableMovementTag.value === tagName && <button class="btn ">YES</button>
+                        } {
                             Array.from(element.children).map(c => traverseDOM(c, level + 1))
                         } <span>{`</${tagName}>`}</span></>
                     : `<${tagName}>${text}</${tagName}>`
@@ -45,6 +54,44 @@ export function visualizeFirstUniqueTagName(document: Document): JSXChildren {
     }
 
     // Start traversal from the document root
-    const res = traverseDOM(document.documentElement, 0);
-    return res!;
+    return <>{traverseDOM(file.documentElement, 0)}</>;
+});
+
+type TagsMap = Record<string, {parent?: string, children?: string[]}>;
+
+export interface DocumentSignature {
+    tagNameCounts: Record<string, number>;
+    tagsMap: TagsMap
+    probableMovementTag?: string;
 }
+export function getXmlDocumentSignature(d: Document): DocumentSignature {
+    const counts: Record<string, number> = {};
+    const tagsMap: TagsMap = {};
+
+    // Recursive function to traverse the DOM tree
+    function traverseDOM(element: Element) {
+        const tagName = element.tagName;
+        if(!tagsMap[tagName]) {
+            tagsMap[tagName] = {parent: element.parentElement?.tagName, children: [...element.children].map(c => c.tagName)}
+        } else {
+            // get unique child tag names and add them
+            tagsMap[tagName].children = [...new Set([...(tagsMap[tagName].children ?? []), ...[...element.children].map(c => c.tagName)])]
+        }
+        counts[tagName] = counts[tagName] ? counts[tagName] + 1 : 1;
+
+        Array.from(element.children).forEach(c => traverseDOM(c));
+    }
+
+    // Start traversal from the document root
+    traverseDOM(d.documentElement);
+
+    const maxCount = Object.values(counts).sort((a, b) => b - a);
+    const [firstElementWithMaxCount] = Object.entries(counts).find(([k, count]) => count === maxCount[0]) ?? []
+
+    return {
+        tagNameCounts: counts,
+        tagsMap,
+        probableMovementTag: firstElementWithMaxCount
+     };
+}
+

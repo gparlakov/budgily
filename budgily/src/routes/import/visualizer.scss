@@ -1,6 +1,11 @@
-.highlight:hover {
+.highlight:hover,
+.highlight.probable:not(:hover) {
   background-color: rgba(0, 150, 250, 0.3);
 }
+.highlight.probable {
+    border: 1px dotted rgba(250, 10, 100, 0.8);
+}
+
 .level-1 {
   margin-left: 16px;
 }
