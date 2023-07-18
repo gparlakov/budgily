@@ -2,7 +2,9 @@ import { component$, useSignal, useStore } from '@builder.io/qwik';
 
 import { Form } from '@builder.io/qwik-city';
 import { readAndParseFiles } from './reader';
-import { VisualizeXML, getXmlDocumentSignature } from './visualizer';
+import { SelectTransaction, VisualizeXML } from './visualizer';
+import { getXmlDocumentSignature } from './document-signature';
+
 
 
 export default component$(() => {
@@ -23,21 +25,24 @@ export default component$(() => {
         </div>
         <div class="text-center">
 
-          {state.step === 0 && <><h1 class="text-5xl font-bold">Import bank statement</h1><p class="py-6">Import from a file or drop the text below</p></> }
-          {state.step === 1 && <><h1 class="text-5xl font-bold">Is this one movement?</h1></> }
+          {state.step === 0 && <><h1 class="text-5xl font-bold">Import bank statement</h1><p class="text-2x py-6">Import from a file or drop the text below</p></> }
+          {state.step === 1 && <>
+            <h1 class="text-5xl font-bold">One transaction</h1>
+            <h2 class="text-2xl py-6">Please select one transaction below.</h2>
+          </> }
         </div>
         <div class="card w-full shadow-2xl bg-base-100">
           <div class="card-body">
 
             {state.step === 0 && <Form >
               <div class="form-control">
-                <label class="label"><span class="label-text">Import from a file</span></label>
+                <label class="label"><span class="label-text">Import from a file (only .xml)</span></label>
                 <input ref={filesInput} onChange$={() => {
                   filesInput.value && readAndParseFiles(filesInput.value).then(docs => {
                     state.files = docs;
                     state.step++;
                   })
-                }} name="file" accept=".xml,.csv,.json" type="file" placeholder="Input from a file" class={`file-input w-full ${false ? 'file-input-warning' : ''} `} />
+                }} name="file" accept=".xml" type="file" placeholder="Input from a file" class={`file-input w-full ${false ? 'file-input-warning' : ''} `} />
               </div>
 
               <div class="divider">or</div>
@@ -48,7 +53,7 @@ export default component$(() => {
               {!false && <div class="text-warning">{JSON.stringify({})}</div>}
             </Form>}
 
-            {state.step === 1 && <VisualizeXML file={state.files[0]} first={1} signature={getXmlDocumentSignature(state.files[0])} />}
+            {state.step === 1 && <SelectTransaction file={state.files[0]} signature={getXmlDocumentSignature(state.files[0])} />}
 
             {state.step === 2 && <>
               // add the summary
