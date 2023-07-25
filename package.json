@@ -6,6 +6,8 @@
     "server": "npx nx run budgily-api:build:production && PORT=3000 node dist/budgily-api/main.js",
     "client.express.ps": "npx nx run budgily:build:express && $env:DIST_DIR = \"${PWD}\\dist\\budgily\\client\" node .\\dist\\budgily\\server\\entry.express",
     "client.express.sh": "npx nx run budgily:build:express && PORT=8888 API_URL=\"/graphql\" DIST_DIR=\"$(pwd)/budgily/dist/client/\" node ./budgily/dist/server/entry.express.js",
+    "dev": "BUDGILY_CATEGORIES_FILE_PATH=./data/categories.json BUDGILY_SCHEMA_FILE_PATH=./budgily-data/schema/budgily.graphql BUDGILY_DB_FILE=db.json API_URL=/graphql npx nx run budgily:serve",
+    "preview": "BUDGILY_CATEGORIES_FILE_PATH=./data/categories.json BUDGILY_SCHEMA_FILE_PATH=./budgily-data/schema/budgily.graphql BUDGILY_DB_FILE=db.json API_URL=/graphql node --experimental-specifier-resolution=node ./node_modules/nx/bin/nx.js run budgily:preview",
     "client": "npm run client.express.sh",
     "client:dev": "npx nx run budgily:serve",
     "codegen": "graphql-codegen --config codegen.ts",
@@ -14,6 +16,7 @@
   "private": true,
   "dependencies": {
     "@apollo/server": "^4.7.0",
+    "@brightspace-ui/intl": "^3.13.2",
     "axios": "^1.0.0",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
