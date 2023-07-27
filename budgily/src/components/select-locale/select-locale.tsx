@@ -3,6 +3,7 @@ import { AutocompleteRoot, AutocompleteLabel, AutocompleteTrigger, AutocompleteI
 
 import styles from './select-locale.scss?inline';
 import localesJSON from './locales.json?inline';
+import { skipped } from 'budgily/src/core/date-parser';
 
 export type Locale = string;
 export type Language = string;
@@ -42,7 +43,8 @@ export const SelectLocale = component$(({onSelect$}: Props) => {
             key={key} optionValue={`${value} ${key}`}
             onClick$={() => onSelect$(key)}
             onKeyDown$={(e) => e.key === 'Enter' && onSelect$(key)}
-            >{value}</AutocompleteOption>
+            disabled={skipped.includes(key)}
+            >{value} {skipped.includes(key) && 'Not Supported' }</AutocompleteOption>
         )}
       </AutocompleteListbox>
     </AutocompleteRoot>

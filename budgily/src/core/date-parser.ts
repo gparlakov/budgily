@@ -1,22 +1,38 @@
+import { invalid } from './invalid-locales';
+
+export const skipped = [
+  ...invalid,
+  'ar-sa',
+  'tzm-latn-',
+  'ccp-cakm-',
+  'zh-sg',
+  'prs-af',
+  'kkj-cm',
+  'mzn-ir',
+  'jgo-cm',
+  'lrc-ir',
+  'ps-af',
+  'fa-af',
+  'fa-ir',
+  'xog-ug',
+  'uz-arab',
+  'th-th',
+  'uz-arab-af'
+];
+
 export class DateParser {
   private _yearPosition: number;
   private _monthPosition: number;
   private _dayPosition: number;
   private _dateRexExp: RegExp;
+  private _index: Map<string, string>;
 
   constructor(locale: string) {
-    const format = new Intl.DateTimeFormat(locale, {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
+    const format = new Intl.DateTimeFormat(locale);
 
     const parts = format.formatToParts(new Date(2023, 6, 7));
 
-    // in bg-BG for example it will be 7.7.2023 г. so we'll have the '.' x2 and the ' г.' x1
+    // in bg-BG for example it will be '7.7.2023 г.' so we'll have the '.' x2 and the ' г.' x1
     // so we'll take the literal that's repeated multiple times and consider that the separator
     const literals = parts
       .filter((f) => f.type === 'literal')
@@ -43,18 +59,29 @@ export class DateParser {
       // escape separator if special regex symbol
       .join('.+*?^$[]{}()|/\\'.includes(separator) ? `\\${separator}` : separator);
     this._dateRexExp = new RegExp(tokenized.replace(/Y+/, '(\\d+)').replace(/D+/, '(\\d+)').replace(/M+/, '(\\d+)'));
+
+    const numberFormatter = new Intl.NumberFormat(locale);
+    const numerals = Array.from({ length: 10 }).map((_, i) => numberFormatter.format(i));
+    this._index = new Map(numerals.map((d, i) => [d, i.toString()]));
+
   }
+
   parse(string: string) {
-    const parts = this._dateRexExp.exec(string);
-    console.log('regex---', this._dateRexExp, 'parsed', parts, 'year', this._yearPosition, 'day', this._dayPosition, 'month', this._monthPosition);
+    const digits = [...this._index.entries()].reduce(
+      (s, [localeDigit, digit]) => s.replace(new RegExp(localeDigit, 'g'), digit),
+      string
+    );
+
+    const parts = this._dateRexExp.exec(digits);
     if (parts == null || parts.length < 4) {
       return undefined;
     }
 
-    return new Date(
+    const res =  new Date(
       parseInt(parts[this._yearPosition]),
       parseInt(parts[this._monthPosition]) - 1,
       parseInt(parts[this._dayPosition])
     );
+    return res;
   }
 }

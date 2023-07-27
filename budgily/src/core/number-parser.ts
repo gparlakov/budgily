@@ -2,7 +2,7 @@ export class NumberParser {
   private _group: RegExp;
   private _decimal: RegExp;
   private _numeral: RegExp;
-  private _index: (d: any) => number | undefined;
+  private _index: (d: string) => string;
 
   constructor(locale: string) {
     const format = new Intl.NumberFormat(locale);
@@ -12,8 +12,9 @@ export class NumberParser {
     this._group = new RegExp(`[${parts.find(d => d.type === "group")?.value ?? ''}]`, "g");
     this._decimal = new RegExp(`[${parts.find(d => d.type === "decimal")?.value ?? ''}]`);
     this._numeral = new RegExp(`[${numerals.join("")}]`, "g");
-    this._index = d => index.get(d);
+    this._index = d => index.get(d)?.toString() ?? '';
   }
+
   parse(string: string) {
     return (string = string.trim()
       .replace(this._group, "")
