@@ -20,6 +20,8 @@ export const skipped = [
   'uz-arab-af'
 ];
 
+// next iteration might take the individual separators between month day and year in the order they were
+// provided by the localized format parts (and skip the rest - so type === year, day, month, literal and then take the values until we have all the above - skip the rest)
 export class DateParser {
   private _yearPosition: number;
   private _monthPosition: number;
