@@ -5,7 +5,8 @@ import { Form } from '@builder.io/qwik-city';
 import { SelectLocale } from 'budgily/src/components/select-locale/select-locale';
 import { DocumentSignature, getXmlDocumentSignature } from './document-signature';
 import { Parsed, readAndParseFiles, recognizeLocale } from './reader';
-import { SelectOne, SelectTransaction } from './visualizer';
+import { SelectOne, SelectTransaction, SelectedLocale } from './visualizer';
+import { Button } from '@qwik-ui/tailwind';
 
 export default component$(() => {
 
@@ -26,8 +27,10 @@ export default component$(() => {
         <div class="text-sm breadcrumbs">
           <ul>
             <li class={state.step === 0 ? 'active' : ''}><a onClick$={() => state.step = 0}>Select File</a></li>
-            {state.step >= 1 && <li class={state.step === 1 ? 'active' : ''}><a onClick$={() => state.step = 1}>Mapping to a movement</a></li>}
-            {state.step >= 2 && <li class={state.step === 2 ? 'active' : ''}><a onClick$={() => state.step = 2}>Import it</a></li>}
+            {state.step >= 1 && <li class={state.step === 1 ? 'active' : ''}><a onClick$={() => state.step = 1}>Select one movement</a></li>}
+            {state.step >= 2 && <li class={state.step === 2 ? 'active' : ''}><a onClick$={() => state.step = 2}>Select locale</a></li>}
+            {state.step >= 3 && <li class={state.step === 2 ? 'active' : ''}><a onClick$={() => state.step = 3}>Confirm</a></li>}
+            {state.step >= 4 && <li class={state.step === 2 ? 'active' : ''}><a onClick$={() => state.step = 4}>Conf</a></li>}
           </ul>
         </div>
         <div class="text-center">
@@ -80,6 +83,9 @@ export default component$(() => {
                 preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
                 onSelect$={(l: string) => { state.selectedLocale = l; }}
               />
+              {state.selectedLocale && <SelectedLocale file={state.files[0]} signature={state.signature} recognized={state.recognizedLocales![state.selectedLocale!]}></SelectedLocale>}
+
+              <Button onClick$={() => state.step += 1} class="color-success">Confirm</Button>
             </>}
             {state.step === 3 && <>
               <SelectOne file={state.files[0]} signature={state.signature!} selectedTag={state.selectedTag!} onSelected$={() => { }} />
@@ -95,7 +101,7 @@ export default component$(() => {
               </div>
             </>}
 
-            {state.step === 3 && <>
+            {state.step === 4 && <>
               <div>Selected tag for 1 movement: {state.selectedTag}</div>
               <div>Movements: {state.signature?.tagNameCounts[state.selectedTag!]}</div>
               // how many movements

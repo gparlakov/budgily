@@ -3,6 +3,7 @@ import { DocumentSignature } from './document-signature';
 import styles from './visualizer.scss?inline';
 
 import selectTransactionStyles from './select-transaction.scss?inline';
+import { Parsed } from './reader';
 
 export interface SelectTransactionProps {
     file: Document;
@@ -14,7 +15,13 @@ export const SelectTransaction = component$((props: SelectTransactionProps) => {
     const detected = props.signature.probableMovementTag
 
     return <VisualizeXML first={3} {...props}>
-        {Object.entries(props.signature.tagsMap).map(([tag]) => <button class={`btn btn-xs ${tag === detected ? 'btn-success btn-sm' : 'btn-faded'} `} onClick$={() => props.onSelected$(tag)} q: slot={tag}>{tag === detected ? 'Yes' : 'This is it'}</button>)}
+        {Object.entries(props.signature.tagsMap).map(([tag]) =>
+            <button
+                class={`btn btn-xs ${tag === detected ? 'btn-success btn-sm' : 'btn-faded'} `}
+                onClick$={() => props.onSelected$(tag)}
+                q: slot={tag}>{
+                    tag === detected ? 'Yes' : 'This is it'
+                }</button>)}
     </VisualizeXML>
 })
 
@@ -29,7 +36,41 @@ export const SelectOne = component$((props: SelectOneProps) => {
     const detected = props.signature.probableMovementTag
 
     return <VisualizeXML first={1} {...props}>
-        {Object.entries(props.signature.tagsMap).map(([tag]) => <button class={`btn btn-xs ${tag === detected ? 'btn-success btn-sm' : 'btn-faded'} `} onClick$={() => props.onSelected$(tag)} q: slot={tag}>{tag === detected ? 'Yes' : 'This is it'}</button>)}
+        {
+            Object.entries(props.signature.tagsMap)
+                .map(([tag]) =>
+                    <button
+                        class={`btn btn-xs ${tag === detected ? 'btn-success btn-sm' : 'btn-faded'} `}
+                        onClick$={() => props.onSelected$(tag)}
+                        q: slot={tag}>{
+                            tag === detected ? 'Yes' : 'This is it'
+                        }</ button>
+                )
+        }
+    </VisualizeXML>
+})
+
+export interface SelectedLocaleProps {
+    file: Document;
+    recognized: Record<string, Parsed>;
+    signature: DocumentSignature;
+}
+export const SelectedLocale = component$(({ recognized, ...rest }: SelectedLocaleProps) => {
+    useStylesScoped$(selectTransactionStyles);
+
+    return <VisualizeXML first={1} {...rest}>
+        {Object.entries(recognized).map(([tag, p]) => {
+            switch (p.type) {
+                case 'amount':
+                    return <div q: slot={tag}>{p.value}</div>
+                case 'date':
+                    return <div q: slot={tag}>{p.value.toLocaleDateString()}</div>
+                default:
+                    return '';
+            }
+        })
+
+        }
     </VisualizeXML>
 })
 
@@ -69,10 +110,10 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: Visual
                 : <div class={`level-${level} highlight`} >{
                     Number(element.children?.length) > 0
                         ? <>
-                            <span>{`<${tagName}>${text}`}</span> { !slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />) } {
+                            <span>{`<${tagName}>${text}`}</span> {!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)} {
                                 Array.from(element.children).map(c => traverseDOM(c, level + 1))
                             } <span>{`</${tagName}>`} </span></>
-                        : <>{`<${tagName}>${text}</${tagName}>`}{ !slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)}</>
+                        : <>{`<${tagName}>${text}</${tagName}>`}{!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)}</>
                 }</div>
         }
 
