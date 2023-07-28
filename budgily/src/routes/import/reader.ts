@@ -1,5 +1,7 @@
 import { DateParser } from 'budgily/src/core/date-parser';
 import { NumberParser } from 'budgily/src/core/number-parser';
+import locales from './../../components/select-locale/locales.json?inline';
+import { invalid } from 'budgily/src/core/invalid-locales';
 
 export async function readAndParseFiles(input: HTMLInputElement): Promise<Document[]> {
   const files: FileList | null = input.files;
@@ -45,7 +47,7 @@ export function getProbableParsed(element: Element, locale: string): Record<stri
     text: e.textContent ?? '',
   }));
   const description = texts.sort((a, b) => Number(b.length) - Number(a.length))[0].tag;
-
+  console.log('----recognizing', texts, description)
   return texts.reduce((acc, { tag, text }) => {
     if (tag === description) {
       return { ...acc, [tag]: { type: 'description', value: text } };
@@ -61,4 +63,16 @@ export function getProbableParsed(element: Element, locale: string): Record<stri
       },
     };
   }, {} as Record<string, Parsed>);
+}
+
+export type Locale = string;
+export function recognizeLocale(element: Element): Record<Locale, Record<string, Parsed>> {
+  return Object.keys(locales)
+    .filter((l) => !invalid.includes(l))
+    .map((locale) => [locale, getProbableParsed(element, locale)] as const)
+    .filter(([l, parsed]) => {
+      const types = Object.values(parsed).map((v) => v.type);
+      return types.includes('amount') && types.includes('date');
+    })
+    .reduce((acc, [l, p]) => ({ ...acc, [l]: p }), {} as Record<Locale, Record<string, Parsed>>);
 }

@@ -11,9 +11,10 @@ export type Country = string;
 export type LanguageSlashCountry = `${Language} / ${Country}`
 
 export type Props = {
+  preferred?: string[];
   onSelect$: QRL<(v: string) => void>
 }
-export const SelectLocale = component$(({onSelect$}: Props) => {
+export const SelectLocale = component$(({ preferred, onSelect$ }: Props) => {
   useStylesScoped$(styles);
 
   return (
@@ -38,14 +39,17 @@ export const SelectLocale = component$(({onSelect$}: Props) => {
         </AutocompleteButton>
       </AutocompleteTrigger>
       <AutocompleteListbox class="w-full max-w-sm max-h-[20rem] px-4 py-2 mt-2 rounded-sm border-[1px] bg-white overflow-auto">
-        {Object.entries(localesJSON).map(([key, value]) =>
-          <AutocompleteOption class="rounded-sm px-2 hover:bg-[#496080] focus:bg-[#496080]"
-            key={key} optionValue={`${value} ${key}`}
-            onClick$={() => onSelect$(key)}
-            onKeyDown$={(e) => e.key === 'Enter' && onSelect$(key)}
-            disabled={skipped.includes(key)}
-            >{value} {skipped.includes(key) && 'Not Supported' }</AutocompleteOption>
-        )}
+        {Object.entries(localesJSON)
+        // if preferred
+          .filter(([locale]) => !preferred || preferred.includes(locale))
+          .map(([key, value]) =>
+            <AutocompleteOption class="rounded-sm px-2 hover:bg-[#496080] focus:bg-[#496080]"
+              key={key} optionValue={`${value} ${key}`}
+              onClick$={() => onSelect$(key)}
+              onKeyDown$={(e) => e.key === 'Enter' && onSelect$(key)}
+              disabled={skipped.includes(key)}
+            >{value} {skipped.includes(key) && 'Not Supported'}</AutocompleteOption>
+          )}
       </AutocompleteListbox>
     </AutocompleteRoot>
   )

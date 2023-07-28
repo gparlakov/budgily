@@ -1,33 +1,23 @@
-import { component$, useSignal, useStore, $ } from '@builder.io/qwik';
+import { $, component$, useSignal, useStore } from '@builder.io/qwik';
 
 import { Form } from '@builder.io/qwik-city';
 
-
-import { SelectLocale } from '../../components/select-locale/select-locale';
-import { readAndParseFiles } from './reader';
-import { SelectOne, SelectTransaction } from './visualizer';
+import { SelectLocale } from 'budgily/src/components/select-locale/select-locale';
 import { DocumentSignature, getXmlDocumentSignature } from './document-signature';
-
-type LocaleStore = {
-  num: string;
-  date: string
-  selected: true;
-}
-type Empty = {
-  selected: false;
-}
+import { Parsed, readAndParseFiles, recognizeLocale } from './reader';
+import { SelectOne, SelectTransaction } from './visualizer';
 
 export default component$(() => {
 
   const filesInput = useSignal<HTMLInputElement>();
   const state = useStore<{
+    selectedLocale?: string;
+    recognizedLocales?: Record<string, Record<string, Parsed>>;
     signature?: DocumentSignature;
     files: Document[],
     step: number,
     selectedTag?: string
   }>({ files: [], step: 0 });
-
-  const localState = useStore<LocaleStore | Empty>({selected: false});
 
   return <div class="hero min-h-screen w-full bg-base-200">
     <div class="hero-content w-full">
@@ -48,27 +38,12 @@ export default component$(() => {
             <h2 class="text-2xl py-6">Please select one transaction below.</h2>
           </>}
           {state.step === 2 && <>
-            <h1 class="text-5xl font-bold">Select the Amount</h1>
-            <h2 class="text-2xl py-6">Select the amount.</h2>
+            <h1 class="text-5xl font-bold">Recognizing</h1>
+            <h2 class="text-2xl py-6">We recognized {Object.keys(state.recognizedLocales).length}. Please confirm locale selection.</h2>
           </>}
         </div>
         <div class="card w-full shadow-2xl bg-base-100">
           <div class="card-body">
-            <SelectLocale onSelect$={(v) => {
-              localState.selected = true;
-              if(localState.selected) {
-                // just for TS ^^^ - we know it's true b/c we just set it but TS needs an if to reconsider the type
-                localState.num = (new Intl.NumberFormat(v)).format(1234567.89);
-                localState.date = (new Intl.DateTimeFormat(v)).format(new Date(2023, 6, 25))
-
-                new Intl.DateTimeFormat(v).formatToParts(new Date(2023, 6, 7)).forEach(f => console.log(f))
-              }
-            }}/>
-            {localState.selected && <div>
-              <div>Number 1234567.89 =&gt; { localState.num }</div>
-              <div>Date 25th of July 2023 =&gt; { localState.date }</div>
-            </div>}
-
             {state.step === 0 && <Form >
               <div class="form-control">
                 <label class="label"><span class="label-text">Import from a file (only .xml)</span></label>
@@ -93,10 +68,20 @@ export default component$(() => {
               <SelectTransaction
                 file={state.files[0]}
                 signature={state.signature!}
-                onSelected$={$((selectedTag: string) => { state.selectedTag = selectedTag; state.step += 1; })} />
+                onSelected$={$((selectedTag: string) => {
+                  state.selectedTag = selectedTag;
+                  state.step += 1;
+                  state.recognizedLocales = recognizeLocale(state.files[0].documentElement.getElementsByTagName(selectedTag)[0]);
+                })} />
             }
 
             {state.step === 2 && <>
+              <SelectLocale
+                preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
+                onSelect$={(l: string) => { state.selectedLocale = l; }}
+              />
+            </>}
+            {state.step === 3 && <>
               <SelectOne file={state.files[0]} signature={state.signature!} selectedTag={state.selectedTag!} onSelected$={() => { }} />
               <div>Selected tag for 1 movement: {state.selectedTag}</div>
               <div>Movements: {state.signature?.tagNameCounts[state.selectedTag!]}</div>
@@ -128,4 +113,3 @@ export default component$(() => {
     </div>
   </div>;
 });
-
