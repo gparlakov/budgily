@@ -1,4 +1,4 @@
-import { Component, component$, useStore } from '@builder.io/qwik';
+import { Component, component$, useStore, $ } from '@builder.io/qwik';
 import { Button } from '@qwik-ui/tailwind';
 import { WizardCrumbProps, WizardStepProps, WizardTitleProps } from 'budgily/src/routes/wizard';
 
