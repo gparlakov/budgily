@@ -17,19 +17,24 @@ export const slot = Object.freeze({
     step: (s: number) => `step-${s}`
 });
 
-let counter: Record<keyof typeof slot, number> = {
-    crumb: 0,
-    title: 0,
-    step: 0
+export function next() {
+    let counter: Record<keyof typeof slot, number> = {
+        crumb: 0,
+        title: 0,
+        step: 0
+    }
+    function n(type: keyof typeof slot) {
+        const i = counter[type];
+        const res = { 'q:slot': slot[type](i), step: i }
+        counter[type] += 1;
+        return res;
+    }
+    return {
+        crumb: () => n('crumb'),
+        title: () => n('title'),
+        step: () => n('step'),
+    }
 }
-export function next(type: keyof typeof slot) {
-    const i = counter[type];
-    const res = { 'q:slot': slot[type](i), step: i }
-    counter[type] += 1;
-    return res;
-}
-
-
 
 export type WizardContext = {
     onPage$: QRL<(id: number) => void>;
@@ -160,10 +165,12 @@ export type WizardTitleProps = { step: number } & QwikIntrinsicElements['h1'];
 export const WizardTitle = component$(({ step, ...props }: WizardTitleProps) => {
     const ctx = useContext(WizardContextId)
     return <>
-        {ctx.state.current === step ? <><h1 {...props}>
-            <Slot />
-        </h1>
-            <Slot name='sub-title' /> </> : ''}
+        {ctx.state.current === step ? <>
+            <h1 {...props}>
+                <Slot />
+            </h1>
+            <Slot name='sub-title' />
+        </> : ''}
     </>
 })
 

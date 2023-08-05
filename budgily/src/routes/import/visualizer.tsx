@@ -12,10 +12,13 @@ export interface SelectTransactionProps {
 }
 export const SelectTransaction = component$((props: SelectTransactionProps) => {
     useStylesScoped$(selectTransactionStyles);
+    if(props.signature == null) {
+        return <></>;
+    }
     const detected = props.signature.probableMovementTag
 
     return <VisualizeXML first={3} {...props}>
-        {Object.entries(props.signature.tagsMap).map(([tag]) =>
+        {Object.entries(props.signature?.tagsMap ?? {}).map(([tag]) =>
             <button
                 class={`btn btn-xs ${tag === detected ? 'btn-success btn-sm' : 'btn-faded'} `}
                 onClick$={() => props.onSelected$(tag)}
@@ -33,6 +36,9 @@ export interface SelectOneProps {
 }
 export const SelectOne = component$((props: SelectOneProps) => {
     useStylesScoped$(selectTransactionStyles);
+    if(props.signature == null) {
+        return <></>;
+    }
     const detected = props.signature.probableMovementTag
 
     return <VisualizeXML first={1} {...props}>
@@ -83,6 +89,9 @@ interface VisualizerXMLProps {
 
 export const VisualizeXML = component$(({ file, signature, skip, first }: VisualizerXMLProps) => {
     useStylesScoped$(styles)
+    if(signature == null) {
+        return <></>;
+    }
 
     const { skipTags, tags } = useCalculateVisibleTags(signature, skip, first);
     const slotAdded: Record<string, boolean> = {};
