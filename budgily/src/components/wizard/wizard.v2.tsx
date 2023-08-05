@@ -7,17 +7,30 @@ import {
     createContextId,
     useContext,
     useContextProvider,
-    useStore
+    useStore,
+    useTask$
 } from '@builder.io/qwik';
 
 
 export type WizardContext = {
     onPage$: QRL<(id: number) => void>;
     state: {
-        current: number
+        current: number,
+        nextDisabled?: boolean;
+        prevDisabled?: boolean;
     },
     next$: QRL<() => void>,
     prev$: QRL<() => void>,
+}
+
+const noop$ = $((v?: unknown) => { return; });
+export const emptyContext: WizardContext = {
+    onPage$: noop$,
+    state: {
+        current: 0,
+    },
+    next$: noop$,
+    prev$: noop$,
 }
 
 export const WizardContextId = createContextId<WizardContext>('Wizard_context');
@@ -25,10 +38,10 @@ export const WizardContextId = createContextId<WizardContext>('Wizard_context');
 interface WizardProps {
     steps: number;
     useCustomActions?: boolean;
-    onWizardContext?: { ctx?: WizardContext }
+    referenceWizardContext?: WizardContext
 }
 
-export const WizardV2 = component$(({ steps: stepCount, onWizardContext, useCustomActions }: WizardProps) => {
+export const WizardV2 = component$(({ steps: stepCount, referenceWizardContext, useCustomActions }: WizardProps) => {
     const steps = Array.from({ length: stepCount }).map((_, i) => i);
     const w = useStore({
         current: 0,
@@ -64,9 +77,16 @@ export const WizardV2 = component$(({ steps: stepCount, onWizardContext, useCust
     };
 
     useContextProvider(WizardContextId, wiz);
-    if (onWizardContext) {
-        onWizardContext.ctx = wiz;
-    }
+    useTask$(() => {
+        // once - since no track
+        console.log('adding reference')
+        if (referenceWizardContext) {
+            referenceWizardContext.next$ = wiz.next$;
+            referenceWizardContext.prev$ = wiz.prev$;
+            referenceWizardContext.onPage$ = wiz.onPage$;
+            referenceWizardContext.state = wiz.state;
+        }
+    })
     return (<>
         <div class="hero min-h-screen w-full bg-base-200">
             <div class="hero-content w-full">
