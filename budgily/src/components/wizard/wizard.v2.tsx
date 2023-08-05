@@ -11,6 +11,25 @@ import {
     useTask$
 } from '@builder.io/qwik';
 
+export const slot = Object.freeze({
+    crumb: (s: number) => `crumb-${s}`,
+    title: (s: number) => `title-${s}`,
+    step: (s: number) => `step-${s}`
+});
+
+let counter: Record<keyof typeof slot, number> = {
+    crumb: 0,
+    title: 0,
+    step: 0
+}
+export function next(type: keyof typeof slot) {
+    const i = counter[type];
+    const res = { 'q:slot': slot[type](i), step: i }
+    counter[type] += 1;
+    return res;
+}
+
+
 
 export type WizardContext = {
     onPage$: QRL<(id: number) => void>;
@@ -78,8 +97,6 @@ export const WizardV2 = component$(({ steps: stepCount, referenceWizardContext, 
 
     useContextProvider(WizardContextId, wiz);
     useTask$(() => {
-        // once - since no track
-        console.log('adding reference')
         if (referenceWizardContext) {
             referenceWizardContext.next$ = wiz.next$;
             referenceWizardContext.prev$ = wiz.prev$;
@@ -93,47 +110,38 @@ export const WizardV2 = component$(({ steps: stepCount, referenceWizardContext, 
                 <div class="w-full">
                     <div class="text-sm breadcrumbs">
                         <ul>
-                            {
-                                steps
-                                    .map((s) => <Slot key={s} name={`crumb${s}`} />)
-                            }
+                            {steps.map((i) => <Slot key={i} name={slot.crumb(i)} />)}
                         </ul>
                     </div>
                     <div class="text-center">
-                        {
-                            steps
-                                .map((i) => <Slot key={`title-${i}`} name={`title-${i}`} />)
-                        }
+                        {steps.map((i) => <Slot key={`title-${i}`} name={slot.title(i)} />)}
                         <div class="card w-full shadow-2xl bg-base-100 items-center">
                             <div class="card-body">
-
-                                {
-                                    steps
-                                        .map((i) => <Slot key={`step-${i}`} name={`step-${i}`} />)
-                                }
-
+                                {steps.map((i) => <Slot key={`step-${i}`} name={slot.step(i)} />)}
                             </div>
 
                             <div class="card-actions">
                                 <Slot name="custom-actions" />
 
-                                {!useCustomActions && <><button
-                                    class="btn-secondary"
-                                    onClick$={wiz.prev$}
-                                    disabled={w.prevDisabled}
-                                >Prev</button>
+                                {!useCustomActions && <>
+                                    <button
+                                        class="btn-secondary"
+                                        onClick$={wiz.prev$}
+                                        disabled={w.prevDisabled}
+                                    >Prev</button>
 
                                     <button
                                         class="btn-primary"
                                         onClick$={wiz.next$}
                                         disabled={w.nextDisabled}
-                                    >Next</button></>}
+                                    >Next</button>
+                                </>}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     </>)
 })
 

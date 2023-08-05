@@ -1,5 +1,5 @@
-import { component$, useSignal, $, useStore } from '@builder.io/qwik';
-import { WizardV2, WizardTitle, WizardCrumb, WizardStep, WizardContext, emptyContext } from 'budgily/src/components/wizard/wizard.v2';
+import { component$, useStore } from '@builder.io/qwik';
+import { WizardContext, WizardCrumb, WizardStep, WizardTitle, WizardV2, emptyContext, next } from 'budgily/src/components/wizard/wizard.v2';
 
 
 export default component$(() => {
@@ -10,13 +10,13 @@ export default component$(() => {
             referenceWizardContext={w}
             useCustomActions={true}
         >
-            <WizardCrumb q: slot="crumb0" step={0}> Crumb1</WizardCrumb>
-            <WizardTitle q: slot="title-0" step={0}> First title</WizardTitle>
-            <WizardStep q: slot="step-0" step={0} >First Step</WizardStep>
+            <WizardCrumb {...next('crumb')}> Crumb1</WizardCrumb>
+            <WizardTitle {...next('title')}> First title</WizardTitle>
+            <WizardStep {...next('step')} >First Step</WizardStep>
 
-            <WizardCrumb q: slot="crumb1" step={1}> Crumb2</WizardCrumb>
-            <WizardTitle q: slot="title-1" step={1}> title2</WizardTitle>
-            <WizardStep q: slot="step-1" step={1} >Step 2</WizardStep>
+            <WizardCrumb {...next('crumb')}> Crumb2</WizardCrumb>
+            <WizardTitle {...next('title')}> title2</WizardTitle>
+            <WizardStep {...next('step')} >Step 2</WizardStep>
 
             <>
                 <button q: slot="custom-actions" onClick$={() => w.prev$()} disabled={w.state.prevDisabled}>prev</button>

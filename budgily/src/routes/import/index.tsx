@@ -7,7 +7,7 @@ import { DocumentSignature, getXmlDocumentSignature } from './document-signature
 import { Parsed, readAndParseFiles, recognizeLocale } from './reader';
 import { SelectOne, SelectTransaction, SelectedLocale } from './visualizer';
 import { Button } from '@qwik-ui/tailwind';
-import { Wizard } from 'budgily/src/components/wizard/wizard';
+import { WizardCrumb, WizardStep, WizardV2, WizardTitle, slot } from 'budgily/src/components/wizard/wizard.v2';
 
 
 export default component$(() => {
@@ -23,14 +23,71 @@ export default component$(() => {
   }>({ files: [], step: 0 });
 
 
-  const crumb1 = component$(() => <>'Select File'</>)
+  return <WizardV2 steps={5} >
 
-  const crumb2 = component$(() => <>'Select one movement'</>);
-  const crumb3 = component$(() => <>'Select locale'</>);
-  const crumb4 = component$(() => <>'Confirm'</>);
-  const crumb5 = component$(() => <>'Conf'</>);
+    {/* crumbs will show up on top */}
+    <WizardCrumb step={0} q: slot={slot.crumb(0)}>Select File</WizardCrumb>
+    <WizardCrumb step={1} q: slot={slot.crumb(1)}>Select one movement</WizardCrumb>
+    <WizardCrumb step={2} q: slot={slot.crumb(2)}>Select locale</WizardCrumb>
+    <WizardCrumb step={3} q: slot={slot.crumb(3)}>Confirm</WizardCrumb>
+    <WizardCrumb step={4} q: slot={slot.crumb(4)}>Conf</WizardCrumb>
 
-  const Step1 = component$(() => <><Form >
+    <WizardTitle step={0} q: slot={slot.crumb(0)}>Select File</WizardTitle>
+    <WizardStep q: slot={slot.step(0)} step={0}> <SelectFile filesInput={filesInput} state={state} /></WizardStep>
+
+
+    <WizardTitle step={1} q: slot={slot.crumb(1)}>Select one movement</WizardTitle>
+    <WizardStep q: slot={slot.step(1)} step={1}> <SelectTransaction
+      file={state.files[0]}
+      signature={state.signature!}
+      onSelected$={$((selectedTag: string) => {
+        state.selectedTag = selectedTag;
+        state.step += 1;
+        state.recognizedLocales = recognizeLocale(state.files[0].documentElement.getElementsByTagName(selectedTag)[0]);
+      })} />
+    </WizardStep>
+
+    <WizardTitle step={2} q: slot={slot.crumb(2)}>Select locale</WizardTitle>
+    <WizardStep q: slot={slot.step(2)} step={2}> <SelectLocale
+      preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
+      onSelect$={(l: string) => { state.selectedLocale = l; }}
+    />
+      {state.selectedLocale && <SelectedLocale file={state.files[0]} signature={state.signature} recognized={state.recognizedLocales![state.selectedLocale!]}></SelectedLocale>}
+
+      <Button onClick$={() => state.step += 1} class="color-success">Confirm</Button>
+    </WizardStep>
+
+    <WizardTitle step={3} q: slot={slot.crumb(3)}>Confirm</WizardTitle>
+    <WizardStep q: slot={slot.step(3)} step={3}>
+      <SelectOne file={state.files[0]} signature={state.signature!} selectedTag={state.selectedTag!} onSelected$={() => { }} />
+      <div>Selected tag for 1 movement: {state.selectedTag}</div>
+      <div>Movements: {state.signature?.tagNameCounts[state.selectedTag!]}</div>
+
+        // how many movements
+      // how many duplicates
+      // what is the min date and the max date
+      // any re-imported movements will replace the ones in the DB ()
+      <div class="form-control mt-6">
+        <button class="btn btn-primary">Import</button>
+      </div>
+    </WizardStep>
+
+    <WizardTitle step={4} q: slot={slot.crumb(4)}>Conf</WizardTitle>
+    <WizardStep q: slot={slot.step(4)} step={4}> <>
+      <div>Selected tag for 1 movement: {state.selectedTag}</div>
+      <div>Movements: {state.signature?.tagNameCounts[state.selectedTag!]}</div>
+        // how many movements
+      // how many duplicates
+      // what is the min date and the max date
+      // any re-imported movements will replace the ones in the DB ()
+      <div class="form-control mt-6">
+        <button class="btn btn-primary">Import</button>
+      </div>
+    </></WizardStep>
+  </WizardV2>
+});
+function SelectFile(filesInput, state: { selectedLocale?: string | undefined; recognizedLocales?: Record<string, Record<string, Parsed>> | undefined; signature?: DocumentSignature | undefined; files: Document[]; step: number; selectedTag?: string | undefined; }) {
+  return <Form>
     <div class="form-control">
       <label class="label"><span class="label-text">Import from a file (only .xml)</span></label>
       <input ref={filesInput} onChange$={() => {
@@ -38,7 +95,7 @@ export default component$(() => {
           state.files = docs;
           state.step++;
           state.signature = getXmlDocumentSignature(state.files[0]);
-        })
+        });
       }} name="file" accept=".xml" type="file" placeholder="Input from a file" class={`file-input w-full ${false ? 'file-input-warning' : ''} `} />
     </div>
 
@@ -48,68 +105,6 @@ export default component$(() => {
       {false && <label class="label"><span class="label-text text-warning">Please add some text</span></label>}
     </div>
     {!false && <div class="text-warning">{JSON.stringify({})}</div>}
-  </Form></>)
+  </Form>;
+}
 
-  const Step2 = component$(() => <SelectTransaction
-    file={state.files[0]}
-    signature={state.signature!}
-    onSelected$={$((selectedTag: string) => {
-      state.selectedTag = selectedTag;
-      state.step += 1;
-      state.recognizedLocales = recognizeLocale(state.files[0].documentElement.getElementsByTagName(selectedTag)[0]);
-    })} />
-  )
-
-  const Step3 = component$(() => <><SelectLocale
-    preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
-    onSelect$={(l: string) => { state.selectedLocale = l; }}
-  />
-    {state.selectedLocale && <SelectedLocale file={state.files[0]} signature={state.signature} recognized={state.recognizedLocales![state.selectedLocale!]}></SelectedLocale>}
-
-    <Button onClick$={() => state.step += 1} class="color-success">Confirm</Button>
-  </>)
-
-  const Step4 = component$(() => <>
-    <SelectOne file={state.files[0]} signature={state.signature!} selectedTag={state.selectedTag!} onSelected$={() => { }} />
-    <div>Selected tag for 1 movement: {state.selectedTag}</div>
-    <div>Movements: {state.signature?.tagNameCounts[state.selectedTag!]}</div>
-
-          // how many movements
-    // how many duplicates
-    // what is the min date and the max date
-    // any re-imported movements will replace the ones in the DB ()
-    <div class="form-control mt-6">
-      <button class="btn btn-primary">Import</button>
-    </div>
-  </>)
-
-  const Step5 = component$(() => <>
-    <div>Selected tag for 1 movement: {state.selectedTag}</div>
-    <div>Movements: {state.signature?.tagNameCounts[state.selectedTag!]}</div>
-          // how many movements
-    // how many duplicates
-    // what is the min date and the max date
-    // any re-imported movements will replace the ones in the DB ()
-    <div class="form-control mt-6">
-      <button class="btn btn-primary">Import</button>
-    </div>
-  </>)
-
-  return <Wizard
-
-    crumbs={[crumb1, crumb2, crumb3, crumb4, crumb5]}
-
-    // titles={[
-    //   component$(() => <><h1 class="text-5xl font-bold">Import bank statement</h1><p class="text-2x py-6">Import from a file or drop the text below</p></>),
-    //   component$(() => <>
-    //     <h1 class="text-5xl font-bold">One transaction</h1>
-    //     <h2 class="text-2xl py-6">Please select one transaction below.</h2>
-    //   </>),
-    //   component$(() => <>
-    //     <h1 class="text-5xl font-bold">Recognizing</h1>
-    //     <h2 class="text-2xl py-6">We recognized {Object.keys(state.recognizedLocales).length}. Please confirm locale selection.</h2>
-    //   </>)]}
-
-    steps={[Step1, Step2, Step3, Step4, Step5]}
-  />
-});
