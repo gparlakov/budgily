@@ -1,9 +1,10 @@
-import { JSXChildren, QRL, Slot, component$, useStylesScoped$ } from '@builder.io/qwik';
+import { JSXChildren, QRL, QwikIntrinsicElements, Slot, component$, useSignal, useStylesScoped$ } from '@builder.io/qwik';
 import { DocumentSignature } from './document-signature';
-import styles from './visualizer.scss?inline';
-
-import selectTransactionStyles from './select-transaction.scss?inline';
 import { Parsed } from './reader';
+
+import styles from './visualizer.scss?inline';
+import selectTransactionStyles from './select-transaction.scss?inline';
+import { clsq } from 'budgily/src/core/clqs';
 
 export interface SelectTransactionProps {
     file: Document;
@@ -12,7 +13,7 @@ export interface SelectTransactionProps {
 }
 export const SelectTransaction = component$((props: SelectTransactionProps) => {
     useStylesScoped$(selectTransactionStyles);
-    if(props.signature == null) {
+    if (props.signature == null) {
         return <></>;
     }
     const detected = props.signature.probableMovementTag
@@ -36,7 +37,7 @@ export interface SelectOneProps {
 }
 export const SelectOne = component$((props: SelectOneProps) => {
     useStylesScoped$(selectTransactionStyles);
-    if(props.signature == null) {
+    if (props.signature == null) {
         return <></>;
     }
     const detected = props.signature.probableMovementTag
@@ -85,13 +86,17 @@ interface VisualizerXMLProps {
     signature: DocumentSignature;
     skip?: number;
     first?: number;
+
+    textWrapper?: QwikIntrinsicElements['div'];
 }
 
-export const VisualizeXML = component$(({ file, signature, skip, first }: VisualizerXMLProps) => {
+export const VisualizeXML = component$(({ file, signature, skip, first, textWrapper }: VisualizerXMLProps) => {
     useStylesScoped$(styles)
-    if(signature == null) {
+    if (signature == null) {
         return <></>;
     }
+    // allow users to style textWrapper
+    const { class:classes, ...restTextWrapper } = textWrapper ?? { class: '' };
 
     const { skipTags, tags } = useCalculateVisibleTags(signature, skip, first);
     const slotAdded: Record<string, boolean> = {};
@@ -116,12 +121,13 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: Visual
 
             return skipThisTag
                 ? <>{Array.from(element.children).map(c => traverseDOM(c, level + 1))}</>
-                : <div class={`level-${level} highlight`} >{
+                : <div {...restTextWrapper} class={`level level-${level} level-${level}-wrapper ${clsq(classes)}`} >{
                     Number(element.children?.length) > 0
                         ? <>
                             <span>{`<${tagName}>${text}`}</span> {!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)} {
                                 Array.from(element.children).map(c => traverseDOM(c, level + 1))
-                            } <span>{`</${tagName}>`} </span></>
+                            } <span>{`</${tagName}>`}</span>
+                        </>
                         : <>{`<${tagName}>${text}</${tagName}>`}{!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)}</>
                 }</div>
         }
@@ -129,8 +135,28 @@ export const VisualizeXML = component$(({ file, signature, skip, first }: Visual
         return undefined;
     }
 
+    const c = useSignal<Element>();
     // Start traversal from the document root
-    return <>{traverseDOM(file.documentElement, 0)}</>;
+    return <div class="main-wrapper" onMouseMove$={({target}) => {
+        // find the first "level" parent and highlight that (if not already)
+        let t = target as Element;
+        while (!t.classList.contains('level') && t.parentElement != null) {
+            t = t.parentElement;
+        }
+        if(t === c.value) {
+            return;
+        }
+
+        [...document.querySelectorAll('.level')].forEach(el => {
+            const isTarget = el === t;
+            if(isTarget && !el.classList.contains('highlight')) {
+                el.classList.add('highlight');
+                c.value = el;
+            } else {
+                el.classList.remove('highlight');
+            }
+        })
+    }}>{traverseDOM(file.documentElement, 0)}</div>;
 });
 
 function useCalculateVisibleTags(signature: DocumentSignature, skip: number | undefined, first: number | undefined) {

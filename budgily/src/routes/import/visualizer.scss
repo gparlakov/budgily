@@ -1,3 +1,7 @@
+* {
+  text-align: left;
+}
+
 .highlight:hover,
 .highlight.probable:not(:hover) {
   background-color: rgba(0, 150, 250, 0.3);
@@ -12,6 +16,10 @@
 
 .highlight:not(.highlight.probable):hover > .btn.hidden {
     display: initial;
+}
+
+.level {
+  width: fit-content;
 }
 
 .level-1 {
