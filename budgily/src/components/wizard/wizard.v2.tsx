@@ -76,10 +76,11 @@ export const WizardV2 = component$(({ steps: stepCount, referenceWizardContext, 
     const wiz = {
         state: w,
         next$: $(() => {
-            const hasNext = w.current + 1 < stepCount;
+            console.log('----next from', w.current)
+            const hasNext = w.current + 1 <= stepCount;
             if (hasNext) {
                 w.prevDisabled = false;
-                w.current += w.current + 1;
+                w.current = w.current + 1;
             }
         }),
         prev$: $(() => {
@@ -113,6 +114,7 @@ export const WizardV2 = component$(({ steps: stepCount, referenceWizardContext, 
         <div class="hero min-h-screen w-full bg-base-200">
             <div class="hero-content w-full">
                 <div class="w-full">
+                    <div>step: {w.current} state: {JSON.stringify(w)}</div>
                     <div class="text-sm breadcrumbs">
                         <ul>
                             {steps.map((i) => <Slot key={i} name={slot.crumb(i)} />)}

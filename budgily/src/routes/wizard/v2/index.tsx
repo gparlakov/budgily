@@ -4,19 +4,32 @@ import { WizardContext, WizardCrumb, WizardStep, WizardTitle, WizardV2, emptyCon
 
 export default component$(() => {
     const w = useStore<WizardContext>(emptyContext)
+    const {crumb, title, step} = next();
     return <>
         <WizardV2
-            steps={2}
+            steps={5}
             referenceWizardContext={w}
             useCustomActions={true}
         >
-            <WizardCrumb {...next('crumb')}> Crumb1</WizardCrumb>
-            <WizardTitle {...next('title')}> First title</WizardTitle>
-            <WizardStep {...next('step')} >First Step</WizardStep>
+            <WizardCrumb {...crumb()}> Crumb1</WizardCrumb>
+            <WizardTitle {...title()}> First title</WizardTitle>
+            <WizardStep {...step()} >First Step</WizardStep>
 
-            <WizardCrumb {...next('crumb')}> Crumb2</WizardCrumb>
-            <WizardTitle {...next('title')}> title2</WizardTitle>
-            <WizardStep {...next('step')} >Step 2</WizardStep>
+            <WizardCrumb {...crumb()}> Crumb2</WizardCrumb>
+            <WizardTitle {...title()}> title2</WizardTitle>
+            <WizardStep {...step()} >Step 2</WizardStep>
+
+            <WizardCrumb {...crumb()}> Crumb3</WizardCrumb>
+            <WizardTitle {...title()}> title3</WizardTitle>
+            <WizardStep {...step()} >Step 3</WizardStep>
+
+            <WizardCrumb {...crumb()}> Crumb4</WizardCrumb>
+            <WizardTitle {...title()}> title4</WizardTitle>
+            <WizardStep {...step()} >Step 4</WizardStep>
+
+            <WizardCrumb {...crumb()}> Crumb5</WizardCrumb>
+            <WizardTitle {...title()}> title5</WizardTitle>
+            <WizardStep {...step()} >Step 5</WizardStep>
 
             <>
                 <button q: slot="custom-actions" onClick$={() => w.prev$()} disabled={w.state.prevDisabled}>prev</button>
