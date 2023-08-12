@@ -62,11 +62,12 @@ export default component$(() => {
       onSelected$={$((selectedTag: string) => {
         state.selectedTag = selectedTag;
         state.recognizedLocales = recognizeLocale(state.files[0].documentElement.getElementsByTagName(selectedTag)[0]);
+        state.selectedLocale = Object.keys(state.recognizedLocales)[0];
         state.wiz.next$();
       })} />
     </WizardStep>
 
-    <WizardTitle  {...title()}>Confirm</WizardTitle>
+    {/* <WizardTitle  {...title()}>Confirm</WizardTitle>
     <WizardStep {...step()} >
       <SelectOne file={state.files[0]} signature={state.signature!} selectedTag={state.selectedTag!} onSelected$={() => { }} />
       <div>Selected tag for 1 movement: {state.selectedTag}</div>
@@ -79,7 +80,7 @@ export default component$(() => {
       <div class="form-control mt-6">
         <button class="btn btn-primary">Import</button>
       </div>
-    </WizardStep>
+    </WizardStep> */}
 
 
     <WizardTitle  {...title()}>Select locale</WizardTitle>
@@ -87,11 +88,8 @@ export default component$(() => {
       preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
       onSelect$={(l: string) => { state.selectedLocale = l; }}
     />
-      {state.selectedLocale
-        ? <SelectedLocale file={state.files[0]} signature={state.signature} recognized={state.recognizedLocales![state.selectedLocale!]} />
-        : <>Please select a locale because we need it to recognize the date and number local formats.</>
-      }
-
+      <SelectedLocale file={state.files[0]} signature={state.signature} recognized={state.selectedLocale ? state.recognizedLocales?.[state.selectedLocale] : {}} />
+      {/* : <>Please select a locale because we need it to recognize the date and number local formats.</> */}
       <Button onClick$={() => state.wiz.next$()} class="color-success">Confirm</Button>
     </WizardStep>
 

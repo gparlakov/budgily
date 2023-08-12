@@ -47,7 +47,6 @@ export function getProbableParsed(element: Element, locale: string): Record<stri
     text: e.textContent ?? '',
   }));
   const description = texts.sort((a, b) => Number(b.length) - Number(a.length))[0].tag;
-  console.log('----recognizing', texts, description)
   return texts.reduce((acc, { tag, text }) => {
     if (tag === description) {
       return { ...acc, [tag]: { type: 'description', value: text } };
