@@ -1,7 +1,75 @@
-.btn-faded {
-  opacity: 0.3
+.visible-when-hover {
+  display: none;
+}
+.hovering {
+  position: relative;
 }
 
-.btn-faded:hover {
-  opacity: initial;
+.yes-this-is-it {
+  width: 25%;
+  position: absolute;
+  right: -25%;
+  top: 0;
+}
+
+.detected-probable-movement {
+  display: block;
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  // border: 2px solid green;
+
+  animation: movement_probable 3s ease-in-out 0.5s forwards;
+  animation-fill-mode: forwards;
+
+  -webkit-animation: movement_probable 3s ease-in-out 0.5s forwards; /* Safari and Chrome */
+  -webkit-animation-fill-mode: forwards;
+  -moz-animation: movement_probable 3s ease-in-out 0.5s forwards; /* Firefox */
+  -o-animation: movement_probable 3s ease-in-out 0.5s forwards; /* Opera */
+}
+
+@keyframes movement_probable {
+  0% {
+    border: 0px solid green;
+    width: 0%;
+    height: 0%;
+  }
+  50% {
+    border: 2px solid green;
+  }
+  100% {
+    border: 2px solid green;
+    width: 100%;
+    height: 100%;
+  }
+}
+
+
+.pop-up {
+    animation: pop-up 3s ease-in-out 0.5s forwards;
+}
+@keyframes pop-up {
+  50% {
+    transform: scale(1.2, 1.2);
+  }
+  100% {
+    transform: scale(1, 1);
+  }
+}
+
+.wrap {
+  display: flex;
+}
+
+.action {
+  flex: 1 1 0;
+  margin-right: 10px;
+  text-align: center;
+}
+
+.xml-content {
+  flex: 2 1 0;
 }

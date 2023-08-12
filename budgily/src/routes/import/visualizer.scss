@@ -2,20 +2,35 @@
   text-align: left;
 }
 
+@mixin pop-up-shadow {
+  box-shadow: 2px 2px 6px 2px rgba(0, 150, 250, 0.5);
+  transform: translate(-4px, -4px);
+  cursor: pointer;
+}
+
+.highlight {
+  transition: all 0.2s ease;
+  animation: pop-down 0.4s ease;
+  &:hover {
+    animation: pop-up 0.4s ease;
+  }
+}
+
 .highlight:hover,
 .highlight.probable:not(:hover) {
   background-color: rgba(0, 150, 250, 0.3);
+  @include pop-up-shadow;
 }
 .highlight.probable {
-    border: 1px dotted rgba(250, 10, 100, 0.8);
+  border: 1px dotted rgba(250, 10, 100, 0.8);
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 .highlight:not(.highlight.probable):hover > .btn.hidden {
-    display: initial;
+  display: initial;
 }
 
 .level {
@@ -36,4 +51,21 @@
 }
 .level-5 {
   margin-left: 256px;
+}
+
+@keyframes pop-up {
+  0% {
+    box-shadow: initial;
+  }
+  100% {
+    @include pop-up-shadow;
+  }
+}
+@keyframes pop-down {
+  0% {
+    @include pop-up-shadow;
+  }
+  100% {
+    box-shadow: initial;
+  }
 }

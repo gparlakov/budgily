@@ -6,7 +6,7 @@ import { invalid } from 'budgily/src/core/invalid-locales';
 export async function readAndParseFiles(input: HTMLInputElement): Promise<Document[]> {
   const files: FileList | null = input.files;
   if (!files || files.length === 0) {
-    console.log('No files selected.');
+    console.log('Error: No files selected.');
     return [];
   }
 

@@ -83,6 +83,13 @@
       "options": {
         "lintFilePatterns": ["budgily/**/*.{ts,tsx,js,jsx}"]
       }
+    },
+    "e2e": {
+      "executor": "@nx/playwright:playwright",
+      "outputs": ["dist/.playwright/budgily"],
+      "options": {
+        "config": "budgily/playwright.config.ts"
+      }
     }
   },
   "tags": []
