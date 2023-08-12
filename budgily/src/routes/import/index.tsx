@@ -5,9 +5,11 @@ import { Form } from '@builder.io/qwik-city';
 import { Button } from '@qwik-ui/tailwind';
 import { SelectLocale } from 'budgily/src/components/select-locale/select-locale';
 import { WizardContext, WizardCrumb, WizardStep, WizardTitle, WizardV2, emptyContext, next } from 'budgily/src/components/wizard/wizard.v2';
-import { DocumentSignature, getXmlDocumentSignature } from './document-signature';
-import { Parsed, readAndParseFiles, recognizeLocale } from './reader';
-import { SelectOne, SelectTransaction, SelectedLocale } from './visualizer';
+import { DocumentSignature, getXmlDocumentSignature } from '../../core/xml/document-signature';
+import { Parsed, readAndParseFiles, recognizeLocale } from '../../core/xml/reader';
+import { SelectMovement } from 'budgily/src/components/xml/select-movement';
+import { SelectOne } from 'budgily/src/components/xml/select-one';
+import { SelectedLocale } from 'budgily/src/components/xml/selected-locale';
 
 export default component$(() => {
   const { crumb, step, title } = next();
@@ -22,13 +24,13 @@ export default component$(() => {
   }>({ files: [], wiz: emptyContext });
 
 
-  return <WizardV2 steps={5} referenceWizardContext={state.wiz} useCustomActions={true} >
+  return <WizardV2 steps={4} referenceWizardContext={state.wiz} useCustomActions={true} >
 
     <WizardCrumb {...crumb()}>Select File</WizardCrumb>
     <WizardCrumb {...crumb()}>Select one movement</WizardCrumb>
     <WizardCrumb {...crumb()}>Select locale</WizardCrumb>
     <WizardCrumb {...crumb()}>Confirm</WizardCrumb>
-    <WizardCrumb {...crumb()}>Conf</WizardCrumb>
+    {/* <WizardCrumb {...crumb()}>Conf</WizardCrumb> */}
 
     <WizardTitle  {...title()}>Select File</WizardTitle>
     <WizardStep {...step()} >
@@ -54,7 +56,7 @@ export default component$(() => {
 
 
     <WizardTitle  {...title()}>Select one movement</WizardTitle>
-    <WizardStep {...step()} > <SelectTransaction
+    <WizardStep {...step()} > <SelectMovement
       file={state.files[0]}
       signature={state.signature!}
       onSelected$={$((selectedTag: string) => {
