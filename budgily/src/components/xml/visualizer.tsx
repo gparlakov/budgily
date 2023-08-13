@@ -49,15 +49,18 @@ export const VisualizeXML = component$(({ file, signature, skip, first, textWrap
 
             return skipThisTag
                 ? <>{Array.from(element.children).map(c => traverseDOM(c, level + 1))}</>
-                : <div {...restTextWrapper} class={`level level-${level} level-${level}-wrapper tag-${tagName} ${clsq(classes)} ${tagClasses?.[tagName] ?? ''}`} data-level={level} data-tag={tagName} >{
-                    Number(element.children?.length) > 0
-                        ? <>
-                            <span>{`<${tagName}>${text}`}</span> {!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)} {
-                                Array.from(element.children).map(c => traverseDOM(c, level + 1))
-                            } <span>{`</${tagName}>`}</span>
-                        </>
-                        : <>{`<${tagName}>${text}</${tagName}>`}{!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)}</>
-                }</div>
+                : <>
+                    {!slotAdded[`${tagName}-before`] && (slotAdded[`${tagName}-before`] = true, <Slot name={`${tagName}-before`} />)}
+                    <div {...restTextWrapper} class={`level level-${level} level-${level}-wrapper tag-${tagName} ${clsq(classes)} ${tagClasses?.[tagName] ?? ''}`} data-level={level} data-tag={tagName} >{
+                        Number(element.children?.length) > 0
+                            ? <>
+                                <span>{`<${tagName}>${text}`}</span> {!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)} {
+                                    Array.from(element.children).map(c => traverseDOM(c, level + 1))
+                                } <span>{`</${tagName}>`}</span>
+                            </>
+                            : <>{`<${tagName}>${text}</${tagName}>`}{!slotAdded[tagName] && (slotAdded[tagName] = true, <Slot name={tagName} />)}</>
+                    }</div>
+                </>
         }
 
         return undefined;

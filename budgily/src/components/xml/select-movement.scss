@@ -20,15 +20,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  // border: 2px solid green;
 
-  animation: movement_probable 3s ease-in-out 0.5s forwards;
+  animation: movement_probable 2s ease-in-out 1s forwards;
   animation-fill-mode: forwards;
 
-  -webkit-animation: movement_probable 3s ease-in-out 0.5s forwards; /* Safari and Chrome */
+  -webkit-animation: movement_probable 2s ease-in-out 1s forwards; /* Safari and Chrome */
   -webkit-animation-fill-mode: forwards;
-  -moz-animation: movement_probable 3s ease-in-out 0.5s forwards; /* Firefox */
-  -o-animation: movement_probable 3s ease-in-out 0.5s forwards; /* Opera */
+  -moz-animation: movement_probable 2s ease-in-out 1s forwards; /* Firefox */
+  -o-animation: movement_probable 2s ease-in-out 1s forwards; /* Opera */
 }
 
 @keyframes movement_probable {

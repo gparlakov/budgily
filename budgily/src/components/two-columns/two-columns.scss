@@ -1,0 +1,13 @@
+.wrap {
+  display: flex;
+}
+
+.left {
+  flex: 1 1 0;
+  margin-right: 10px;
+  text-align: center;
+}
+
+.right {
+  flex: 2 1 0;
+}
