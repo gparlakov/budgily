@@ -8,8 +8,7 @@ import { WizardContext, WizardCrumb, WizardStep, WizardTitle, WizardV2, emptyCon
 import { DocumentSignature, getXmlDocumentSignature } from '../../core/xml/document-signature';
 import { Parsed, readAndParseFiles, recognizeLocale } from '../../core/xml/reader';
 import { SelectMovement } from 'budgily/src/components/xml/select-movement';
-import { SelectOne } from 'budgily/src/components/xml/select-one';
-import { SelectedLocale } from 'budgily/src/components/xml/selected-locale';
+import { SelectProperties } from 'budgily/src/components/xml/select-properties';
 
 export default component$(() => {
   const { crumb, step, title } = next();
@@ -84,13 +83,13 @@ export default component$(() => {
 
 
     <WizardTitle  {...title()}>Select locale</WizardTitle>
-    <WizardStep {...step()} > <SelectLocale
-      preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
-      onSelect$={(l: string) => { state.selectedLocale = l; }}
-    />
-      <SelectedLocale file={state.files[0]} signature={state.signature} recognized={state.selectedLocale && state.recognizedLocales ? state.recognizedLocales[state.selectedLocale] : {}} />
-      {/* : <>Please select a locale because we need it to recognize the date and number local formats.</> */}
-      <Button onClick$={() => state.wiz.next$()} class="color-success">Confirm</Button>
+    <WizardStep {...step()} >
+      <SelectLocale
+        preferred={state.recognizedLocales ? Object.keys(state.recognizedLocales) : undefined}
+        selected={state.recognizedLocales ? Object.keys(state.recognizedLocales)[0] : undefined}
+        onSelect$={(l: string) => { state.selectedLocale = l; }}
+      />
+      <SelectProperties file={state.files[0]} signature={state.signature} parsed={state.selectedLocale && state.recognizedLocales ? state.recognizedLocales[state.selectedLocale] : {}} />
     </WizardStep>
 
     {/* <WizardTitle  {...title()}>Conf</WizardTitle>

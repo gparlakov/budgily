@@ -11,10 +11,11 @@ export type Country = string;
 export type LanguageSlashCountry = `${Language} / ${Country}`
 
 export type Props = {
+  selected?: string;
   preferred?: string[];
   onSelect$: QRL<(v: string) => void>
 }
-export const SelectLocale = component$(({ preferred, onSelect$ }: Props) => {
+export const SelectLocale = component$(({ selected, preferred, onSelect$ }: Props) => {
   useStylesScoped$(styles);
 
   return (
@@ -23,7 +24,7 @@ export const SelectLocale = component$(({ preferred, onSelect$ }: Props) => {
         Select Locale
       </AutocompleteLabel>
       <AutocompleteTrigger class="flex max-w-xs items-center rounded-sm border-[#7d95b3] border-[1px] relative">
-        <AutocompleteInput class="w-full bg-inherit px-2 pr-6" />
+        <AutocompleteInput class="w-full bg-inherit px-2 pr-6" value={selected}/>
         <AutocompleteButton class="w-6 h-6 group absolute right-0">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -44,7 +45,7 @@ export const SelectLocale = component$(({ preferred, onSelect$ }: Props) => {
           .filter(([locale]) => !preferred || preferred.includes(locale))
           .map(([key, value]) =>
             <AutocompleteOption class="rounded-sm px-2 hover:bg-[#496080] focus:bg-[#496080]"
-              key={key} optionValue={`${value} ${key}`}
+              key={key} optionValue={`${value} ${key}`} aria-selected={selected === key}
               onClick$={() => onSelect$(key)}
               onKeyDown$={(e) => e.key === 'Enter' && onSelect$(key)}
               disabled={skipped.includes(key)}

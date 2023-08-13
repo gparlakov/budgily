@@ -9,7 +9,7 @@ export const TwoColumns = component$(() => {
     <div class="wrap">
       <article class="left">
 
-        <h2 class="mb-4 text-4xl font-extrabold leading-none tracking-tight text-gray-900 md:text-5xl lg:text-6xl dark:text-white"
+        <h2 class="mb-4 text-2xl font-extrabold leading-none tracking-tight text-gray-900 md:text-3xl lg:text-5xl dark:text-white"
         ><Slot name="left-title" /></h2>
         <p class="mb-6 text-lg font-normal text-gray-500 lg:text-xl dark:text-gray-400"
         >
