@@ -22,9 +22,8 @@ export type MovementsFilter = Omit<MovementFilter, 'fromDate' | 'toDate'> & {
   to?: Date;
 };
 const invalidDate = new Date('invalid').toString();
-export function isValidDate(d: string | Date): boolean {
-  return (d != null && typeof d === 'object' && 'getUTCDate' in d) ||
-  (typeof d === 'string' && Date.parse(d).toString() != invalidDate);
+export function isValidDate(d: Date): d is Date {
+  return (d != null && typeof d === 'object' && 'getUTCDate' in d && d.toString() != invalidDate);
 }
 
 type Filter = (m: Movement) => boolean;
@@ -64,24 +63,24 @@ export function getMovementsFromLocalStorage(
     const idFilter = Array.isArray(id) ? (m: Movement) => id.includes(m.id) : passThrough;
 
     const amountMinFilter = typeof amountMin === 'number' && amountMin > 0 ? (m: Movement) => m.amount >= amountMin : passThrough;
-    const amountMaxFilter = typeof amountMin === 'number' && amountMax > 0 ? (m: Movement) => m.amount <= amountMax! : passThrough;
+    const amountMaxFilter = typeof amountMax === 'number' && amountMax > 0 ? (m: Movement) => m.amount <= amountMax : passThrough;
 
     let fromDateFilter: Filter = passThrough;
     if (from != null && isValidDate(from)) {
-      const parsedFromDate = Date.parse(from.toString());
-      fromDateFilter = (m: Movement) => parseInt(m.date) > parsedFromDate;
+      const fromAsMillis = from.valueOf();
+      fromDateFilter = (m: Movement) => m.date != null && m.date.valueOf() > fromAsMillis;
     }
 
     let toDateFilter: Filter = passThrough;
-    if (isValidDate(toDate)) {
-      const parsedToDate = Date.parse(toDate);
-      toDateFilter = (m: Movement) => parseInt(m.date) < parsedToDate;
+    if (to != null && isValidDate(to)) {
+      const toAsMillis = to.valueOf();
+      toDateFilter = (m: Movement) => m.date != null && m.date.valueOf() < toAsMillis;
     }
 
     let searchFilter: Filter = passThrough;
     if (typeof search === 'string') {
-      const r = new RegExp(search);
-      searchFilter = (m) => r.test(m.raw);
+      const r = new RegExp(search, 'i');
+      searchFilter = (m) => m != null && r.test(`${m.amount} ${m.type} ${m.description}`);
     }
 
     let categoryFilter: Filter = passThrough;
