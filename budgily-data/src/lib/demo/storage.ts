@@ -1,9 +1,11 @@
+import { max } from 'd3';
 import { MovementFilter, Pagination, Sort } from '../../generated/graphql';
 import { filterValueAllCategories, filterValueNoCategory } from '../core/types';
 
 export interface DemoCategory {
-  id: string;
+  id: number;
   name: string;
+  movementIds?: string[];
 }
 export type DemoMovement = Omit<MovementRaw, 'date'> & {
   date: Date;
@@ -136,8 +138,11 @@ export function getMovementsFromLocalStorageOrWellKnown(
           ? filteredMovements.sort((a, b) => (desc ? sorter!(b, a) : sorter!(a, b)))
           : filteredMovements;
       })
-      // paginate
-      .then((filteredAndSorted) => {
+
+      // include categories
+      .then((r) => Promise.all([r, getCategoriesFromLocalStorageOrEmpty()]))
+      // paginate and include cats
+      .then(([filteredAndSorted, cats]) => {
         const results = filteredAndSorted.length ?? 0;
         const zeroBasedPage = Number(page) - 1 < 0 ? 0 : Number(page) - 1;
 
@@ -152,7 +157,15 @@ export function getMovementsFromLocalStorageOrWellKnown(
         return {
           data: {
             movements: {
-              movements: filteredAndSorted.slice(startIndex, endIndex),
+              movements: filteredAndSorted
+                .slice(startIndex, endIndex)
+                // include categories
+                .map((m) => ({
+                  ...m,
+                  categories: (m.categories = cats
+                    .filter((c) => (c.movementIds ?? []).includes(m.id))
+                    .map((c) => ({ id: c.id, name: c.name }))),
+                })),
               sort: { field: field ?? 'date', desc },
               page: {
                 currentPage: currentPageNumber,
@@ -179,74 +192,59 @@ export function getCategoriesFromLocalStorageOrEmpty(): Promise<DemoCategory[]> 
 }
 
 export function getMovementById(id: string): Promise<DemoMovement | undefined> {
-  return getMovementsFromLocalStorageOrWellKnown({id: [id]}).then(r => (r.data?.movements?.movements ?? [])[0])
+  return getMovementsFromLocalStorageOrWellKnown({ id: [id] }).then((r) => (r.data?.movements?.movements ?? [])[0]);
 }
 
+export function categorize({
+  category,
+  categoryId,
+  movementIds,
+}: {
+  category?: DemoCategory;
+  categoryId?: number;
+  movementIds: string[];
+}) {
+  if (!Array.isArray(movementIds)) {
+    throw new Error(`Expected an array of movements but got ${movementIds}`);
+  }
+  if (typeof category === 'object' && category == null) {
+    throw new Error('Expected a category but got empty (null|undefined)');
+  }
+  if (typeof category === 'object' && category?.name == null) {
+    throw new Error('Can not create a category without a name');
+  }
 
+  return getCategoriesFromLocalStorageOrEmpty().then((cats) => {
+    if (typeof categoryId === 'number' && cats.find((c) => c.id === categoryId) == null) {
+      throw new Error(
+        `Could not find category with id ${categoryId}. Please create a new one or provide a correct category id`
+      );
+    }
 
-// export function getCategoriesByMovement(parent: Movement) {
-//   return categories$
-//     .pipe(
-//       take(1),
-//       map((cs) =>
-//         parent != null
-//           ? cs.filter((c) => (Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
-//           : cs
-//       )
-//     )
-//     .toPromise();
-// }
+    const isNewCategory = typeof category === 'object' && Array.isArray(movementIds) && category?.name != null;
+    let nextId = categoryId;
+    let newCats: DemoCategory[];
+    if (isNewCategory) {
+      nextId = (max(cats.map((c) => c.id)) ?? 0) + 1;
+      newCats = [
+        ...cats,
+        {
+          ...category,
+          // next id
+          id: nextId,
+          // add movementIds to category (set makes for unique ids only)
+          movementIds: [...new Set([...movementIds, ...movementIds])],
+        },
+      ];
+    } else {
+      nextId = categoryId;
+      newCats = cats.map((c) =>
+        c.id === categoryId ? { ...c, movementIds: [...new Set([...(c.movementIds ?? []), ...movementIds])] } : c
+      );
+    }
 
-// export function categorize({ category, categoryId, movementIds }: Categorize) {
-//   if (!Array.isArray(movementIds)) {
-//     throw new Error(`Expected an array of movements but got ${movementIds}`);
-//   }
-//   if (typeof category === 'object' && category == null) {
-//     throw new Error('Expected a category but got empty (null|undefined)');
-//   }
-//   if (typeof category === 'object' && category?.name == null) {
-//     throw new Error('Can not create a category without a name');
-//   }
+    window.localStorage.setItem(categoriesKey, JSON.stringify(newCats));
 
-//   return categories$
-//     .pipe(
-//       take(1),
-//       map((cats) => {
-//         if (typeof categoryId === 'number' && cats.find((c) => c.id === categoryId) == null) {
-//           throw new Error(
-//             `Could not find category with id ${categoryId}. Please create a new one or provide a correct category id`
-//           );
-//         }
-
-//         const isNewCategory = typeof category === 'object' && Array.isArray(movementIds) && category?.name != null;
-//         let nextId = categoryId;
-//         let newCats: Category[];
-//         if (isNewCategory) {
-//           nextId = (max(cats.map((c) => c.id)) ?? 0) + 1;
-//           newCats = [
-//             ...cats,
-//             {
-//               ...category,
-//               // next id
-//               id: nextId,
-//               // add movementIds to category (set makes for unique ids only)
-//               movementIds: [...new Set([...movementIds, ...movementIds])],
-//             },
-//           ];
-//         } else {
-//           nextId = categoryId;
-//           newCats = cats.map((c) =>
-//             c.id === categoryId ? { ...c, movementIds: [...new Set([...c.movementIds, ...movementIds])] } : c
-//           );
-//         }
-
-//         // fire and forget write file - could break the file but it's under source control :)
-//         writeFile(catsFileName, JSON.stringify(newCats));
-//         categories$.next(newCats);
-
-//         return newCats.find((c) => c.id === nextId);
-//       })
-//     )
-//     .toPromise();
-// }
-
+    return newCats.find((c) => c.id === nextId);
+  });
+}
