@@ -48,7 +48,7 @@ export function getMovementsFromLocalStorageOrWellKnown(
           return fetch(movementsWellknown)
             .then((d) => d.json())
             .then((d) => {
-              window.localStorage.setItem(movementsKey, d);
+              window.localStorage.setItem(movementsKey, JSON.stringify(d));
               return d as MovementRaw[];
             });
         }
@@ -168,53 +168,85 @@ export function getMovementsFromLocalStorageOrWellKnown(
 }
 
 export function getCategoriesFromLocalStorageOrEmpty(): Promise<DemoCategory[]> {
-
   return Promise.resolve().then(() => {
     const local = window.localStorage.getItem(categoriesKey);
-    if(typeof local === 'string'){
-      return JSON.parse(local)
+    if (typeof local === 'string') {
+      return JSON.parse(local);
     } else {
-      return []
+      return [];
     }
-  })
+  });
 }
 
-function movements(): string {
-  return 'all-movements';
+export function getMovementById(id: string): Promise<DemoMovement | undefined> {
+  return getMovementsFromLocalStorageOrWellKnown({id: [id]}).then(r => (r.data?.movements?.movements ?? [])[0])
 }
-//   export function getMovementById(clientContext: ClientContextType, controller?: AbortController) {
-//     return (id: string) => {
-//       return gqlCall<{ movements: { movements: Movement[] } }>(
-//         JSON.stringify({
-//           query: `
-//           query GetAllMovements {
-//             movements(filter: {id: ["${id}"]}) {
-//               movements {
-//                 id,
-//                 account
-//                 amount
-//                 date
-//                 description
-//                 opposite
-//                 type
-//                 raw
-//                 categories {
-//                   description
-//                   movementIds
-//                   name
-//                   id
-//                 }
-//               }
-//             }
-//           }
-//       `,
-//         }),
-//         clientContext,
-//         controller
-//       );
-//     };
+
+
+
+// export function getCategoriesByMovement(parent: Movement) {
+//   return categories$
+//     .pipe(
+//       take(1),
+//       map((cs) =>
+//         parent != null
+//           ? cs.filter((c) => (Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
+//           : cs
+//       )
+//     )
+//     .toPromise();
+// }
+
+// export function categorize({ category, categoryId, movementIds }: Categorize) {
+//   if (!Array.isArray(movementIds)) {
+//     throw new Error(`Expected an array of movements but got ${movementIds}`);
+//   }
+//   if (typeof category === 'object' && category == null) {
+//     throw new Error('Expected a category but got empty (null|undefined)');
+//   }
+//   if (typeof category === 'object' && category?.name == null) {
+//     throw new Error('Can not create a category without a name');
 //   }
 
-export function getCategories() {
+//   return categories$
+//     .pipe(
+//       take(1),
+//       map((cats) => {
+//         if (typeof categoryId === 'number' && cats.find((c) => c.id === categoryId) == null) {
+//           throw new Error(
+//             `Could not find category with id ${categoryId}. Please create a new one or provide a correct category id`
+//           );
+//         }
 
-}
+//         const isNewCategory = typeof category === 'object' && Array.isArray(movementIds) && category?.name != null;
+//         let nextId = categoryId;
+//         let newCats: Category[];
+//         if (isNewCategory) {
+//           nextId = (max(cats.map((c) => c.id)) ?? 0) + 1;
+//           newCats = [
+//             ...cats,
+//             {
+//               ...category,
+//               // next id
+//               id: nextId,
+//               // add movementIds to category (set makes for unique ids only)
+//               movementIds: [...new Set([...movementIds, ...movementIds])],
+//             },
+//           ];
+//         } else {
+//           nextId = categoryId;
+//           newCats = cats.map((c) =>
+//             c.id === categoryId ? { ...c, movementIds: [...new Set([...c.movementIds, ...movementIds])] } : c
+//           );
+//         }
+
+//         // fire and forget write file - could break the file but it's under source control :)
+//         writeFile(catsFileName, JSON.stringify(newCats));
+//         categories$.next(newCats);
+
+//         return newCats.find((c) => c.id === nextId);
+//       })
+//     )
+//     .toPromise();
+// }
+
