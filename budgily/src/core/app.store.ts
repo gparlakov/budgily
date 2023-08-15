@@ -1,5 +1,5 @@
 import { NoSerialize } from '@builder.io/qwik';
-import { MovementsFilter as Filter } from '@codedoc1/budgily-data-client';
+import { MovementsDemoFilter as Filter } from '@codedoc1/budgily-data-client';
 import { CategoryVM, MovementVm } from './movement.types';
 
 export type MovementsFilter = Omit<Filter, 'fromDate' | 'toDate'> & {

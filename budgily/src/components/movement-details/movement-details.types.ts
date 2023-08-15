@@ -1,5 +1,5 @@
 import { NoSerialize } from '@builder.io/qwik';
-import { Category, Movement, MovementType } from '@codedoc1/budgily-data-client';
+import { DemoCategory, DemoMovement, MovementType } from '@codedoc1/budgily-data-client';
 import { CategoryVM } from '../../core/movement.types';
 
 export interface MovementDetailsProps {
@@ -47,8 +47,8 @@ export function mapToVm({
   categories,
   opposite,
   type,
-}: Movement): MovementDetailsMovement {
-  const cats = categories?.filter((c): c is Category => c != null);
+}: DemoMovement): MovementDetailsMovement {
+  const cats = categories?.filter((c): c is DemoCategory => c != null);
   const categoriesStr = Array.isArray(cats) && cats.length > 0 ? cats?.map((c) => c.name).join(',') : '-----';
 
   return {

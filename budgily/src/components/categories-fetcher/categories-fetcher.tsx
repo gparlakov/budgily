@@ -1,9 +1,9 @@
-import { NoSerialize, Resource, component$, noSerialize, useContext, useResource$, useSignal, useStylesScoped$, useTask$, useVisibleTask$ } from '@builder.io/qwik';
+import { NoSerialize, Resource, component$, noSerialize, useResource$, useSignal, useStylesScoped$, useTask$, useVisibleTask$ } from '@builder.io/qwik';
 
 import styles from './categories-fetcher.scss?inline';
-import { getCategories } from '@codedoc1/budgily-data-client';
-import { ClientContext } from 'budgily/src/core/client.context';
+
 import { CategoryVM } from 'budgily/src/core/movement.types';
+import { getCategoriesFromLocalStorageOrEmpty } from '@codedoc1/budgily-data-client';
 
 export interface CategoriesFetcherProps {
   store: {
@@ -16,20 +16,19 @@ export const CategoriesFetcher = component$(({ store }: CategoriesFetcherProps) 
 
   const retry = useSignal<number>(-1)
 
-  const ctx = useContext(ClientContext);
   const categories = useResource$(({ cleanup, track }) => {
     track(retry);
     const abort = new AbortController();
     cleanup(() => abort.abort());
-    return getCategories(ctx, abort)();
+    return getCategoriesFromLocalStorageOrEmpty();
   });
 
   // on client init - initial "retry" i.e. init
   useVisibleTask$(() => { retry.value = 0; });
 
   return <Resource value={categories} onResolved={(cs) => {
-    if (Array.isArray(cs.data?.categories)) {
-      store.allCategories = noSerialize(cs.data?.categories.map(({id, name}) => ({id: id.toString(), name})) ?? []);
+    if (Array.isArray(cs)) {
+      store.allCategories = noSerialize(cs);
     } else if (retry.value === 0) {
       retry.value++;
     }

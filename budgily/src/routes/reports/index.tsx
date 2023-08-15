@@ -12,26 +12,26 @@ import {
 } from '@builder.io/qwik';
 
 import {
-  filterValueNoCategory
+  filterValueNoCategory, getMovementsFromLocalStorageOrWellKnown
 } from '@codedoc1/budgily-data-client';
-
-import { ClientContext } from '../../core/client.context';
 
 import { MovementFilter } from '../../components/movement-filter/movement-filter';
 import { ReportsLanding } from '../../components/reports-landing/reports-landing';
 
 import { MovementsGrid } from 'budgily/src/components/movements-grid/movements-grid';
-import { debouncedGetAllMovements, mapToViewModel } from 'budgily/src/core/movements.fetch';
+import { mapToViewModel } from 'budgily/src/core/movements.fetch';
 import { CategoriesFetcher } from '../../components/categories-fetcher/categories-fetcher';
 import { MovementDetails } from '../../components/movement-details/movement-details';
 import { AppStore } from '../../core/app.store';
 import global from './index.scss?inline';
+import { debounce } from 'budgily/src/core/debounce';
 
 
 const debounceMovementMillis = 300;
+const debouncedGetAllMovements = debounce(getMovementsFromLocalStorageOrWellKnown, debounceMovementMillis)
+
 export default component$(() => {
   useStyles$(global);
-  const ctx = useContext(ClientContext);
   const appStore = useStore<AppStore>({
     movements: noSerialize([]),
     maxSum: 0,
@@ -49,11 +49,8 @@ export default component$(() => {
     track(appStore.filter);
     const abort = new AbortController();
     cleanup(() => abort.abort());
-    return debouncedGetAllMovements(
-      ctx,
-      abort,
-      debounceMovementMillis
-    )(appStore.filter, { field: 'date', desc: true })
+
+    return debouncedGetAllMovements(appStore.filter, { field: 'date', desc: true })
       .then(mapToViewModel)
       .then(({ errors, maxSum, months, movements }) => {
         appStore.movements = noSerialize(movements);

@@ -4,7 +4,7 @@ import { Parsed } from 'budgily/src/core/xml/reader';
 import { VisualizeXML } from './visualizer';
 import { TwoColumns } from '../two-columns/two-columns';
 import { Button } from '@qwik-ui/tailwind';
-import { Movement } from '@codedoc1/budgily-data-client';
+import { DemoMovement } from '@codedoc1/budgily-data-client';
 
 type Props = Exclude<Parsed['type'], 'unknown'>
 
@@ -19,7 +19,7 @@ export const SelectProperties = component$(({ parsed, signature, ...rest }: Sele
     const step = useSignal<Props>('date');
     const sI = useComputed$(() => steps.indexOf(step.value))
 
-    const selected = useSignal<Partial<Record<keyof Movement, string>>>({});
+    const selected = useSignal<Partial<Record<keyof DemoMovement, string>>>({});
 
     return <>
         {signature != null && <TwoColumns>
