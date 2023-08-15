@@ -191,18 +191,18 @@ export function getCategoriesFromLocalStorageOrEmpty(): Promise<DemoCategory[]> 
   });
 }
 
-export function getMovementById(id: string): Promise<DemoMovement | undefined> {
-  return getMovementsFromLocalStorageOrWellKnown({ id: [id] }).then((r) => (r.data?.movements?.movements ?? [])[0]);
+export function getMovementByIdForDemo(ids: string | string[]): Promise<DemoMovement[]> {
+  return getMovementsFromLocalStorageOrWellKnown({ id: Array.isArray(ids) ? ids: [ids] }).then((r) => (r.data?.movements?.movements ?? []));
 }
 
-export function categorize({
+export function categorizeForDemo({
   category,
   categoryId,
   movementIds,
 }: {
   category?: DemoCategory;
   categoryId?: number;
-  movementIds: string[];
+  movementIds?: string[];
 }) {
   if (!Array.isArray(movementIds)) {
     throw new Error(`Expected an array of movements but got ${movementIds}`);

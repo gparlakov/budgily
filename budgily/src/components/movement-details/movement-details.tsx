@@ -6,21 +6,18 @@ import {
   Signal,
   component$,
   useComputed$,
-  useContext,
   useResource$,
   useSignal,
   useStore,
   useStylesScoped$,
-  useVisibleTask$,
+  useVisibleTask$
 } from '@builder.io/qwik';
 
-import { ClientContextType, categorize, getMovementById } from '@codedoc1/budgily-data-client';
-import { ClientContext } from '../../core/client.context';
 import styles from './movement-details.scss?inline';
 import { MovementDetailsMovement, MovementDetailsProps, MovementDetailsStore, mapToVm } from './movement-details.types';
+import { categorizeForDemo, getMovementByIdForDemo } from '@codedoc1/budgily-data-client';
 
 export const MovementDetails = component$(({ store: appStore }: MovementDetailsProps) => {
-  const ctx = useContext(ClientContext);
   useStylesScoped$(styles);
 
   const state = useStore<MovementDetailsStore>({ loading: true });
@@ -36,11 +33,11 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
     }
   });
 
-  const movementResource = resourceMovementForId(appStore, ctx, state);
+  const movementResource = resourceMovementForId(appStore, state);
 
   toggleDialogOnSelectedMovementId(dialog, appStore);
 
-  const onCategorize = onCategorizeHandler(ctx, newCat, appStore, state, existingCat);
+  const onCategorize = onCategorizeHandler(newCat, appStore, state, existingCat);
 
   const onKey = keyboardNavigationAndCategorization(onCategorize, appStore, newCatInput);
 
@@ -166,26 +163,25 @@ function keyboardNavigationAndCategorization(onCategorize: QRL<() => Promise<voi
 
 
 function onCategorizeHandler(
-  ctx: ClientContextType,
   newCat: Signal<string | undefined>,
   store: MovementDetailsProps['store'],
   state: MovementDetailsStore,
   existingCat: Signal<string | undefined>
 ) {
   return $(async () => {
-    const mutationFn = categorize(ctx);
+
     if (newCat.value) {
       // new category
-      const result = await mutationFn({ name: newCat.value, movementId: store.selectedId as string });
-      const createdCat = result.data?.categorize;
-      createdCat && createdCat.id && store.allCategories?.push(createdCat);
+      const result = await categorizeForDemo({ category:{ id: undefined as unknown as number, name: newCat.value, movementIds: [store.selectedId as string] }});
+      const createdCat = result;
+      createdCat != null && store.allCategories?.push(createdCat);
       newCat.value = undefined;
       state.movement &&
         (state.movement.categoriesStr = `${createdCat?.name}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
           }`);
     } else if (existingCat.value) {
       // existing selected;
-      await mutationFn({ id: existingCat.value, movementId: store.selectedId as string });
+      await categorizeForDemo({category: { id: existingCat.value, movementId: store.selectedId as string }});
       const existingCatName = store.allCategories && store.allCategories.find((c) => c.id === existingCat.value)?.name;
 
       state.movement &&
@@ -217,20 +213,20 @@ function toggleDialogOnSelectedMovementId(dialog: Signal<HTMLDialogElement | und
   });
 }
 
-function resourceMovementForId(store: MovementDetailsProps['store'], ctx: ClientContextType, state: MovementDetailsStore) {
+function resourceMovementForId(store: MovementDetailsProps['store'], state: MovementDetailsStore) {
   return useResource$(({ track, cleanup }) => {
     track(() => store.selectedId);
     const abort = new AbortController();
     cleanup(() => abort.abort('cleanup'));
 
-    const fn = getMovementById(ctx, abort);
+
     if (store.selectedId != null) {
-      return fn(store.selectedId).then((v) => {
+      return getMovementByIdForDemo(store.selectedId).then((v) => {
         state.loading = false;
-        if (v.data?.movements.movements[0]) {
-          state.movement = mapToVm(v.data?.movements.movements[0]);
+        if (v[0]) {
+          state.movement = mapToVm(v[0]);
         } else {
-          state.errorMessage = JSON.stringify(v.errors);
+          state.errorMessage = 'Not found';
         }
         return v;
       });
