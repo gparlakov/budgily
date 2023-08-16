@@ -200,7 +200,7 @@ export function categorizeForDemo({
   categoryId,
   movementIds,
 }: {
-  category?: DemoCategory;
+  category?: Pick<DemoCategory, 'name' | 'movementIds'>;
   categoryId?: number;
   movementIds?: string[];
 }) {

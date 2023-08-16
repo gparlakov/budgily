@@ -169,20 +169,19 @@ function onCategorizeHandler(
   existingCat: Signal<string | undefined>
 ) {
   return $(async () => {
-
     if (newCat.value) {
       // new category
-      const result = await categorizeForDemo({ category:{ id: undefined as unknown as number, name: newCat.value, movementIds: [store.selectedId as string] }});
+      const result = await categorizeForDemo({ category:{ name: newCat.value}, movementIds: [store.selectedId as string] });
       const createdCat = result;
       createdCat != null && store.allCategories?.push(createdCat);
       newCat.value = undefined;
       state.movement &&
         (state.movement.categoriesStr = `${createdCat?.name}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
           }`);
-    } else if (existingCat.value) {
+    } else if (existingCat.value && store.selectedId != null) {
       // existing selected;
-      await categorizeForDemo({category: { id: existingCat.value, movementId: store.selectedId as string }});
-      const existingCatName = store.allCategories && store.allCategories.find((c) => c.id === existingCat.value)?.name;
+      await categorizeForDemo({categoryId: parseInt(existingCat.value), movementIds: Array.isArray(store.selectedId) ? store.selectedId : [store.selectedId] });
+      const existingCatName = store.allCategories && store.allCategories.find((c) => c.id.toString() === existingCat.value)?.name;
 
       state.movement &&
         (state.movement.categoriesStr = `${existingCatName}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
@@ -214,11 +213,8 @@ function toggleDialogOnSelectedMovementId(dialog: Signal<HTMLDialogElement | und
 }
 
 function resourceMovementForId(store: MovementDetailsProps['store'], state: MovementDetailsStore) {
-  return useResource$(({ track, cleanup }) => {
+  return useResource$(({ track }) => {
     track(() => store.selectedId);
-    const abort = new AbortController();
-    cleanup(() => abort.abort('cleanup'));
-
 
     if (store.selectedId != null) {
       return getMovementByIdForDemo(store.selectedId).then((v) => {
