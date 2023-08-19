@@ -1,10 +1,10 @@
 import { Resource, component$, noSerialize, useContext, useResource$, useStore, useStylesScoped$ } from '@builder.io/qwik';
 
-import { ClientContextType } from '@codedoc1/budgily-data-client';
+import { ClientContextType, getMovementsFromLocalStorageOrWellKnown } from '@codedoc1/budgily-data-client';
 import { Pagination } from '@qwik-ui/tailwind';
 import { AppStore } from 'budgily/src/core/app.store';
 import { ClientContext } from 'budgily/src/core/client.context';
-import { debouncedGetAllMovements } from 'budgily/src/core/movements.fetch';
+
 import { Categorize } from '../categorize/categorize';
 import { mapToVm } from '../movement-details/movement-details.types';
 import styles from './movements-grid.scss?inline';
@@ -130,9 +130,9 @@ function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid,
     track(filter)
     const abort = new AbortController();
     cleanup(() => abort.abort('cleanup'));
-    const movementsFn = debouncedGetAllMovements(ctx, abort, 300)
 
-    return movementsFn(filter, { field: 'amount', desc: true }, { page: grid.page, size: grid.size }).then((v) => {
+
+    return getMovementsFromLocalStorageOrWellKnown(filter, { field: 'amount', desc: true }, { page: grid.page, size: grid.size }).then((v) => {
       const { page, movements } = v.data?.movements ?? {};
       if (page) {
         grid.page = page.currentPage;
