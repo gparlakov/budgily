@@ -4,12 +4,13 @@
     "daisyui": "^2.51.6"
   },
   "scripts": {
-    "build.server": "vite build -c adapters/express/vite.config.ts",
+    "build.server": "vite build -c adapters/static/vite.config.ts",
     "serve": "node ./dist/server/entry.express.js"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.23",
+    "qwik": "^1.0.57",
     "tailwindcss": "^3.3.1"
   }
 }

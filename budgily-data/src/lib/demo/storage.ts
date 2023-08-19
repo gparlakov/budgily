@@ -32,7 +32,7 @@ export function isValidDate(d: Date): d is Date {
 type Filter = (m: DemoMovement) => boolean;
 
 const movementsKey = 'all-movements';
-const movementsWellknown = '/mock-data.json';
+const movementsWellknown = './mock-data.json';
 const categoriesKey = 'all-categories';
 
 export function getMovementsFromLocalStorageOrWellKnown(
