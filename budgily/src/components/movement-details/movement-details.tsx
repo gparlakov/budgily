@@ -173,7 +173,10 @@ function onCategorizeHandler(
       // new category
       const result = await categorizeForDemo({ category:{ name: newCat.value}, movementIds: [store.selectedId as string] });
       const createdCat = result;
-      createdCat != null && store.allCategories?.push(createdCat);
+      if(createdCat != null) {
+         store.allCategories?.push(createdCat);
+         existingCat.value = createdCat.id.toString();
+      }
       newCat.value = undefined;
       state.movement &&
         (state.movement.categoriesStr = `${createdCat?.name}${state.movement?.categoriesStr.includes('---') ? '' : `,${state.movement?.categoriesStr}`
