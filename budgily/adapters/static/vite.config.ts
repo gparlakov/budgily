@@ -4,20 +4,21 @@ import baseConfig from '../../vite.config';
 
 export default extendConfig(baseConfig, () => {
   return {
+    base: '/budgily/',
     build: {
       ssr: true,
       rollupOptions: {
         input: ['@qwik-city-plan'],
       },
+      outDit: './budgily'
     },
     plugins: [
       staticAdapter({
-        base: '/budgily/demo/build/',
+        base: '/budgily/build/',
         origin: 'https://gparlakov.github.io/',
-        containerAttributes: {
-          'q:base': '/budgily/demo/build/'
-        }
+        debug: true
       }),
     ],
   };
 });
+

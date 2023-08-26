@@ -12,7 +12,8 @@
       },
       "configurations": {
         "preview": {},
-        "express": {}
+        "express": {},
+        "ssg": {}
       }
     },
     "build.client": {
@@ -23,7 +24,10 @@
       },
       "configurations": {
         "preview": {},
-        "express": {}
+        "express": {},
+        "ssg": {
+          "configFile": "./budgily/adapters/static/vite.client.config.ts"
+        }
       }
     },
     "build.ssr": {
@@ -44,6 +48,10 @@
         },
         "express.debug": {
           "ssr": "src/entry.express.tsx"
+        },
+        "ssg": {
+          "configFile": "./budgily/adapters/static/vite.config.ts",
+          "mode": "production"
         }
       }
     },
