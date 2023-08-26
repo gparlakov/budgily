@@ -2,6 +2,12 @@ header {
   display: flex;
   background: white;
   border-bottom: 10px solid var(--qwik-dark-purple);
+  .navbar-start {
+    flex: 1
+  }
+  .navbar-center {
+    flex: 8
+  }
 }
 
 header .logo a {

@@ -38,7 +38,7 @@ export const CategoryFilter = component$(({ filterStore }: CategoryFilterProps) 
   const ids = useSignal<string[]>([]);
 
   return (
-    <div class="py-2 px-5 inline-block background-green-400 relative w-2/12">
+    <div class="py-2 px-5 inline-block background-green-400 relative w-3/12">
       <select
         id="category"
         class="select select-bordered select-sm w-full"
@@ -101,7 +101,7 @@ export const DateRangeFilter = component$(({ filterStore }: DateRangeFilterProps
   })
 
   return (
-    <div class="py-2 px-5 inline-block w-5/12">
+    <div class="py-2 px-5 flex w-6/12">
       <label for={fromId}>Range </label><input type="date" bind: value={fromV} id={fromId} class="input input-bordered input-sm" />
 
       <span>-</span><input type="date" bind: value={toV} id={toId} class="input input-bordered input-sm" />
