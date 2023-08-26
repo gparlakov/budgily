@@ -5,10 +5,11 @@ import baseConfig from '../../vite.config';
 
 export default extendConfig(baseConfig, () => {
   return {
+    base: '/budgily/',
     plugins: [
       qwikVite({
         client: {
-          outDir: './dist/./client/budgily',
+          outDir: './dist/client',
         }
       }),
     ],

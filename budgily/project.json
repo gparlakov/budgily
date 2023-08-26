@@ -13,7 +13,8 @@
       "configurations": {
         "preview": {},
         "express": {},
-        "ssg": {}
+        "ssg": {},
+        "ssg-debug": {}
       }
     },
     "build.client": {
@@ -27,6 +28,10 @@
         "express": {},
         "ssg": {
           "configFile": "./budgily/adapters/static/vite.client.config.ts"
+        },
+        "ssg-debug": {
+          "configFile": "./budgily/adapters/static/vite.client.config.ts",
+          "mode": "dev"
         }
       }
     },
@@ -52,6 +57,10 @@
         "ssg": {
           "configFile": "./budgily/adapters/static/vite.config.ts",
           "mode": "production"
+        },
+        "ssg-debug": {
+          "configFile": "./budgily/adapters/static/vite.config.ts",
+          "mode": "dev"
         }
       }
     },
