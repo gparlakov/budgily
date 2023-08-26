@@ -6,7 +6,7 @@ name: Build and deploy Node.js app to Azure Web App - Budgily-dev
 on:
   push:
     branches:
-      - demo
+      - disableddemo
   workflow_dispatch:
 
 jobs:
