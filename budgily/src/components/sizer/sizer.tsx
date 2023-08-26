@@ -11,7 +11,7 @@ export const Sizer = component$(({onSize, id, debounceTime}: SizerProps) => {
   const idd = id ?? useId();
   const debounce = debounceTime ?? 100;
   const emitSize = $(() => {
-    const el = document.querySelector(`div#${idd}`)
+    const el = document.querySelector(`div[id="${idd}"]`)
     if(el != null) {
       onSize(el.getBoundingClientRect().width);
     }

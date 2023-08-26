@@ -24,7 +24,8 @@ export default component$(() => {
     <QwikCityProvider>
       <head>
         <meta charSet="utf-8" />
-        <link rel="manifest" href="/manifest.json" />
+        <base href="/budgily/" />
+        <link rel="manifest" href="manifest.json" />
         <RouterHead />
       </head>
       <body lang="en">

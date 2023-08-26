@@ -41,7 +41,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                 }} />
             </label>
               <button onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids">
-                <img src="/copy.svg" width="12" height="12" />
+                <img src="copy.svg" width="12" height="12" />
               </button>
               <span class="w-9 inline-block">{Object.entries(grid.selected.selected).filter(([, selected]) => selected).length}</span>
             </th>
@@ -69,7 +69,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                 <td>{new Date(Number(m.date)).toLocaleDateString()}</td>
                 <td>{m.categories?.map(c => c.name).join(',')}</td>
                 <td><div class="dropdown dropdown-bottom dropdown-left">
-                  <label tabIndex={0} class=""><img src="/copy.svg" width="12" height="12" /></label>
+                  <label tabIndex={0} class=""><img src="copy.svg" width="12" height="12" /></label>
                   <div tabIndex={0} class="dropdown-content z-[1] card card-compact w-64 p-2 shadow bg-primary text-primary-content">
                     <div class="card-body">
                       <p>Type - {m.type}</p>
