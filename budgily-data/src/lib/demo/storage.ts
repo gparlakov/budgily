@@ -57,8 +57,11 @@ export function getMovementsFromLocalStorageOrWellKnown(
       })
       // map date
       .then((rawMovements) => rawMovements.map((v): DemoMovement => ({ ...v, date: new Date(v.date) })))
+
+      // include categories
+      .then((r) => Promise.all([r, getCategoriesFromLocalStorageOrEmpty()]))
       // filter
-      .then((movements) => {
+      .then(([movements, cats]) => {
         const passThrough = () => true;
         const idFilter = Array.isArray(id) ? (m: DemoMovement) => id.includes(m.id) : passThrough;
 
@@ -103,6 +106,12 @@ export function getMovementsFromLocalStorageOrWellKnown(
         }
 
         return movements
+          .map((m) => ({
+            ...m,
+            categories: cats
+              .filter((c) => (c.movementIds ?? []).includes(m.id))
+              .map((c) => ({ id: c.id, name: c.name })),
+          }))
           .filter(idFilter)
           .filter(amountMinFilter)
           .filter(amountMaxFilter)
@@ -138,11 +147,8 @@ export function getMovementsFromLocalStorageOrWellKnown(
           ? filteredMovements.sort((a, b) => (desc ? sorter!(b, a) : sorter!(a, b)))
           : filteredMovements;
       })
-
-      // include categories
-      .then((r) => Promise.all([r, getCategoriesFromLocalStorageOrEmpty()]))
       // paginate and include cats
-      .then(([filteredAndSorted, cats]) => {
+      .then((filteredAndSorted) => {
         const results = filteredAndSorted.length ?? 0;
         const zeroBasedPage = Number(page) - 1 < 0 ? 0 : Number(page) - 1;
 
@@ -157,15 +163,7 @@ export function getMovementsFromLocalStorageOrWellKnown(
         return {
           data: {
             movements: {
-              movements: filteredAndSorted
-                .slice(startIndex, endIndex)
-                // include categories
-                .map((m) => ({
-                  ...m,
-                  categories: (m.categories = cats
-                    .filter((c) => (c.movementIds ?? []).includes(m.id))
-                    .map((c) => ({ id: c.id, name: c.name }))),
-                })),
+              movements: filteredAndSorted.slice(startIndex, endIndex),
               sort: { field: field ?? 'date', desc },
               page: {
                 currentPage: currentPageNumber,
@@ -192,7 +190,9 @@ export function getCategoriesFromLocalStorageOrEmpty(): Promise<DemoCategory[]> 
 }
 
 export function getMovementByIdForDemo(ids: string | string[]): Promise<DemoMovement[]> {
-  return getMovementsFromLocalStorageOrWellKnown({ id: Array.isArray(ids) ? ids: [ids] }).then((r) => (r.data?.movements?.movements ?? []));
+  return getMovementsFromLocalStorageOrWellKnown({ id: Array.isArray(ids) ? ids : [ids] }).then(
+    (r) => r.data?.movements?.movements ?? []
+  );
 }
 
 export function categorizeForDemo({
