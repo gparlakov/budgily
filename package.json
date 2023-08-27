@@ -11,7 +11,9 @@
     "client": "npm run client.express.sh",
     "client:dev": "npx nx run budgily:serve",
     "codegen": "graphql-codegen --config codegen.ts",
-    "run:nginx": "sudo nginx -c \"$(pwd)/nginx.conf\" -g \"error_log $(pwd)/logs.log;\""
+    "run:nginx": "sudo nginx -c \"$(pwd)/nginx.conf\" -g \"error_log $(pwd)/logs.log;\"",
+    "build.gh": "BUDGILY_BASE=\"/budgily/\" nx run budgily:build:ssg",
+    "build.cf": "BUDGILY_BASE=\"/budgily/\" nx run budgily:build:ssg"
   },
   "private": true,
   "dependencies": {
