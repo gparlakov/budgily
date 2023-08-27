@@ -3,9 +3,11 @@ import { qwikVite } from '@builder.io/qwik/optimizer';
 
 import baseConfig from '../../vite.config';
 
+const base = process.env.BUDGILY_BASE ?? '/';
+
 export default extendConfig(baseConfig, () => {
   return {
-    base: '/budgily/',
+    base,
     plugins: [
       qwikVite({
         client: {

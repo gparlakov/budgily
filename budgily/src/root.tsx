@@ -8,6 +8,7 @@ import { RouterHead } from "./components/router-head/router-head";
 
 import globalStyles from './global.scss?inline';
 import { ClientContext, createClientContext } from './core/client.context';
+const base = process.env.BUDGILY_BASE ?? '/';
 
 export default component$(() => {
   /**
@@ -24,7 +25,7 @@ export default component$(() => {
     <QwikCityProvider>
       <head>
         <meta charSet="utf-8" />
-        <base href="/budgily/" />
+        <base href={base} />
         <link rel="manifest" href="manifest.json" />
         <RouterHead />
       </head>
