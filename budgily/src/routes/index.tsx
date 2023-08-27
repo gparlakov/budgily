@@ -147,11 +147,11 @@ function useTabStorage<T extends string>(def: T) {
 
 
 export const head: DocumentHead = {
-  title: "Welcome to Qwik",
+  title: "Welcome to Budgily",
   meta: [
     {
-      name: "description",
-      content: "Qwik site description",
+      name: "Budgily",
+      content: "A budget visualizing app.",
     },
   ],
 };
