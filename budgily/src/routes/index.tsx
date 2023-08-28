@@ -86,16 +86,15 @@ export default component$(() => {
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
       <header class="navbar">
         <div class="navbar-start">
-          <div class="join">
-
+          <div class="join" data-tour="grid-chart-controls">
             <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => {view.value = 'chart'; appStore.selectedId = undefined;}}>📊 <span class="hidden-text">chart</span></button>
             <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => {view.value = 'grid'; appStore.selectedId = undefined;}}>📑 <span class="hidden-text">grid</span></button>
             <button class="join-item hide-text  btn btn-sm" onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁 <span class="hidden-text">reload</span></button>
           </div>
         </div>
 
-        <div class="navbar-center">
-          <MovementFilter filterStore={appStore}></MovementFilter>
+        <div class="navbar-center" data-tour="grid-filter-and-search">
+          <MovementFilter filterStore={appStore} ></MovementFilter>
         </div>
 
       </header>

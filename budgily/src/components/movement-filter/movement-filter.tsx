@@ -38,7 +38,7 @@ export const CategoryFilter = component$(({ filterStore }: CategoryFilterProps) 
   const ids = useSignal<string[]>([]);
 
   return (
-    <div class="py-2 px-5 inline-block background-green-400 relative w-3/12">
+    <div class="py-2 px-5 inline-block background-green-400 relative w-3/12" >
       <select
         id="category"
         class="select select-bordered select-sm w-full"
