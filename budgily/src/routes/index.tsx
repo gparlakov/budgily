@@ -88,8 +88,8 @@ export default component$(() => {
         <div class="navbar-start">
           <div class="join">
 
-            <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => view.value = 'chart'}>📊 <span class="hidden-text">chart</span></button>
-            <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => view.value = 'grid'}>📑 <span class="hidden-text">grid</span></button>
+            <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => {view.value = 'chart'; appStore.selectedId = undefined;}}>📊 <span class="hidden-text">chart</span></button>
+            <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => {view.value = 'grid'; appStore.selectedId = undefined;}}>📑 <span class="hidden-text">grid</span></button>
             <button class="join-item hide-text  btn btn-sm" onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁 <span class="hidden-text">reload</span></button>
           </div>
         </div>
@@ -147,10 +147,10 @@ function useTabStorage<T extends string>(def: T) {
 
 
 export const head: DocumentHead = {
-  title: "Welcome to Budgily",
+  title: "Welcome to Budgily Demo",
   meta: [
     {
-      name: "Budgily",
+      name: "Budgily | Demo ",
       content: "A budget visualizing app.",
     },
   ],

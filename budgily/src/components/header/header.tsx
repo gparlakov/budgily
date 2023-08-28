@@ -1,50 +1,18 @@
 import { component$, useStylesScoped$ } from '@builder.io/qwik';
 import styles from './header.scss?inline';
-import { Link } from '@builder.io/qwik-city';
+
 
 export default component$(() => {
   useStylesScoped$(styles);
 
   return (
     <header>
-      <div class="navbar bg-base-100">
-        <div class="navbar-start">
-          <div class="dropdown">
-            <label tabIndex={0} class="text-xl">
-              Budgily MENU
-            </label>
-            <ul tabIndex={0} class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-              <li>
-                <Link href="/reports">
-                  📊 chart
-                </Link>
-              </li>
-              <li>
-                <Link href="/reports">
-                  📑  grid
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="navbar-center hidden lg:flex">
-          <ul class="menu menu-horizontal px-1">
-          <li>
-                <Link href="/reports">
-                  📊 chart
-                </Link>
-              </li>
-              <li>
-                <Link href="/reports">
-                  📑  grid
-                </Link>
-              </li>
-            <li tabIndex={0}>
-
-            </li>
-          </ul>
-        </div>
-        <div class="navbar-end"></div>
+      <div class="bg-base-100">
+        <h3>Hello and welcome to Budgily DEMO.</h3>
+        <p> The app has 1000 demo bank movement records that you can visualize, categorize and see in grid form. </p>
+        <p>Categorize by clicking on one of the chart sections or selecting the grid (top right corner) and selecting one or more rows of movements.</p>
+        <p>Want to sign up for full version: <a class="link" href="https://docs.google.com/forms/d/1dsxhIgV8Hs2xphy_AxOdDg12iY0qW4GfqMcWafiZ5GE" target="_blank"> Sign up (Google Form)</a></p>
+        <p>--&gt; vv Chart Grid view controls</p>
       </div>
     </header>
   );

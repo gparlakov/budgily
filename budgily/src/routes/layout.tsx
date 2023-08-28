@@ -5,16 +5,11 @@ export default component$(() => {
   return (
     <>
       <main>
-        {/* <Header /> */}
+        <Header />
         <section>
           <Slot />
         </section>
       </main>
-      <footer>
-        <a href="https://www.builder.io/" target="_blank">
-          Made with ♡ by Builder.io
-        </a>
-      </footer>
     </>
   );
 });
