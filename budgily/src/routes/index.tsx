@@ -3,10 +3,12 @@ import {
   Resource,
   component$,
   noSerialize,
+  useComputed$,
   useResource$,
   useSignal,
   useStore,
   useStyles$,
+  useTask$,
   useVisibleTask$
 } from '@builder.io/qwik';
 import { type DocumentHead } from "@builder.io/qwik-city";
@@ -22,6 +24,7 @@ import { CategoriesFetcher } from '../components/categories-fetcher/categories-f
 import { MovementDetails } from '../components/movement-details/movement-details';
 import { AppStore } from '../core/app.store';
 import { debouncedGetAllMovements } from '../core/data/get-data';
+import demo from '../core/demo';
 
 import global from './index.scss?inline';
 
@@ -80,6 +83,10 @@ export default component$(() => {
 
     appStore.previous = noSerialize(() => toggle$('previous'));
   });
+
+  useTask$(({track}) => {
+    demo.onDetailsId(track(() => appStore.selectedId));
+  })
 
   return (
     <>

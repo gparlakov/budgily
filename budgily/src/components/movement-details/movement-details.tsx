@@ -86,8 +86,9 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
                       bind: value={newCat}
                       class="input input-bordered w-full max-w-xs"
                       ref={newCatInput}
+                      data-tour="details-new-category"
                     ></input>
-                    <select class="select select-bordered" bind: value={existingCat}>
+                    <select class="select select-bordered" bind: value={existingCat} data-tour="details-existing-category">
                       {appStore.allCategories?.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}
@@ -121,7 +122,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
 });
 
 export const Details = (state: { movement?: MovementDetailsMovement }) => (
-  <table>
+  <table data-tour="details-rows">
     <tbody>
       <tr>
         <td class="px-10 font-bold">Amount</td>
