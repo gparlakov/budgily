@@ -73,7 +73,7 @@ function useTour() {
     });
 
 
-    initialTour.addStep({
+    initialTour.addStep( {
       id: 'show chart details',
       text: 'Click to open details',
       attachTo: {
@@ -86,22 +86,22 @@ function useTour() {
     });
 
     initialTour.start();
-
+    initialTour.once('complete', () => demo.on('initialTourDone'));
 
     demo.opened((isOpen) => {
       if (isOpen && initialTour.isActive()) {
         initialTour.complete();
 
         setTimeout(() => {
-          debugger;
+          const detailDialog = document.querySelector('dialog') as HTMLElement ?? undefined;
           const detailsTour = new Shepherd.Tour({
-            // useModalOverlay: false,
+            useModalOverlay: true,
             defaultStepOptions: {
               classes: 'shadow-md bg-purple-dark',
               scrollTo: true
             },
-            modalContainer: document.querySelector('dialog>div') as HTMLElement ?? undefined
-
+            modalContainer: detailDialog,
+            stepsContainer: detailDialog,
           })
 
           detailsTour.addStep({
@@ -117,9 +117,7 @@ function useTour() {
             },
             buttons: [{
               text: 'Next',
-              action: () => {
-                initialTour.next();
-              },
+              action: detailsTour.next
             }]
           });
 
@@ -133,9 +131,7 @@ function useTour() {
             },
             buttons: [{
               text: 'Next',
-              action: () => {
-                initialTour.next();
-              },
+              action: detailsTour.next
             }]
           });
 
@@ -148,18 +144,44 @@ function useTour() {
             },
             buttons: [{
               text: 'Next',
-              action: () => {
-                initialTour.next();
-              },
+              action: detailsTour.next,
             }]
           });
 
-          // detailsTour.start();
-        }, 2500);
+          detailsTour.addStep({
+            id: 'Demo move adjacent movement',
+            text: 'Use buttons for quick select of next movement',
+            attachTo: {
+              element: '[data-tour="select-next-movement"]',
+              on: 'top'
+            },
+            buttons: [{
+              text: 'Next',
+              action: detailsTour.next,
+            }]
+          });
+
+          detailsTour.addStep({
+            id: 'Demo move adjacent movement',
+            text: 'Use buttons for quick select of previous movement',
+            attachTo: {
+              element: '[data-tour="select-previous-movement"]',
+              on: 'top'
+            },
+            buttons: [{
+              text: 'Next',
+              action: detailsTour.complete,
+            }]
+          });
+          detailsTour.start();
+        }, 300);
       };
     });
 
 
+    demo.gridVisible(() => {
+      // alert('next!')
+    })
 
   }, { strategy: 'document-idle' });
 }

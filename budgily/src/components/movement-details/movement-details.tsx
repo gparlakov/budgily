@@ -100,6 +100,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
                   <button
                     class="btn btn-ghost absolute left-0 top-40"
                     title="previous"
+                    data-tour="select-previous-movement"
                     onClick$={() => appStore.previous && appStore.previous()}
                   >
                     &lt;
@@ -108,6 +109,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
                     class="btn btn-ghost absolute right-0 top-40"
                     title="next"
                     onClick$={() => appStore.next && appStore.next()}
+                    data-tour="select-next-movement"
                   >
                     &gt;
                   </button>
