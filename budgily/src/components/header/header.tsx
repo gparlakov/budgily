@@ -80,6 +80,9 @@ function useTour() {
         element: '#movements > rect:first-of-type ',
         on: 'right'
       },
+      showOn: () => {
+        return document.querySelector('#movements') != null;
+      }
     });
 
     initialTour.start();
