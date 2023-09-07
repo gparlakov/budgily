@@ -59,8 +59,8 @@ export const ReportsLanding = component$(({ movementDetailsStore }: ReportsLandi
         {store.movementsCoords && <g id="title"><text x={Number(store.width) - 150} y="45" fill="black">
           Count: {store.movementsCoords.length}
         </text></g>}
-        <g ref={xAxis} transform={`translate(0, ${store.padding + 2})`}></g>
-        <g ref={yAxis} transform={`translate(${monthsAxisWidth + 10}, 0)`}></g>
+        <g ref={xAxis} transform={`translate(0, ${store.padding + 2})`} data-tour="amount-ax"></g>
+        <g ref={yAxis} transform={`translate(${monthsAxisWidth + 10}, 0)`} data-tour="months-axis"></g>
         <g id="movements">
           {store.movementsCoords?.map((m) => (
             <Rect key={m.id ?? useId()} {...m.coord} movement={m} onClick$={$(() => { movementDetailsStore.selectedId = m.id; })}></Rect>

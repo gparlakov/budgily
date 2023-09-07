@@ -84,7 +84,7 @@ export default component$(() => {
     appStore.previous = noSerialize(() => toggle$('previous'));
   });
 
-  useTask$(({track}) => {
+  useTask$(({ track }) => {
     demo.onDetailsId(track(() => appStore.selectedId));
   })
 
@@ -94,8 +94,8 @@ export default component$(() => {
       <header class="navbar">
         <div class="navbar-start">
           <div class="join" data-tour="grid-chart-controls">
-            <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => {view.value = 'chart'; appStore.selectedId = undefined; demo.on('gridHidden')}}>📊 <span class="hidden-text">chart</span></button>
-            <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => {view.value = 'grid'; appStore.selectedId = undefined; demo.on('gridVisible')}}>📑 <span class="hidden-text">grid</span></button>
+            <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => { view.value = 'chart'; appStore.selectedId = undefined;  }}>📊 <span class="hidden-text">chart</span></button>
+            <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => { view.value = 'grid'; appStore.selectedId = undefined; }}>📑 <span class="hidden-text">grid</span></button>
             <button class="join-item hide-text  btn btn-sm" onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁 <span class="hidden-text">reload</span></button>
           </div>
         </div>
@@ -138,6 +138,7 @@ function useTabStorage<T extends string>(def: T) {
   // initialize on client
   useVisibleTask$(() => {
     view.value = (sessionStorage?.getItem(key) ?? def) as T;
+    demo.on(view.value === 'grid' ? 'gridVisible' : 'gridHidden');
   });
 
   // on change
@@ -146,6 +147,7 @@ function useTabStorage<T extends string>(def: T) {
 
     const val = view.value ?? def;
     sessionStorage?.setItem(key, val);
+    demo.on(val === 'grid' ? 'gridVisible' : 'gridHidden');
   });
 
   return view;

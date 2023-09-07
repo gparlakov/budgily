@@ -1,49 +1,61 @@
-
-let opened: boolean = false;
-let subscribers: ((v: boolean) => void) [] = []
-
-let initialTourDone = false;
-let gridVisible = false;
+let gridVisible: boolean | undefined = undefined;
+let chartDone = false;
+let gridDone = false;
+let detailsOpened = false;
 
 const demo = {
-    on(ev: 'initialTourDone' | 'gridVisible' | 'gridHidden') {
-        if(ev === 'initialTourDone') {
-            initialTourDone = true;
-        }
-        if(ev === 'gridVisible') {
-            gridVisible = true;
-        }
-        if(ev === 'gridHidden') {
-            gridVisible = false;
-        }
-    },
-    gridVisible(cb: () => void) {
-        if(gridVisible) {
-            cb();
-        }
-        else {
-            setTimeout(() => demo.gridVisible(cb), 1000);
-        }
-    },
-    chartVisibleAndInitialTourDone(cb: () => void) {
-        if(gridVisible && initialTourDone) {
-            cb();
-        }
-        else {
-            setTimeout(() => demo.gridVisible(cb), 1000);
-        }
-    },
-    opened(onNext: (v: boolean) => void) {
-        onNext(opened); // call immediately to give the value
-        subscribers.push(onNext);
-    },
-    isOpened() {
-        return opened;
-    },
-    onDetailsId(id?: string | null | string[]) {
-        opened = (typeof id === 'string' && id.trim() != '') || Array.isArray(id) && typeof id[0] === 'string' && id[0].trim() != '';
-        subscribers.forEach(s => typeof s === 'function' && s(opened))
+  init() {
+    chartDone = false;
+    gridDone = false;
+    detailsOpened = false;
+  },
+  on(ev: 'gridVisible' | 'gridHidden' | 'chartDone' | 'gridDone') {
+    if (ev === 'chartDone') {
+      chartDone = true;
     }
-}
+    if (ev === 'gridDone') {
+      gridDone = true;
+    }
+    if (ev === 'gridVisible') {
+      gridVisible = true;
+    }
+    if (ev === 'gridHidden') {
+      gridVisible = false;
+    }
+  },
+  gridVisible(cb: () => void) {
+    callWhen(cb, () => Boolean(gridVisible));
+  },
+  chartVisible(cb: () => void) {
+    callWhen(cb, () => gridVisible === false);
+  },
+  firstTourDone(cb: () => void) {
+    callWhen(cb, () => chartDone || gridDone);
+  },
+  onDetailsId(id?: string | null | string[]) {
+    const opened =
+      (typeof id === 'string' && id.trim() != '') ||
+      (Array.isArray(id) && typeof id[0] === 'string' && id[0].trim() != '');
+
+    detailsOpened = opened;
+    console.log('--- details', detailsOpened);
+  },
+  detailsOpened(cb: () => void) {
+    callWhen(cb, () => detailsOpened);
+  },
+  readyToShowNavigationTour(cb: () => void) {
+    callWhen(cb, () => !detailsOpened && (chartDone || gridDone));
+  },
+};
 
 export default demo;
+function callWhen(cb: () => void, whenCb: () => boolean) {
+  const fn = () => {
+    if (whenCb()) {
+      cb();
+    } else {
+      setTimeout(fn, 1000);
+    }
+  };
+  fn();
+}
