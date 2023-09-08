@@ -1,11 +1,12 @@
-import { component$, useComputed$, useSignal, useStyles$, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
+import { component$, useSignal, useStyles$, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
+
 import Shepherd from 'shepherd.js';
 
 import demo from '../../core/demo';
 
-import styles from './header.scss?inline';
-import shepherdStyles from 'shepherd.js/dist/css/shepherd.css?inline'
 import { Button } from '@qwik-ui/tailwind';
+import shepherdStyles from 'shepherd.js/dist/css/shepherd.css?inline';
+import styles from './header.scss?inline';
 
 export const md = {
   fn: function x(...args: unknown[]) {
@@ -17,6 +18,7 @@ export const md = {
 export default component$(() => {
   useStylesScoped$(styles);
   useStyles$(shepherdStyles);
+  useStyles$('.pad-down {transform: translateY(10px);} .mute-button { background-color: lightgray; }');
 
   const tour = useTour();
 
@@ -27,46 +29,68 @@ export default component$(() => {
         <p> The app has 1000 demo bank movement records that you can visualize, categorize and see in grid form. </p>
         <p>Categorize by clicking on one of the chart sections or selecting the grid (top right corner) and selecting one or more rows of movements.</p>
         <p>Want to sign up for full version: <a class="link" href="https://docs.google.com/forms/d/1dsxhIgV8Hs2xphy_AxOdDg12iY0qW4GfqMcWafiZ5GE" target="_blank"> Sign up (Google Form)</a></p>
-        <Button onClick$={() => tour.value = true}>Want a tour?</Button>
+        <Button onClick$={() => tour.value += 1}>Want a tour?</Button>
       </div>
     </header>
   );
 });
 function useTour() {
-  const startTour = useSignal(false)
+  const startTour = useSignal(0)
 
-  useVisibleTask$(({ track }) => {
+  useVisibleTask$(({ track, cleanup}) => {
 
     if (track(() => startTour.value)) {
       demo.init();
 
       const chartTour = chartTourInit();
+      const gridTour = gridTourInit();
 
-      demo.readyToShowNavigationTour(() => {
-        navigationTourInit().start();
+      const cancelNavigationDemo = demo.readyToShowNavigationTour(() => {
+        const nav = navigationTourInit()
+        nav.start();
+        nav.on('cancel', cleanupFn);
       })
 
-      demo.gridVisible(() => {
-        console.log('grid visible')
+      const cancelGridDemo = demo.gridVisible(() => {
+        gridTour.start();
+        gridTour.on('cancel', cleanupFn);
       })
 
-      demo.chartVisible(() => {
+      const cancelChartDemo = demo.chartVisible(() => {
         setTimeout(() => {
           chartTour.start();
+          chartTour.on('cancel', cleanupFn)
         }, 500) // wait for content
       })
 
-      demo.detailsOpened(() => {
+      const cancelDetailsDemo = demo.detailsOpenedAndChart(() => {
         chartTour.complete();
 
         setTimeout(() => {
           const detailsTour = chartMovementDetailsTourInit();
           detailsTour.start();
           detailsTour.once('complete', () => demo.on('chartDone'));
+          detailsTour.on('cancel', cleanupFn);
         }, 300);
       });
 
-      chartTour.once('complete', () => startTour.value = false);
+      gridTour.once('complete', () => {
+        demo.on('gridDone');
+      });
+
+      const cleanupFn = () => {
+        cancelDetailsDemo();
+        cancelChartDemo();
+        cancelGridDemo();
+        cancelNavigationDemo();
+
+        gridTour.off('complete')
+        gridTour.complete();
+        chartTour.off('complete');
+        chartTour.complete();
+      }
+
+      cleanup(cleanupFn)
     }
 
   }, { strategy: 'document-idle' });
@@ -96,7 +120,7 @@ function chartMovementDetailsTourInit() {
     floatingUIOptions: {
       // middleware: [md]
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: detailsTour.next
     }]
@@ -110,7 +134,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="details-new-category"]',
       on: 'top'
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: detailsTour.next
     }]
@@ -123,7 +147,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="details-existing-category"]',
       on: 'top'
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: detailsTour.next,
     }]
@@ -136,7 +160,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="select-next-movement"]',
       on: 'top'
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: detailsTour.next,
     }]
@@ -149,7 +173,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="select-previous-movement"]',
       on: 'top'
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: detailsTour.complete,
     }]
@@ -176,7 +200,7 @@ function chartTourInit() {
     showOn: () => {
       return document.querySelector('#movements') != null;
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -189,7 +213,7 @@ function chartTourInit() {
       element: '[data-tour="months-axis"]',
       on: 'right'
     },
-    buttons: [{
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -208,6 +232,88 @@ function chartTourInit() {
     }
   });
   return chartTour;
+}
+
+function gridTourInit() {
+  const grid = new Shepherd.Tour({
+    useModalOverlay: true,
+    defaultStepOptions: {
+      classes: 'shadow-md bg-purple-dark',
+      scrollTo: false
+    }
+  });
+
+  grid.addStep({
+    id: 'show grid total',
+    text: 'The movements as individual lines in the grid.',
+    attachTo: {
+      element: '[data-tour="table"]',
+      on: 'right'
+    },
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+      text: 'Next',
+      action: function () { this.next(); },
+    }],
+    modalOverlayOpeningPadding: 15
+  });
+
+  grid.addStep({
+    id: 'show grid row',
+    text: 'Each row shows a credit(green)',
+    attachTo: {
+      element: document.querySelectorAll('[data-tour="table-row"][data-type="credit"]')[3] as HTMLElement,
+      on: 'bottom'
+    },
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+      text: 'Next',
+      action: function () { this.next(); },
+    }]
+  });
+
+  grid.addStep({
+    id: 'show grid row - debit',
+    text: 'Or debit(red)',
+    attachTo: {
+      element: document.querySelectorAll('[data-tour="table-row"][data-type="debit"]')[3] as HTMLElement,
+      on: 'bottom'
+    },
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+      text: 'Next',
+      action: function () { this.next(); },
+    }]
+  });
+
+  grid.addStep({
+    id: 'show grid select row',
+    text: 'You can select individual rows',
+    classes: 'pad-down',
+    attachTo: {
+      element: document.querySelectorAll('[data-tour="table-row-checkbox"]')[4] as HTMLElement,
+      on: 'bottom',
+    },
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+      text: 'Next',
+      action: function () { this.next(); },
+    }],
+    modalOverlayOpeningPadding: 15,
+  });
+
+  grid.addStep({
+    id: 'show grid select row',
+    text: 'Or all rows at once',
+    classes: 'pad-down',
+    modalOverlayOpeningPadding: 15,
+    attachTo: {
+      element: '[data-tour="table-row-all-checkbox"]',
+      on: 'bottom'
+    },
+    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+      text: 'Next',
+      action: function () { this.next(); },
+    }]
+  });
+
+  return grid;
 }
 
 function navigationTourInit() {

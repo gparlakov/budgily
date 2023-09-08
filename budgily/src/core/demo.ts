@@ -24,13 +24,13 @@ const demo = {
     }
   },
   gridVisible(cb: () => void) {
-    callWhen(cb, () => Boolean(gridVisible));
+    return callWhen(cb, () => Boolean(gridVisible));
   },
   chartVisible(cb: () => void) {
-    callWhen(cb, () => gridVisible === false);
+    return callWhen(cb, () => gridVisible === false);
   },
   firstTourDone(cb: () => void) {
-    callWhen(cb, () => chartDone || gridDone);
+    return callWhen(cb, () => chartDone || gridDone);
   },
   onDetailsId(id?: string | null | string[]) {
     const opened =
@@ -38,19 +38,24 @@ const demo = {
       (Array.isArray(id) && typeof id[0] === 'string' && id[0].trim() != '');
 
     detailsOpened = opened;
-    console.log('--- details', detailsOpened);
   },
-  detailsOpened(cb: () => void) {
-    callWhen(cb, () => detailsOpened);
+  detailsOpenedAndChart(cb: () => void): () => void {
+    return callWhen(cb, () => detailsOpened && !gridVisible);
   },
   readyToShowNavigationTour(cb: () => void) {
-    callWhen(cb, () => !detailsOpened && (chartDone || gridDone));
+    return callWhen(cb, () => !detailsOpened && (chartDone || gridDone));
   },
 };
 
 export default demo;
 function callWhen(cb: () => void, whenCb: () => boolean) {
+    let cancelled = false;
+    const cancel = () => cancelled = true;
+
   const fn = () => {
+    if(cancelled) {
+        return; // stop this
+    }
     if (whenCb()) {
       cb();
     } else {
@@ -58,4 +63,5 @@ function callWhen(cb: () => void, whenCb: () => boolean) {
     }
   };
   fn();
+  return cancel;
 }

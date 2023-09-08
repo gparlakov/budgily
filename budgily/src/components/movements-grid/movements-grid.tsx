@@ -23,7 +23,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
         <Categorize store={appStore} onCategorize={onCategorize} wide={true} />
       </div>
     </details>
-      <table class="table table-xs table-pin-rows">
+      <table class="table table-xs table-pin-rows" data-tour="table">
         <thead>
           <tr>
             <th><label>
@@ -38,7 +38,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                     grid.selected.selected = grid.allIds.reduce((acc, n) => ({ ...acc, [n]: true }), {});
                     appStore.selectedId = grid.allIds;
                   }
-                }} />
+                }} data-tour="table-row-all-checkbox"/>
             </label>
               <button onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids">
                 <img src="copy.svg" width="12" height="12" />
@@ -56,13 +56,15 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
         <Resource value={movements} onResolved={(ms) =>
           <>
             <tbody>
-              {ms.map(m => <tr key={m.id} class={m.type}>
+              {ms.map(m => <tr key={m.id} class={m.type} data-tour="table-row" data-type={m.type}>
                 <th><input type="checkbox" class="checkbox checkbox-xs" value={m.id}
                   checked={grid.selected.selected[m.id]}
                   onClick$={() => {
                     grid.selected.selected[m.id] = !Boolean(grid.selected.selected[m.id])
                     appStore.selectedId = Object.entries(grid.selected.selected).filter(([, selected]) => selected).map(([id]) => id);
-                  }} /></th>
+                  }}
+                  data-tour="table-row-checkbox"
+                  /></th>
                 <td>{m.type === 'credit' ? '+' : '-'} {m.amount}</td>
                 <td>{m.description}</td>
                 <td>{m.type}</td>
