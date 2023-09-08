@@ -29,7 +29,7 @@ export interface ReportsViewModel {
 export interface ReportsLandingProps {
 
   movementDetailsStore: {
-    selectedId?: string;
+    selectedId?: string | string[];
     movements:NoSerialize<MovementVm[]>;
     maxSum: number;
     months: string[];

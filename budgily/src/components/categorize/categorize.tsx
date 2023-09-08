@@ -7,7 +7,7 @@ import { ClientContext } from 'budgily/src/core/client.context';
 
 export type CategorizeProps = {
   store: AppStore;
-  onCategorize: NoSerialize<(r: CategorizeResponse) => void>;
+  onCategorize?: NoSerialize<(r: CategorizeResponse) => void>;
   wide?: boolean;
 }
 

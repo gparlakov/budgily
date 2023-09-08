@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "budgily"
-    ]
+    ],
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

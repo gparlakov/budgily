@@ -1,6 +1,6 @@
 import { readFile, stat, writeFile } from 'node:fs/promises';
-import { ReplaySubject } from 'rxjs';
-import { first, take, map } from 'rxjs/operators';
+import { ReplaySubject, firstValueFrom } from 'rxjs';
+import { take, map} from 'rxjs/operators';
 import { Categorize, Category, Movement } from './types';
 import { max } from 'd3';
 
@@ -20,11 +20,11 @@ stat(catsFileName)
   .then((cats) => categories$.next(cats));
 
 export function getAllCategories(): Promise<Category[]> {
-  return categories$.pipe(first()).toPromise();
+  return firstValueFrom(categories$);
 }
 
 export function getCategoriesByMovement(parent: Movement) {
-  return categories$
+  return firstValueFrom(categories$
     .pipe(
       take(1),
       map((cs) =>
@@ -32,8 +32,7 @@ export function getCategoriesByMovement(parent: Movement) {
           ? cs.filter((c) => (Array.isArray(c.movementIds) ? c.movementIds.includes(parent.id) : false))
           : cs
       )
-    )
-    .toPromise();
+    ));
 }
 
 export function categorize({ category, categoryId, movementIds }: Categorize) {

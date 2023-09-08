@@ -1,8 +1,9 @@
 import { readFile, stat } from 'node:fs/promises';
 import { categoriesFileName } from './categories.types';
+import { Category } from '@codedoc1/budgily-data';
 
 let retriesDefault = 1;
-export function readCats(retries = retriesDefault) {
+export function readCats(retries = retriesDefault): Promise<Category[]> {
 
   return stat(categoriesFileName)
     .then(
@@ -10,7 +11,7 @@ export function readCats(retries = retriesDefault) {
       () => false
     )
     .then((exists) => (exists ? readFile(categoriesFileName) : Buffer.from('[]')))
-    .then((b) => JSON.parse(b.toString()))
+    .then((b) => JSON.parse(b.toString()) as Category[])
     .catch((e) => {
       console.log('---error while reading categories', e);
       if(retries > 0) {

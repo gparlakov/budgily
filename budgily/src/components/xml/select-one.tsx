@@ -6,7 +6,7 @@ export interface SelectOneProps {
     file: Document;
     signature: DocumentSignature;
     selectedTag: string;
-    onSelected$: QRL<(s: string, parserId: string) => void>
+    onSelected$: QRL<(s: string) => void>
 }
 export const SelectOne = component$((props: SelectOneProps) => {
     if (props.signature == null) {

@@ -32,8 +32,8 @@ export function getMovements(): QueryResolvers['movements'] {
     const passThrough = () => true;
     const idFilter = Array.isArray(id) ? (m: Movement) => id.includes(m.id) : passThrough;
 
-    const amountMinFilter = amountMin > 0 ? (m: Movement) => m.amount >= amountMin : passThrough;
-    const amountMaxFilter = amountMax > 0 ? (m: Movement) => m.amount <= amountMax : passThrough;
+    const amountMinFilter = Number(amountMin) > 0 ? (m: Movement) => m.amount >= Number(amountMin) : passThrough;
+    const amountMaxFilter = Number(amountMax) > 0 ? (m: Movement) => m.amount <= Number(amountMax) : passThrough;
 
     let fromDateFilter: Filter = passThrough;
     if (isValidDate(fromDate)) {
@@ -65,7 +65,7 @@ export function getMovements(): QueryResolvers['movements'] {
         return (
           isAll ||
           (isNone && (m.categories == null || m.categories.length === 0)) ||
-          (isCategory && m.categories?.some((c) => cats.includes(c.id.toString())))
+          (isCategory && (m.categories?.some((c) => cats.includes(c.id?.toString())) ?? false))
         );
       };
     }
@@ -92,10 +92,10 @@ export function getMovements(): QueryResolvers['movements'] {
           .filter(searchFilter)
       )
       .then((ms) => {
-        let sorter: (a: Movement, b: Movement) => number;
+        let sorter: ((a: Movement, b: Movement) => number) | undefined = undefined;
 
         if(sortableString.includes(field as keyof Movement)) {
-          sorter = (a: Movement, b: Movement) => a[field] == null ? b[field] == null ? 0 : -1 : (a[field] as string).localeCompare(b[field]);
+          sorter = (a: Movement, b: Movement) => a[field] == null ? b[field] == null ? 0 : -1 : (a[field]!).localeCompare(b[field]!);
         }
 
         if(field === 'amount') {

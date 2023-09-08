@@ -1,6 +1,6 @@
 import { Configuration, OpenAIApi } from 'openai';
 
-const _eval = await import('eval').then(e => e.default);
+// const _eval = await import('eval').then((e) => e.default);
 
 export interface MovementImport {}
 
@@ -40,7 +40,8 @@ export async function importViaGPT(
     // });
 
     // const fn = response.data.choices[0].message?.content;
-    const fn = 'const {XMLParser} = require("fast-xml-parser");\n' +
+    const fn =
+      'const {XMLParser} = require("fast-xml-parser");\n' +
       'module.exports = function translateBankStatement(data) {\n' +
       '  const parser = new XMLParser({ unpairedTags: ["br", "hr"], stopNodes: ["*.br"], textNodeName: "$_text", });\n' +
       '  const xmlDoc = parser.parse(data);\n' +
@@ -75,21 +76,29 @@ export async function importViaGPT(
       '  return result;\n' +
       '}';
 
+    // const resultFn = _eval(fn, 'translate.ts', {}, true);
+    // console.log('typeof result', typeof resultFn);
 
-    const resultFn = _eval(fn, 'translate.ts', {}, true);
-    console.log('typeof result', typeof resultFn);
-
-    if (typeof resultFn === 'function') {
-      return { result: resultFn(input) };
-    } else {
-      return { error: { message: 'not a function' } };
-    }
+    // if (typeof resultFn === 'function') {
+    //   return { result: resultFn(input) };
+    // } else {
+    //   return { error: { message: 'not a function' } };
+    // }
   } catch (e) {
     try {
-      console.log(e.toJSON());
+      if (e satisfies { toJSON: () => string }) {
+        console.log(e.toJSON());
+      } else {
+        console.log(e);
+      }
     } catch {
       console.log(e);
     }
-    return { error: { message: e?.message ?? 'Could not parse the data', original: e } };
+    return {
+      error: {
+        message: (e satisfies { message: string }) ? e?.message : 'Could not parse the data',
+        original: e instanceof Error ? e : undefined,
+      },
+    };
   }
 }

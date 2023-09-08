@@ -49,7 +49,7 @@ export function categorize(): MutationResolvers['categorize'] {
       throw new Error('Can not create a category without a name');
     }
 
-    let cats = await loadCategories().then((get) => get);
+    let cats = await loadCategories();
 
     if (typeof categoryId === 'number' && cats.find((c) => c.id === categoryId) == null) {
       throw new Error(

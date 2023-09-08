@@ -96,7 +96,7 @@ export function useCombobox(): ComboboxContext {
   const search = useSignal<string>('');
   const isVisible = useSignal(false);
 
-  const items = useStore<HTMLUListElement[]>([]);
+  const items = useStore<HTMLElement[]>([]);
   const selected = useSignal();
   return {
     search,
