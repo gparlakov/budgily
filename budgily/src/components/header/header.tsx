@@ -38,7 +38,7 @@ function useTour() {
   const startTour = useSignal(0)
 
   useVisibleTask$(({ track, cleanup }) => {
-
+    let cleanupFn = () => {};
     if (track(() => startTour.value)) {
       demo.init();
 
@@ -48,18 +48,18 @@ function useTour() {
       const cancelNavigationDemo = demo.readyToShowNavigationTour(() => {
         const nav = navigationTourInit()
         nav.start();
-        nav.on('cancel', cleanupFn);
+        nav.on('cancel', () => cleanupFn());
       })
 
       const cancelGridDemo = demo.gridVisible(() => {
         gridTour.start();
-        gridTour.on('cancel', cleanupFn);
+        gridTour.on('cancel', () => cleanupFn());
       })
 
       const cancelChartDemo = demo.chartVisible(() => {
         setTimeout(() => {
           chartTour.start();
-          chartTour.on('cancel', cleanupFn)
+          chartTour.on('cancel', () => cleanupFn())
         }, 500) // wait for content
       })
 
@@ -70,7 +70,7 @@ function useTour() {
           const detailsTour = chartMovementDetailsTourInit();
           detailsTour.start();
           detailsTour.once('complete', () => demo.on('chartDone'));
-          detailsTour.on('cancel', cleanupFn);
+          detailsTour.on('cancel', () => cleanupFn());
         }, 300);
       });
 
@@ -78,7 +78,7 @@ function useTour() {
         demo.on('gridDone');
       });
 
-      const cleanupFn = () => {
+      cleanupFn = () => {
         cancelDetailsDemo();
         cancelChartDemo();
         cancelGridDemo();
@@ -230,7 +230,8 @@ function chartTourInit() {
     showOn: () => {
       return document.querySelector('#movements') != null;
     },
-    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }]
+    // don't want users to accidentally click on this button as it appears where the next button does usually
+    // buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }]
   });
   return chartTour;
 }
@@ -312,6 +313,53 @@ function gridTourInit() {
       text: 'Next',
       action: function () { this.next(); },
     }]
+  });
+
+  grid.addStep({
+    id: 'show grid categorize',
+    text: 'And categorize using this control. Click to toggle open/closed.',
+    classes: 'pad-down',
+    modalOverlayOpeningPadding: 15,
+    attachTo: {
+      element: '[data-tour="categorize-control"]',
+      on: 'bottom'
+    },
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
+      text: 'Next',
+      action: function () { this.next(); },
+    }]
+  });
+
+  grid.addStep({
+    id: 'show grid categorize - new ',
+    text: 'Type in here to create a new category.',
+    classes: 'pad-down',
+    modalOverlayOpeningPadding: 15,
+    attachTo: {
+      element: '[data-tour="categorize-control-new"]',
+      on: 'bottom'
+    },
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
+      text: 'Next',
+      action: function () { this.next(); },
+    }],
+    showOn: () => document.querySelector('[data-tour="categorize-control-new"]')?.checkVisibility() ?? false
+  });
+
+  grid.addStep({
+    id: 'show grid categorize - new ',
+    text: 'Or use dropdown to see your created categories.',
+    classes: 'pad-down',
+    modalOverlayOpeningPadding: 15,
+    attachTo: {
+      element: '[data-tour="categorize-control-existing"]',
+      on: 'bottom'
+    },
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
+      text: 'Next',
+      action: function () { this.next(); },
+    }],
+    showOn: () => document.querySelector('[data-tour="categorize-control-existing"]')?.checkVisibility() ?? false
   });
 
   return grid;

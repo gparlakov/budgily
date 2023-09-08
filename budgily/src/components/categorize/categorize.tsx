@@ -47,8 +47,10 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
         bind: value={newCat}
         class="input input-bordered w-full max-w-xs"
         ref={newCatInput}
+        data-tour="categorize-control-new"
       ></input>
-      <select class="select select-bordered" bind: value={existingCat}>
+      <select class="select select-bordered" bind: value={existingCat}
+        data-tour="categorize-control-existing">
         {appStore.allCategories?.map((c) => (
           <option key={c.id} value={c.id} selected={c.id.toString() === existingCat.value}>
             {c.name}

@@ -18,7 +18,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
   return <>
 
     <div class="overflow-x-auto"><details class="collapse bg-base-300 collapse collapse-arrow collapse-sm">
-      <summary class="collapse-title text-xl/16 p-2.5 min-h-fit">Categorize (click to open)</summary>
+      <summary class="collapse-title text-xl/16 p-2.5 min-h-fit" data-tour="categorize-control">Categorize (click to open)</summary>
       <div class="collapse-content">
         <Categorize store={appStore} onCategorize={onCategorize} wide={true} />
       </div>
