@@ -37,7 +37,7 @@ export default component$(() => {
 function useTour() {
   const startTour = useSignal(0)
 
-  useVisibleTask$(({ track, cleanup}) => {
+  useVisibleTask$(({ track, cleanup }) => {
 
     if (track(() => startTour.value)) {
       demo.init();
@@ -120,7 +120,7 @@ function chartMovementDetailsTourInit() {
     floatingUIOptions: {
       // middleware: [md]
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: detailsTour.next
     }]
@@ -134,7 +134,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="details-new-category"]',
       on: 'top'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: detailsTour.next
     }]
@@ -147,7 +147,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="details-existing-category"]',
       on: 'top'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: detailsTour.next,
     }]
@@ -160,7 +160,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="select-next-movement"]',
       on: 'top'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: detailsTour.next,
     }]
@@ -173,7 +173,7 @@ function chartMovementDetailsTourInit() {
       element: '[data-tour="select-previous-movement"]',
       on: 'top'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: detailsTour.complete,
     }]
@@ -200,7 +200,7 @@ function chartTourInit() {
     showOn: () => {
       return document.querySelector('#movements') != null;
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -213,7 +213,7 @@ function chartTourInit() {
       element: '[data-tour="months-axis"]',
       on: 'right'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -225,11 +225,12 @@ function chartTourInit() {
     text: 'Click to open details',
     attachTo: {
       element: '#movements > rect:first-of-type ',
-      on: 'right'
+      on: 'top-start'
     },
     showOn: () => {
       return document.querySelector('#movements') != null;
-    }
+    },
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }]
   });
   return chartTour;
 }
@@ -250,7 +251,7 @@ function gridTourInit() {
       element: '[data-tour="table"]',
       on: 'right'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }],
@@ -264,7 +265,7 @@ function gridTourInit() {
       element: document.querySelectorAll('[data-tour="table-row"][data-type="credit"]')[3] as HTMLElement,
       on: 'bottom'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -277,7 +278,7 @@ function gridTourInit() {
       element: document.querySelectorAll('[data-tour="table-row"][data-type="debit"]')[3] as HTMLElement,
       on: 'bottom'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -291,7 +292,7 @@ function gridTourInit() {
       element: document.querySelectorAll('[data-tour="table-row-checkbox"]')[4] as HTMLElement,
       on: 'bottom',
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }],
@@ -307,7 +308,7 @@ function gridTourInit() {
       element: '[data-tour="table-row-all-checkbox"]',
       on: 'bottom'
     },
-    buttons: [{text: 'Cancel tour', action: function () { this.cancel()}, classes: 'mute-button'},{
+    buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
       text: 'Next',
       action: function () { this.next(); },
     }]
@@ -333,7 +334,7 @@ function navigationTourInit() {
       on: 'bottom'
     },
     buttons: [
-      {
+      { text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
         text: 'Next',
         action: navigationTour.next,
       }
@@ -348,7 +349,7 @@ function navigationTourInit() {
       on: 'bottom'
     },
     buttons: [
-      {
+      { text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }, {
         text: 'Next',
         action: () => {
           navigationTour.next();
