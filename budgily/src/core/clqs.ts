@@ -2,6 +2,7 @@
  * Custom version of 'clsx' utility migrated to TypeScript.
  */
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ClassDictionary = Record<string, any>;
 export type ClassArray = ClassValue[];
 export type ClassValue = ClassArray | ClassDictionary | string | number | null | boolean | undefined;

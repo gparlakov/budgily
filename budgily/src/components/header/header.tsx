@@ -33,11 +33,12 @@ export default component$(() => {
     </header>
   );
 });
+
 function useTour() {
   const startTour = useSignal(0)
 
   useVisibleTask$(({ track, cleanup }) => {
-    let cleanupFn = () => {};
+    let cleanupFn = () => { return; };
     if (track(() => startTour.value)) {
       demo.init();
 

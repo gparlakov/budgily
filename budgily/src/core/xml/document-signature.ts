@@ -27,7 +27,7 @@ export function getXmlDocumentSignature(d: Document): DocumentSignature {
     traverseDOM(d.documentElement, 0);
 
     const maxCount = Object.values(counts).sort((a, b) => b - a);
-    const [firstElementWithMaxCount] = Object.entries(counts).find(([k, count]) => count === maxCount[0]) ?? []
+    const [firstElementWithMaxCount] = Object.entries(counts).find(([, count]) => count === maxCount[0]) ?? []
 
     return {
         tagNameCounts: counts,

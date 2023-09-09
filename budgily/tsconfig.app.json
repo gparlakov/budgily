@@ -4,6 +4,6 @@
     "outDir": "../../dist/out-tsc"
   },
   "files": [],
-  "exclude": [],
-  "include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"]
+  "exclude": ["**/*.spec.tsx", "**/*.spec.ts", "./dist/**/*.*"],
+  "include": []
 }

@@ -1,10 +1,9 @@
-import { JSXChildren, NoSerialize, QRL, QwikIntrinsicElements, Slot, component$, noSerialize, useSignal, useStyles$, useStylesScoped$ } from '@builder.io/qwik';
+import { JSXChildren, NoSerialize, QwikIntrinsicElements, Slot, component$, useSignal, useStylesScoped$ } from '@builder.io/qwik';
 import { DocumentSignature } from '../../core/xml/document-signature';
-import { Parsed } from '../../core/xml/reader';
 
 import styles from './visualizer.scss?inline';
 
-import { clsq } from 'budgily/src/core/clqs';
+import { clsq } from '../../core/clqs';
 
 
 export type VisualizerXMLProps = {

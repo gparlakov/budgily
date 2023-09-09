@@ -1,9 +1,9 @@
-import { NoSerialize, Resource, component$, noSerialize, useResource$, useSignal, useStylesScoped$, useTask$, useVisibleTask$ } from '@builder.io/qwik';
+import { NoSerialize, Resource, component$, noSerialize, useResource$, useSignal, useStylesScoped$, useVisibleTask$ } from '@builder.io/qwik';
 
 import styles from './categories-fetcher.scss?inline';
 
-import { CategoryVM } from 'budgily/src/core/movement.types';
 import { getCategoriesFromLocalStorageOrEmpty } from '@codedoc1/budgily-data-client';
+import { CategoryVM } from '../../core/movement.types';
 
 export interface CategoriesFetcherProps {
   store: {

@@ -6,8 +6,8 @@ import {
   validDateString
 } from '@codedoc1/budgily-data-client';
 
-import { AppStore } from 'budgily/src/core/app.store';
-import { CategoryVM } from 'budgily/src/core/movement.types';
+import { AppStore } from '../../core/app.store';
+import { CategoryVM } from '../../core/movement.types';
 import styles from './movement-filter.scss?inline';
 
 export interface MovementFilterProps {
@@ -33,7 +33,7 @@ export const CategoryFilter = component$(({ filterStore }: CategoryFilterProps) 
   const cats = [
     { id: filterValueAllCategories, name: 'All', selected: filterStore.filter.categories?.includes(filterValueAllCategories) },
     { id: filterValueNoCategory, name: 'No category', selected: filterStore.filter.categories?.includes(filterValueNoCategory) },
-    ...(filterStore.allCategories as CategoryVM[]).map(c => ({ ...c, selected: filterStore.filter.categories?.includes(c.id) }))
+    ...(filterStore.allCategories as CategoryVM[]).map(c => ({ ...c, selected: filterStore.filter.categories?.includes(c.id?.toString()) }))
   ];
   const ids = useSignal<string[]>([]);
 
@@ -96,15 +96,15 @@ export const DateRangeFilter = component$(({ filterStore }: DateRangeFilterProps
     track(fromV);
     track(toV);
 
-    filterStore.filter.from = validDateString(fromV.value) ? new Date(fromV.value!) : undefined;
-    filterStore.filter.to = validDateString(toV.value) ? new Date(toV.value!) : undefined;
+    filterStore.filter.from = validDateString(fromV.value) ? new Date(fromV.value) : undefined;
+    filterStore.filter.to = validDateString(toV.value) ? new Date(toV.value) : undefined;
   })
 
   return (
     <div class="py-2 px-5 flex w-6/12">
-      <label for={fromId}>Range </label><input type="date" bind: value={fromV} id={fromId} class="input input-bordered input-sm" />
+      <label for={fromId}>Range </label><input type="date" bind:value={fromV} id={fromId} class="input input-bordered input-sm" />
 
-      <span>-</span><input type="date" bind: value={toV} id={toId} class="input input-bordered input-sm" />
+      <span>-</span><input type="date" bind:value={toV} id={toId} class="input input-bordered input-sm" />
     </div>
   );
 });
@@ -127,7 +127,7 @@ export const DebouncedInput = component$(({ output, debounce, ...rest }: Debounc
     }, debounce)
 
     cleanup(() => clearTimeout(timeout));
-  },{ strategy: 'intersection-observer' });
+  }, { strategy: 'intersection-observer' });
 
   return <input {...rest} bind:value={input} />;
 });

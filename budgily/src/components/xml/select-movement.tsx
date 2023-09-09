@@ -44,20 +44,20 @@ export const SelectMovement = component$((props: SelectMovementProps) => {
 
     return <TwoColumns >
 
-        <span q: slot="left-title">Is this it?</span>
-        <div class="mb-4" q: slot="left-description">We've outlined what we detected to be the most probable one movement part.</div>
-        <div class="mb-4" q: slot="left-description">Did we get it right?</div>
-        <div class="mb-4" q: slot="left-description"> Confirm or select one movement →</div>
+        <span q:slot="left-title">Is this it?</span>
+        <div class="mb-4" q:slot="left-description">We've outlined what we detected to be the most probable one movement part.</div>
+        <div class="mb-4" q:slot="left-description">Did we get it right?</div>
+        <div class="mb-4" q:slot="left-description"> Confirm or select one movement →</div>
 
-        <Button class="pop-up" onClick$={() => props.onSelected$(detected)} q: slot="left-action">Yes</Button>
+        <Button class="pop-up" onClick$={() => props.onSelected$(detected)} q:slot="left-action">Yes</Button>
 
-        <VisualizeXML q: slot="right" class="xml-content" first={3} {...props}
+        <VisualizeXML q:slot="right" class="xml-content" first={3} {...props}
             textWrapper={{ class: 'hovering', tagClasses: { [detected ?? '']: 'probable-movement' } }}
             onClick={noSerialize((tag) => { props.onSelected$(tag) })}>
             {
                 Object.entries(props.signature?.tagsMap ?? {})
                     .map(
-                        ([tag]) => <div key={`select-${tag}`} q: slot={tag}>
+                        ([tag]) => <div key={`select-${tag}`} q:slot={tag}>
                             <div class="visible-when-hover" >
                                 <img src="/checkmark.svg" class="yes-this-is-it" />
                             </div>

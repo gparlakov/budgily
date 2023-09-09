@@ -29,7 +29,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
     if (newCat.value) {
       return { name: newCat.value, new: true };
     } else if (existingCat.value) {
-      return { name: appStore.allCategories?.find((c) => c.id === existingCat.value)?.name, new: false };
+      return { name: appStore.allCategories?.find((c) => c.id.toString() === existingCat.value)?.name, new: false };
     }
   });
 
@@ -70,7 +70,7 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
 
                   <form
                     method="dialog"
-                    preventdefault: submit
+                    preventdefault:submit
                     onSubmit$={onCategorize}
                     class="categorize-form py-2 px-5 block background-green-400 relative"
                   >
@@ -83,12 +83,12 @@ export const MovementDetails = component$(({ store: appStore }: MovementDetailsP
                       placeholder="New category"
                       name="category"
                       autoComplete="off"
-                      bind: value={newCat}
+                      bind:value={newCat}
                       class="input input-bordered w-full max-w-xs"
                       ref={newCatInput}
                       data-tour="details-new-category"
                     ></input>
-                    <select class="select select-bordered" bind: value={existingCat} data-tour="details-existing-category">
+                    <select class="select select-bordered" bind:value={existingCat} data-tour="details-existing-category">
                       {appStore.allCategories?.map((c) => (
                         <option key={c.id} value={c.id}>
                           {c.name}

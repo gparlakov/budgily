@@ -2,8 +2,8 @@ import { Resource, component$, noSerialize, useContext, useResource$, useStore, 
 
 import { ClientContextType, getMovementsFromLocalStorageOrWellKnown } from '@codedoc1/budgily-data-client';
 import { Pagination } from '@qwik-ui/tailwind';
-import { AppStore } from 'budgily/src/core/app.store';
-import { ClientContext } from 'budgily/src/core/client.context';
+import { AppStore } from '../../core/app.store';
+import { ClientContext } from '../../core/client.context';
 
 import { Categorize } from '../categorize/categorize';
 import { mapToVm } from '../movement-details/movement-details.types';
@@ -12,7 +12,7 @@ import styles from './movements-grid.scss?inline';
 export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
   useStylesScoped$(styles);
   const ctx = useContext(ClientContext);
-  const grid = useStore<MovementsGrid>({ page: 1, size: 20, selected: useStore({ allSelected: false, selected: {} }), allIds: [], refresh: 1 })
+  const grid = useStore<MovementsGridStore>({ page: 1, size: 20, selected: useStore({ allSelected: false, selected: {} }), allIds: [], refresh: 1 })
   const movements = resourceMovementsPaginated(ctx, grid, appStore);
   const onCategorize = noSerialize(() => { grid.refresh += 1 })
   return <>
@@ -60,7 +60,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                 <th><input type="checkbox" class="checkbox checkbox-xs" value={m.id}
                   checked={grid.selected.selected[m.id]}
                   onClick$={() => {
-                    grid.selected.selected[m.id] = !Boolean(grid.selected.selected[m.id])
+                    grid.selected.selected[m.id] = !(grid.selected.selected[m.id])
                     appStore.selectedId = Object.entries(grid.selected.selected).filter(([, selected]) => selected).map(([id]) => id);
                   }}
                   data-tour="table-row-checkbox"
@@ -113,7 +113,7 @@ export interface MovementsGridProps {
   appStore: AppStore;
 }
 
-export interface MovementsGrid {
+export interface MovementsGridStore {
   allIds: string[];
   page: number;
   size: number;
@@ -123,7 +123,7 @@ export interface MovementsGrid {
   refresh: number;
 }
 
-function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGrid, { filter }: MovementsGridProps['appStore']) {
+function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGridStore, { filter }: MovementsGridProps['appStore']) {
 
   return useResource$(({ track, cleanup }) => {
     track(() => grid.page);

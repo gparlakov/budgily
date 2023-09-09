@@ -3,7 +3,7 @@ import { AutocompleteRoot, AutocompleteLabel, AutocompleteTrigger, AutocompleteI
 
 import styles from './select-locale.scss?inline';
 import localesJSON from './locales.json?inline';
-import { skipped } from 'budgily/src/core/date-parser';
+import { skipped } from '../../core/date-parser';
 
 export type Locale = string;
 export type Language = string;

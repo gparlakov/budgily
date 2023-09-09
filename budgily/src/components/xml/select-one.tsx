@@ -1,5 +1,5 @@
 import { QRL, component$ } from '@builder.io/qwik';
-import { DocumentSignature } from 'budgily/src/core/xml/document-signature';
+import { DocumentSignature } from '../../core/xml/document-signature';
 import { VisualizeXML } from './visualizer';
 
 export interface SelectOneProps {
@@ -19,9 +19,10 @@ export const SelectOne = component$((props: SelectOneProps) => {
             Object.entries(props.signature.tagsMap)
                 .map(([tag]) =>
                     <button
+                        key={tag}
                         class={`btn btn-xs ${tag === detected ? 'btn-success btn-sm' : 'btn-faded'} `}
                         onClick$={() => props.onSelected$(tag)}
-                        q: slot={tag}>{
+                        q:slot={tag}>{
                             tag === detected ? 'Yes' : 'This is it'
                         }</ button>
                 )

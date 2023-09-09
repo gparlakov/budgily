@@ -1,9 +1,9 @@
-import { Signal, component$, useStylesScoped$, $, useComputed$, useSignal, useContext, NoSerialize, QwikIntrinsicElements, useStore } from '@builder.io/qwik';
+import { $, NoSerialize, Signal, component$, useComputed$, useContext, useSignal, useStylesScoped$ } from '@builder.io/qwik';
 
+import { CategorizeResponse, ClientContextType, categorizeForDemo } from '@codedoc1/budgily-data-client';
+import { AppStore } from '../../core/app.store';
+import { ClientContext } from '../../core/client.context';
 import styles from './categorize.scss?inline';
-import { CategorizeResponse, ClientContextType, categorize, categorizeForDemo } from '@codedoc1/budgily-data-client';
-import { AppStore } from 'budgily/src/core/app.store';
-import { ClientContext } from 'budgily/src/core/client.context';
 
 export type CategorizeProps = {
   store: AppStore;
@@ -30,7 +30,7 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
 
   return <form
     method="dialog"
-    preventdefault: submit
+    preventdefault:submit
     onSubmit$={onCategorize}
     class="categorize-form py-2 px-5 block background-green-400 relative"
   >
@@ -44,12 +44,12 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
         placeholder="New category"
         name="category"
         autoComplete="off"
-        bind: value={newCat}
+        bind:value={newCat}
         class="input input-bordered w-full max-w-xs"
         ref={newCatInput}
         data-tour="categorize-control-new"
       ></input>
-      <select class="select select-bordered" bind: value={existingCat}
+      <select class="select select-bordered" bind:value={existingCat}
         data-tour="categorize-control-existing">
         {appStore.allCategories?.map((c) => (
           <option key={c.id} value={c.id} selected={c.id.toString() === existingCat.value}>
@@ -57,12 +57,12 @@ export const Categorize = component$(({ store: appStore, onCategorize: onCategor
           </option>
         ))}
       </select>
-    </div>
+    </div >
 
     <button type="submit" class={`btn ${wide ? 'inline-block' : 'block'} m-1 btn-success`}>
       {loading.value ? <span class="loading loading-spinner"></span> : 'Categorize'}
     </button>
-  </form>;
+  </form >
 });
 
 
@@ -83,7 +83,7 @@ function onCategorizeHandler(
     const isNew = typeof newCat.value === 'string' && newCat.value.trim() != '';
 
     const ids = Array.isArray(store.selectedId) ? [...store.selectedId] : [store.selectedId];
-    const input = isNew ? { category: { name: newCat.value!, movementIds: ids }, movementIds: ids }
+    const input = isNew && newCat.value != null ? { category: { name: newCat.value, movementIds: ids }, movementIds: ids }
       : existingCat.value ? { categoryId: parseInt(existingCat.value), movementIds: ids }
         : undefined;
     if (input) {
@@ -92,12 +92,12 @@ function onCategorizeHandler(
         .then((c) => {
           loading.value = false;
           if (newCat.value != null && c?.id != null) {
-            store.allCategories?.push({...c, id: c.id });
+            store.allCategories?.push({ ...c, id: c.id });
             newCat.value = '';
           }
           existingCat.value = c?.id?.toString();
           // delegate to callback if any
-          afterCategorize && c && afterCategorize({categorize: {...c, id: c.id.toString()}})
+          afterCategorize && c && afterCategorize({ categorize: { ...c, id: c.id.toString() } })
         })
         .catch(e => {
           console.log(e);

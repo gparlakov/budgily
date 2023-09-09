@@ -24,7 +24,7 @@ export const comboboxContext = createContextId<ComboboxContext>('combobox-root')
 
 export const useComboboxProvider = (state: ComboboxContext) => useContextProvider(comboboxContext, state);
 
-export const Combobox = component$(({ input, ul, value }: ComboboxProps) => {
+export const Combobox = component$(({ input, ul }: ComboboxProps) => {
   const combobox = useCombobox();
   useComboboxProvider(combobox);
 
@@ -64,7 +64,7 @@ export const ComboboxItem = component$(({ class: classNames, ...props }: Combobo
   const ref = useSignal<HTMLElement>();
   const { isVisible, } = useContext(comboboxContext);
 
-  useVisibleTask$(({cleanup}) => {
+  useVisibleTask$(() => {
     // add the item when it's instantiated
     // addItem(ref)
 
@@ -97,7 +97,7 @@ export function useCombobox(): ComboboxContext {
   const isVisible = useSignal(false);
 
   const items = useStore<HTMLElement[]>([]);
-  const selected = useSignal();
+  // const selected = useSignal();
   return {
     search,
     updateSearch: $((s: string) => {
@@ -113,8 +113,8 @@ export function useCombobox(): ComboboxContext {
       items.splice(0, items.length);
       items.push(...is);
     }),
-    handleKeyPress: $((e, el) => {
-      const isDown = e.key === 'ArrowDown';
+    handleKeyPress: $((e) => {
+      // const isDown = e.key === 'ArrowDown';
       const isUp = e.key === 'ArrowUp';
 
       if(isUp){

@@ -18,7 +18,7 @@ export const slot = Object.freeze({
 });
 
 export function next() {
-    let counter: Record<keyof typeof slot, number> = {
+    const counter: Record<keyof typeof slot, number> = {
         crumb: 0,
         title: 0,
         step: 0
@@ -47,6 +47,7 @@ export type WizardContext = {
     prev$: QRL<() => void>,
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const noop$ = $((v?: unknown) => { return; });
 export const emptyContext: WizardContext = {
     onPage$: noop$,

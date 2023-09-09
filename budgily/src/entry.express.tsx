@@ -7,7 +7,7 @@
  * - https://qwik.builder.io/deployments/node/
  *
  */
-import { createQwikCity, type PlatformNode } from '@builder.io/qwik-city/middleware/node';
+import { createQwikCity, /*type PlatformNode*/ } from '@builder.io/qwik-city/middleware/node';
 import qwikCityPlan from '@qwik-city-plan';
 import { manifest } from '@qwik-client-manifest';
 import render from './entry.ssr';
@@ -15,9 +15,9 @@ import express from 'express';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 
-declare global {
-  interface QwikCityPlatform extends PlatformNode {}
-}
+// declare global {
+//   interface QwikCityPlatform extends PlatformNode {}
+// }
 
 // import compression from 'compression';
 

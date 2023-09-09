@@ -1,7 +1,7 @@
-import { DateParser } from 'budgily/src/core/date-parser';
-import { NumberParser } from 'budgily/src/core/number-parser';
+import { DateParser } from '../../core/date-parser';
+import { NumberParser } from '../../core/number-parser';
 import locales from './../../components/select-locale/locales.json?inline';
-import { invalid } from 'budgily/src/core/invalid-locales';
+import { invalid } from '../../core/invalid-locales';
 
 export async function readAndParseFiles(input: HTMLInputElement): Promise<Document[]> {
   const files: FileList | null = input.files;
@@ -69,7 +69,7 @@ export function recognizeLocale(element: Element): Record<Locale, Record<string,
   return Object.keys(locales)
     .filter((l) => !invalid.includes(l))
     .map((locale) => [locale, getProbableParsed(element, locale)] as const)
-    .filter(([l, parsed]) => {
+    .filter(([, parsed]) => {
       const types = Object.values(parsed).map((v) => v.type);
       return types.includes('amount') && types.includes('date');
     })

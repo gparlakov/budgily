@@ -3,7 +3,6 @@ import {
   Resource,
   component$,
   noSerialize,
-  useComputed$,
   useResource$,
   useSignal,
   useStore,
@@ -18,13 +17,13 @@ import { filterValueNoCategory } from '@codedoc1/budgily-data-client';
 import { MovementFilter } from '../components/movement-filter/movement-filter';
 import { ReportsLanding } from '../components/reports-landing/reports-landing';
 
-import { MovementsGrid } from 'budgily/src/components/movements-grid/movements-grid';
-import { mapToViewModel } from 'budgily/src/core/movements.fetch';
 import { CategoriesFetcher } from '../components/categories-fetcher/categories-fetcher';
 import { MovementDetails } from '../components/movement-details/movement-details';
+import { MovementsGrid } from '../components/movements-grid/movements-grid';
 import { AppStore } from '../core/app.store';
 import { debouncedGetAllMovements } from '../core/data/get-data';
 import demo from '../core/demo';
+import { mapToViewModel } from '../core/movements.fetch';
 
 import global from './index.scss?inline';
 
@@ -96,7 +95,7 @@ export default component$(() => {
           <div class="join" data-tour="grid-chart-controls">
             <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => { view.value = 'chart'; appStore.selectedId = undefined;  }}>📊 <span class="hidden-text">chart</span></button>
             <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => { view.value = 'grid'; appStore.selectedId = undefined; }}>📑 <span class="hidden-text">grid</span></button>
-            <button class="join-item hide-text  btn btn-sm" onClick$={() => (appStore.filter.categories = [...appStore.filter.categories])} title="reload"> 🔁 <span class="hidden-text">reload</span></button>
+            <button class="join-item hide-text  btn btn-sm" onClick$={() => (appStore.filter.categories = [...appStore.filter.categories ?? []])} title="reload"> 🔁 <span class="hidden-text">reload</span></button>
           </div>
         </div>
 
