@@ -14,8 +14,10 @@ import { renderToStream, RenderToStreamOptions } from "@builder.io/qwik/server";
 import { manifest } from "@qwik-client-manifest";
 import Root from "./root";
 
+const stopGTag = process.env.BUDGILY_STOP_GOOGLE_TAG ?? false;
+
 export default function (opts: RenderToStreamOptions) {
-  return renderToStream(<Root />, {
+  return renderToStream(<Root runGTag={!stopGTag}/>, {
     manifest,
     ...opts,
     // Use container attributes to set attributes on the html tag.

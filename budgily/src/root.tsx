@@ -5,12 +5,16 @@ import {
   ServiceWorkerRegister,
 } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
+import { QwikPartytown } from './components/partytown/partytown';
 
 import globalStyles from './global.scss?inline';
 import { ClientContext, createClientContext } from './core/client.context';
 const base = process.env.BUDGILY_BASE ?? '/';
 
-export default component$(() => {
+export type RootProps = {
+  runGTag?: boolean;
+}
+export default component$(({runGTag}: RootProps) => {
   /**
    * The root of a QwikCity site always start with the <QwikCityProvider> component,
    * immediately followed by the document's <head> and <body>.
@@ -27,6 +31,15 @@ export default component$(() => {
         <meta charSet="utf-8" />
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
+
+        {runGTag && <QwikPartytown forward={['dataLayer.push']} /> }
+        {/* will do nothing unless partytown active b/c of the type - text/partytown */}
+        <script
+          async
+          type="text/partytown"
+          src="https://www.googletagmanager.com/gtag/js?id=G-D0YB3XMFHW"
+        />
+
         <RouterHead />
       </head>
       <body lang="en">

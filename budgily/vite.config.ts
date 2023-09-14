@@ -4,6 +4,8 @@ import { defineConfig } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { qwikNxVite } from 'qwik-nx/plugins';
 import viteEslint from 'vite-plugin-eslint';
+import { partytownVite } from '@builder.io/partytown/utils';
+import { join } from 'path';
 
 export default defineConfig({
   cacheDir: '../node_modules/.vite/./budgily',
@@ -23,6 +25,7 @@ export default defineConfig({
     }),
     tsconfigPaths({ root: '../' }),
     viteEslint({ lintOnStart: false, overrideConfigFile: './.eslintrc.json' }),
+    partytownVite({ dest: join(__dirname, 'dist', 'client', '~partytown') }),
   ],
   server: {
     fs: {
