@@ -1,4 +1,4 @@
-import { component$, useContextProvider, useStyles$ } from "@builder.io/qwik";
+import { component$, useContextProvider, useStyles$, useVisibleTask$ } from "@builder.io/qwik";
 import {
   QwikCityProvider,
   RouterOutlet,
@@ -25,6 +25,14 @@ export default component$(({runGTag}: RootProps) => {
 
   useContextProvider(ClientContext, createClientContext());
 
+  useVisibleTask$(() => {
+    if(runGTag) {
+      // pushing out to datalayer
+      window.dataLayer.push(['js', new Date()]);
+      window.dataLayer.push(['config', 'G-D0YB3XMFHW']);
+    }
+  })
+
   return (
     <QwikCityProvider>
       <head>
@@ -32,7 +40,7 @@ export default component$(({runGTag}: RootProps) => {
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
 
-        {runGTag && <QwikPartytown forward={['dataLayer.push']} /> }
+        <QwikPartytown forward={['dataLayer.push']} />
         {/* will do nothing unless partytown active b/c of the type - text/partytown */}
         <script
           async
