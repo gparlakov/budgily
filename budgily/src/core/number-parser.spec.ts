@@ -1,6 +1,3 @@
-// we want to be able to load all locales and the ?inline results in an error
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore - these are the locales
 import locales from './../components/select-locale/locales.json?inline';
 import { invalid } from './invalid-locales';
 import { NumberParser } from "./number-parser";
