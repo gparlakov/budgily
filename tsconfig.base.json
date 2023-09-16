@@ -17,7 +17,8 @@
     "paths": {
       "@codedoc1/budgily-api": ["budgily-api/src/index"],
       "@codedoc1/budgily-data": ["budgily-data/src/index.ts"],
-      "@codedoc1/budgily-data-client": ["budgily-data/src/index.client.ts"]
+      "@codedoc1/budgily-data-client": ["budgily-data/src/index.client.ts"],
+      "@codedoc1/analytics": ["budgily/src/analytics/index"]
     }
   },
   "exclude": ["node_modules", "tmp"]

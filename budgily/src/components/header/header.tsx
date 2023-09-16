@@ -7,6 +7,7 @@ import demo from '../../core/demo';
 import { Button } from '@qwik-ui/tailwind';
 import shepherdStyles from 'shepherd.js/dist/css/shepherd.css?inline';
 import styles from './header.scss?inline';
+import { tag } from '@codedoc1/analytics';
 
 export const md = {
   fn: function x(...args: unknown[]) {
@@ -29,7 +30,7 @@ export default component$(() => {
         <p>The app can visualize, categorize and see bank account movements in grid form.</p>
         <p>This is the demo version with a 1000 randomly generated movements. Import your own is coming soon.</p>
         <p>Want to sign up for full version: <a class="link" href="https://docs.google.com/forms/d/1dsxhIgV8Hs2xphy_AxOdDg12iY0qW4GfqMcWafiZ5GE" target="_blank"> Sign up (Google Form)</a></p>
-        <Button onClick$={() => tour.value += 1}>Want a tour?</Button>
+        <Button onClick$={() => {tour.value += 1}}>Want a tour?</Button>
       </div>
     </header>
   );
@@ -191,6 +192,7 @@ function chartTourInit() {
     }
   });
 
+
   chartTour.addStep({
     id: 'show chart total',
     text: 'The movements as columns of individual credits or debits stacked on top of each other. Each box represents a single movement.',
@@ -234,6 +236,9 @@ function chartTourInit() {
     // don't want users to accidentally click on this button as it appears where the next button does usually
     // buttons: [{ text: 'Cancel tour', action: function () { this.cancel() }, classes: 'mute-button' }]
   });
+
+
+  wireUpAnalytics(chartTour, 'chart-tour');
   return chartTour;
 }
 
@@ -363,6 +368,8 @@ function gridTourInit() {
     showOn: () => document.querySelector('[data-tour="categorize-control-existing"]')?.checkVisibility() ?? false
   });
 
+  wireUpAnalytics(grid, 'grid-tour');
+
   return grid;
 }
 
@@ -406,6 +413,13 @@ function navigationTourInit() {
       }
     ]
   });
+
+  wireUpAnalytics(navigationTour, 'navigation-tour');
   return navigationTour;
 }
 
+function wireUpAnalytics(tour: Shepherd.Tour, name: string): void {
+  tour.once('start', () => tag({event: 'start-tour', name}))
+  tour.once('complete', () => tag({event: 'complete-tour', name}))
+  tour.once('cancel', () => tag({event: 'cancel-tour', name}))
+}

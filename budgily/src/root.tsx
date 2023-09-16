@@ -26,10 +26,11 @@ export default component$(({runGTag}: RootProps) => {
   useContextProvider(ClientContext, createClientContext());
 
   useVisibleTask$(() => {
+    window.dataLayer = window.dataLayer || [];
     if(runGTag) {
       // pushing out to datalayer
       window.dataLayer.push(['js', new Date()]);
-      window.dataLayer.push(['config', 'G-D0YB3XMFHW']);
+      window.dataLayer.push(['config', 'G-L31J2Q7NQ5']);
     }
   })
 
@@ -40,12 +41,12 @@ export default component$(({runGTag}: RootProps) => {
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
 
-        <QwikPartytown forward={['dataLayer.push']} />
+        <QwikPartytown forward={['dataLayer.push']} debug={true} />
         {/* will do nothing unless partytown active b/c of the type - text/partytown */}
         <script
           async
           type="text/partytown"
-          src="https://www.googletagmanager.com/gtag/js?id=G-D0YB3XMFHW"
+          src="https://www.googletagmanager.com/gtag/js?id=G-L31J2Q7NQ5"
         />
 
         <RouterHead />
