@@ -29,7 +29,9 @@ export default component$(({ runGTag }: RootProps) => {
     if (runGTag) {
       // pushing out to datalayer
       window.dataLayer.push('js', new Date());
-      window.dataLayer.push('config', 'G-L31J2Q7NQ5', { 'debug_mode': true });
+      window.dataLayer.push('config', 'G-L31J2Q7NQ5'
+      // , { 'debug_mode': true }
+      );
     }
   })
 
@@ -40,21 +42,24 @@ export default component$(({ runGTag }: RootProps) => {
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
 
-        <script>window.dataLayer = window.dataLayer || [];</script>
-
-        <QwikPartytown forward={['dataLayer.push']} />
-        {/* will do nothing unless partytown active b/c of the type - text/partytown */}
-        <script
-          async
-          type="text/partytown"
-          src="https://www.googletagmanager.com/gtag/js?id=G-L31J2Q7NQ5"
-        />
+        <script>
+          window.dataLayer = window.dataLayer || [];
+        </script>
 
         <RouterHead />
       </head>
       <body lang="en">
         <RouterOutlet />
         <ServiceWorkerRegister />
+        <QwikPartytown forward={['dataLayer.push']}
+          // debug={true} logStackTraces={true} logScriptExecution={true} logGetters={true} logMainAccess={true} logCalls={true}
+        />
+        <script
+          async
+          // will do nothing unless partytown active b/c of the type - text/partytown
+          type="text/partytown"
+          src="https://www.googletagmanager.com/gtag/js?id=G-L31J2Q7NQ5"
+        />
       </body>
     </QwikCityProvider>
   );
