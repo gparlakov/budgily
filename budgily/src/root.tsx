@@ -14,7 +14,7 @@ const base = process.env.BUDGILY_BASE ?? '/';
 export type RootProps = {
   runGTag?: boolean;
 }
-export default component$(({runGTag}: RootProps) => {
+export default component$(({ runGTag }: RootProps) => {
   /**
    * The root of a QwikCity site always start with the <QwikCityProvider> component,
    * immediately followed by the document's <head> and <body>.
@@ -27,10 +27,10 @@ export default component$(({runGTag}: RootProps) => {
 
   useVisibleTask$(() => {
     window.dataLayer = window.dataLayer || [];
-    if(runGTag) {
+    if (runGTag) {
       // pushing out to datalayer
-      window.dataLayer.push(['js', new Date()]);
-      window.dataLayer.push(['config', 'G-L31J2Q7NQ5']);
+      window.dataLayer.push('js', new Date());
+      window.dataLayer.push('config', 'G-L31J2Q7NQ5', { 'debug_mode': true });
     }
   })
 
