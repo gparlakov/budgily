@@ -26,7 +26,6 @@ export default component$(({ runGTag }: RootProps) => {
   useContextProvider(ClientContext, createClientContext());
 
   useVisibleTask$(() => {
-    window.dataLayer = window.dataLayer || [];
     if (runGTag) {
       // pushing out to datalayer
       window.dataLayer.push('js', new Date());
@@ -41,7 +40,9 @@ export default component$(({ runGTag }: RootProps) => {
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
 
-        <QwikPartytown forward={['dataLayer.push']} debug={true} />
+        <script>window.dataLayer = window.dataLayer || [];</script>
+
+        <QwikPartytown forward={['dataLayer.push']} />
         {/* will do nothing unless partytown active b/c of the type - text/partytown */}
         <script
           async
