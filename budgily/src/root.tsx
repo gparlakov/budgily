@@ -42,19 +42,19 @@ export default component$(({ runGTag }: RootProps) => {
 
         <script>
           window.dataLayer = window.dataLayer || [];
+          console.log('--- initialized data layer', window.dataLayer)
         </script>
-
-        <RouterHead />
-      </head>
-      <body lang="en">
-        <RouterOutlet />
-        <ServiceWorkerRegister />
         <QwikPartytown forward={['dataLayer.push']} />
         <script
           async
           type="text/partytown"
           src="https://www.googletagmanager.com/gtag/js?id=G-L31J2Q7NQ5"
         />
+        <RouterHead />
+      </head>
+      <body lang="en">
+        <RouterOutlet />
+        <ServiceWorkerRegister />
       </body>
     </QwikCityProvider>
   );
