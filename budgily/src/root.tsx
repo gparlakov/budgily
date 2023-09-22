@@ -27,9 +27,9 @@ export default component$(({ runGTag }: RootProps) => {
 
   useVisibleTask$(() => {
     if (runGTag) {
+      console.log('pushing out')
       // pushing out to datalayer
-      window.dataLayer.push('js', new Date());
-      window.dataLayer.push('config', 'G-L31J2Q7NQ5' , { 'debug_mode': true }      );
+
     }
   })
 
@@ -40,14 +40,15 @@ export default component$(({ runGTag }: RootProps) => {
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
 
-        <script>
+        <script dangerouslySetInnerHTML="
           window.dataLayer = window.dataLayer || [];
           console.log('--- initialized data layer', window.dataLayer)
-        </script>
-        <QwikPartytown forward={['dataLayer.push']} />
+          window.dataLayer.push('js', new Date());
+          window.dataLayer.push('config', 'G-L31J2Q7NQ5' , { 'debug_mode': true });
+        "/>
+        {/* <QwikPartytown forward={['dataLayer.push']} /> */}
         <script
           async
-          type="text/partytown"
           src="https://www.googletagmanager.com/gtag/js?id=G-L31J2Q7NQ5"
         />
         <RouterHead />
