@@ -29,7 +29,10 @@ export default component$(({ runGTag }: RootProps) => {
     if (runGTag) {
       console.log('pushing out')
       // pushing out to datalayer
-
+      window.dataLayer = window.dataLayer || [];
+      console.log('--- initialized data layer', window.dataLayer)
+      window.dataLayer.push('js', new Date());
+      window.dataLayer.push('config', 'G-L31J2Q7NQ5');
     }
   })
 
@@ -39,13 +42,6 @@ export default component$(({ runGTag }: RootProps) => {
         <meta charSet="utf-8" />
         <base href={base} />
         <link rel="manifest" href="manifest.json" />
-
-        <script dangerouslySetInnerHTML="
-          window.dataLayer = window.dataLayer || [];
-          console.log('--- initialized data layer', window.dataLayer)
-          window.dataLayer.push('js', new Date());
-          window.dataLayer.push('config', 'G-L31J2Q7NQ5');
-        "/>
         {/* <QwikPartytown forward={['dataLayer.push']} /> */}
         <script
           async
