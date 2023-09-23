@@ -31,7 +31,7 @@ export default component$(({ runGTag }: RootProps) => {
       window.dataLayer = window.dataLayer || [];
 
       gtag('js', new Date());
-      gtag('config', 'G-L31J2Q7NQ5', { 'debug_mode': true });
+      gtag('config', 'G-L31J2Q7NQ5');
       console.log('--- initialized data layer', window.dataLayer)
     }
   })
@@ -45,6 +45,8 @@ export default component$(({ runGTag }: RootProps) => {
         {/* <QwikPartytown forward={['dataLayer.push']} /> */}
         <script
           async
+          // will do nothing unless partytown active b/c of the type - text/partytown
+          // type="text/partytown"
           src="https://www.googletagmanager.com/gtag/js?id=G-L31J2Q7NQ5"
         />
         <RouterHead />
