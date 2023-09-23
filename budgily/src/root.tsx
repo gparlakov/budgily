@@ -32,7 +32,7 @@ export default component$(({ runGTag }: RootProps) => {
       window.dataLayer = window.dataLayer || [];
       console.log('--- initialized data layer', window.dataLayer)
       window.dataLayer.push('js', new Date());
-      window.dataLayer.push('config', 'G-L31J2Q7NQ5');
+      window.dataLayer.push('config', 'G-L31J2Q7NQ5', { 'debug_mode': true });
     }
   })
 
