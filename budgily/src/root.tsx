@@ -9,6 +9,7 @@ import { QwikPartytown } from './components/partytown/partytown';
 
 import globalStyles from './global.scss?inline';
 import { ClientContext, createClientContext } from './core/client.context';
+import { gtag } from './analytics';
 const base = process.env.BUDGILY_BASE ?? '/';
 
 export type RootProps = {
@@ -27,12 +28,11 @@ export default component$(({ runGTag }: RootProps) => {
 
   useVisibleTask$(() => {
     if (runGTag) {
-      console.log('pushing out')
-      // pushing out to datalayer
       window.dataLayer = window.dataLayer || [];
+
+      gtag('js', new Date());
+      gtag('config', 'G-L31J2Q7NQ5', { 'debug_mode': true });
       console.log('--- initialized data layer', window.dataLayer)
-      window.dataLayer.push('js', new Date());
-      window.dataLayer.push('config', 'G-L31J2Q7NQ5', { 'debug_mode': true });
     }
   })
 

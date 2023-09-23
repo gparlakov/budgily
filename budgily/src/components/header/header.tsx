@@ -7,7 +7,7 @@ import demo from '../../core/demo';
 import { Button } from '@qwik-ui/tailwind';
 import shepherdStyles from 'shepherd.js/dist/css/shepherd.css?inline';
 import styles from './header.scss?inline';
-import { tag } from '@codedoc1/analytics';
+import { gtag as tag } from '@codedoc1/analytics';
 
 export const md = {
   fn: function x(...args: unknown[]) {
