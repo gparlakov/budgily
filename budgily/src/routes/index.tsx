@@ -10,7 +10,7 @@ import {
   useTask$,
   useVisibleTask$
 } from '@builder.io/qwik';
-import { type DocumentHead } from "@builder.io/qwik-city";
+import { Link, type DocumentHead } from "@builder.io/qwik-city";
 
 import { filterValueNoCategory } from '@codedoc1/budgily-data-client';
 
@@ -90,16 +90,17 @@ export default component$(() => {
   return (
     <>
       <CategoriesFetcher store={appStore}></CategoriesFetcher>
-      <header class="navbar">
-        <div class="navbar-start">
+      <header class="navbar flex">
+        <div class="navbar-start flex-initial" >
           <div class="join" data-tour="grid-chart-controls">
+            <Link href="/import" class="join-item btn btn-sm hide-text" title="import"> ➕ <span class="hidden-text">import</span></Link>
             <button class={`join-item  hide-text  btn btn-sm ${view.value === 'chart' ? 'btn-accent ' : ''}`} onClick$={() => { view.value = 'chart'; appStore.selectedId = undefined;  }}>📊 <span class="hidden-text">chart</span></button>
             <button class={`join-item  hide-text btn btn-sm ${view.value === 'grid' ? 'btn-accent' : ''}`} onClick$={() => { view.value = 'grid'; appStore.selectedId = undefined; }}>📑 <span class="hidden-text">grid</span></button>
             <button class="join-item hide-text  btn btn-sm" onClick$={() => (appStore.filter.categories = [...appStore.filter.categories ?? []])} title="reload"> 🔁 <span class="hidden-text">reload</span></button>
           </div>
         </div>
 
-        <div class="navbar-center" data-tour="grid-filter-and-search">
+        <div class="navbar-center flex-initial" data-tour="grid-filter-and-search">
           <MovementFilter filterStore={appStore} ></MovementFilter>
         </div>
 

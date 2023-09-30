@@ -20,13 +20,14 @@ export function mapToViewModel({
   data?: { movements: { movements: DemoMovement[] | undefined } };
   errors?: unknown[] | undefined;
 }) {
+  const creditNormalized = MovementType.Credit.toLocaleLowerCase();
   const movements: MovementVm[] =
     data?.movements?.movements?.map((d) => {
       const date = new Date(Number(d.date));
       return {
         amount: Number(d.amount),
         description: d.description ?? '',
-        type: d.type === MovementType.Credit ? ('Credit' as const) : ('Debit' as const),
+        type: d.type?.toLocaleLowerCase() === creditNormalized ? ('Credit' as const) : ('Debit' as const),
         date: date,
         id: d.id,
         categories: d.categories?.filter((c): c is DemoCategory => c != null).map((c) => ({ name: c.name })) ?? [],

@@ -18,6 +18,8 @@ export type MovementRaw = {
   date: string;
   month: string;
   categories: DemoCategory[];
+  sender?: string;
+  receiver?: string;
 };
 
 export type MovementsDemoFilter = Omit<MovementFilter, 'fromDate' | 'toDate'> & {
@@ -34,6 +36,10 @@ type Filter = (m: DemoMovement) => boolean;
 const movementsKey = 'all-movements';
 const movementsWellknown = './mock-data.json';
 const categoriesKey = 'all-categories';
+
+export function replaceMovements(ms: DemoMovement[]): void {
+  window.localStorage.setItem(movementsKey, JSON.stringify(ms))
+}
 
 export function getMovementsFromLocalStorageOrWellKnown(
   { from, categories, to, search, amountMin, amountMax, id }: MovementsDemoFilter | undefined = {},

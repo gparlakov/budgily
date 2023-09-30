@@ -384,7 +384,7 @@ function navigationTourInit() {
 
   navigationTour.addStep({
     id: 'example-step',
-    text: 'View controls - change between Chart and Grid views. And can reload the data too.',
+    text: 'Import or change between Chart and Grid views. And can reload the data too.',
     attachTo: {
       element: '[data-tour="grid-chart-controls"]',
       on: 'bottom'

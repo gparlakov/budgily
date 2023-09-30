@@ -40,9 +40,9 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
-    "@builder.io/qwik": "1.2.9",
-    "@builder.io/qwik-city": "1.2.9",
     "@builder.io/partytown": "^0.8.0",
+    "@builder.io/qwik": "1.2.12",
+    "@builder.io/qwik-city": "1.2.12",
     "@graphql-codegen/cli": "3.3.1",
     "@graphql-codegen/client-preset": "^3.0.1",
     "@graphql-codegen/named-operations-object": "^2.3.1",
@@ -59,7 +59,7 @@
     "@nrwl/workspace": "15.9.2",
     "@nx/playwright": "^16.7.0-beta.1",
     "@playwright/test": "^1.36.0",
-    "@qwik-ui/headless": "^0.1.7",
+    "@qwik-ui/headless": "^0.1.15",
     "@qwik-ui/tailwind": "^0.0.3",
     "@types/compression": "^1.7.2",
     "@types/d3": "^7.4.0",

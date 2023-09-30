@@ -74,11 +74,11 @@ devDependencies:
     specifier: ^0.8.0
     version: 0.8.1
   '@builder.io/qwik':
-    specifier: 1.2.9
-    version: 1.2.9(undici@5.24.0)
+    specifier: 1.2.12
+    version: 1.2.12(undici@5.24.0)
   '@builder.io/qwik-city':
-    specifier: 1.2.9
-    version: 1.2.9
+    specifier: 1.2.12
+    version: 1.2.12
   '@graphql-codegen/cli':
     specifier: 3.3.1
     version: 3.3.1(@babel/core@7.22.19)(@types/node@18.7.23)(graphql@16.8.0)
@@ -128,8 +128,8 @@ devDependencies:
     specifier: ^1.36.0
     version: 1.38.0
   '@qwik-ui/headless':
-    specifier: ^0.1.7
-    version: 0.1.13(@builder.io/qwik@1.2.9)
+    specifier: ^0.1.15
+    version: 0.1.15(@builder.io/qwik@1.2.12)
   '@qwik-ui/tailwind':
     specifier: ^0.0.3
     version: 0.0.3
@@ -1686,8 +1686,8 @@ packages:
     hasBin: true
     dev: true
 
-  /@builder.io/qwik-city@1.2.9:
-    resolution: {integrity: sha512-p+etf1zQ+srhjNH5fX/YSFBjayWEIpnlTKKJgvb22f4E6R4CEPYIhRtcZtg3ljPuC2k+ouGdA0GMHj6LA3enhA==}
+  /@builder.io/qwik-city@1.2.12:
+    resolution: {integrity: sha512-gi8QXd9TohBDjG+xsIdkln+6iMjUFWO6PXe3CTNTpqacTcX0vN7mQkPUcPWj5alo8aSE+Mog8xnZYHx3qsQzwg==}
     engines: {node: '>=16.8.0 <18.0.0 || >=18.11'}
     dependencies:
       '@mdx-js/mdx': 2.3.0
@@ -1702,8 +1702,8 @@ packages:
       - supports-color
     dev: true
 
-  /@builder.io/qwik@1.2.9(undici@5.24.0):
-    resolution: {integrity: sha512-LLifLKFHIe0181aYgzoayG2mSv0asBQq38BrwxS3sBfnsQSEJuTXUfx1PwUq5xZRHQ/jNbkyMHuznC06SU3mPg==}
+  /@builder.io/qwik@1.2.12(undici@5.24.0):
+    resolution: {integrity: sha512-17dwM9BR0NJtrWLPlDygdYMlRkBAMEp8nkPIhhApSH5c/ESQMlbVg7Rm665WkBTf87+Epd+b7cC7Ky+8iYGjmA==}
     engines: {node: '>=16.8.0 <18.0.0 || >=18.11'}
     hasBin: true
     peerDependencies:
@@ -4291,14 +4291,16 @@ packages:
     resolution: {integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw==}
     dev: false
 
-  /@qwik-ui/headless@0.1.13(@builder.io/qwik@1.2.9):
-    resolution: {integrity: sha512-j59YslxvrI7DzuzJQXne/5QCzXPWwc+hwtnkrMc0BS0o5MMam81jGfUoVvnz8D2S6fUxrFafN2zvsYlvOtT6qw==}
+  /@qwik-ui/headless@0.1.15(@builder.io/qwik@1.2.12):
+    resolution: {integrity: sha512-meXaQovEiAp+pJWU+YdMwUTlDnJiC/SKrsWxKZL/AjvCMvuyLrSrH4ryCKwrHFog6+8IoZqFD0A/BPshc9/wdQ==}
     engines: {node: '>=16.0.0'}
     peerDependencies:
-      '@builder.io/qwik': '>1.1.0'
+      '@builder.io/qwik': '>1.2.11'
     dependencies:
-      '@builder.io/qwik': 1.2.9(undici@5.24.0)
+      '@builder.io/qwik': 1.2.12(undici@5.24.0)
       '@floating-ui/dom': 1.0.10
+      country-list-json: 1.1.0
+      libphonenumber-js: 1.10.44
     dev: true
 
   /@qwik-ui/tailwind@0.0.3:
@@ -6500,6 +6502,10 @@ packages:
       js-yaml: 4.1.0
       parse-json: 5.2.0
       path-type: 4.0.0
+    dev: true
+
+  /country-list-json@1.1.0:
+    resolution: {integrity: sha512-9a6sGBVXq3rXmZlddQQIjk0ZAk/pfBwVMUU1zJczWtIG4VcfUKp8HDSMteK1bBZVznE7+wWVg6kntxtzDBjvPQ==}
     dev: true
 
   /create-jest@29.7.0(@types/node@18.7.23)(ts-node@10.9.1):
@@ -10234,6 +10240,10 @@ packages:
     dependencies:
       prelude-ls: 1.2.1
       type-check: 0.4.0
+
+  /libphonenumber-js@1.10.44:
+    resolution: {integrity: sha512-svlRdNBI5WgBjRC20GrCfbFiclbF0Cx+sCcQob/C1r57nsoq0xg8r65QbTyVyweQIlB33P+Uahyho6EMYgcOyQ==}
+    dev: true
 
   /license-webpack-plugin@4.0.2(webpack@5.88.2):
     resolution: {integrity: sha512-771TFWFD70G1wLTC4oU2Cw4qvtmNrIw+wRvBtn+okgHl7slJVi7zfNcdmqDL72BojM30VNJ2UHylr1o77U37Jw==}
