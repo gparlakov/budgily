@@ -37,19 +37,22 @@ export default component$(() => {
   return (
     <header class="min-h-3 block">
       {minimised.value
-        ? <div class="absolute right-2 top-1"> <button onClick$={() => (store(minimisedKey, null), minimised.value = false)} class="btn btn-outline btn-xs float-left">
+        ? <div class="absolute right-2 top-1"> <button onClick$={() => (store(minimisedKey, ''), minimised.value = false)} class="btn btn-outline btn-xs float-left">
           Help and Tour
         </button></div>
         : <div class="bg-base-100">
-          <button onClick$={() => (store(minimisedKey, minimisedValue), minimised.value = true)} class="btn btn-outline btn-sm float-right">
+          <div class="indicator float-right">
+          <button onClick$={() => (store(minimisedKey, minimisedValue), minimised.value = true)} class="btn btn-outline btn-sm">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+          <div class="indicator-item indicator-bottom badge">hide</div>
+          </div>
 
           <h3>Hello and welcome to Budgily DEMO.</h3>
           <p>The app can visualize, categorize and see bank account movements in grid form.</p>
-          <p>This is the demo version with a 1000 randomly generated movements. Import your own is coming soon.</p>
+          <p>This is the demo version with a 1000 randomly generated movements or you can import <strong>your own</strong> via the + import button.</p>
           <p>Want to sign up for full version: <a class="link" href="https://docs.google.com/forms/d/1dsxhIgV8Hs2xphy_AxOdDg12iY0qW4GfqMcWafiZ5GE" target="_blank"> Sign up (Google Form)</a></p>
           <button class="btn btn-accent btn-sm" onClick$={() => { tour.value += 1 }}>Want a tour?</button>
         </div>}
