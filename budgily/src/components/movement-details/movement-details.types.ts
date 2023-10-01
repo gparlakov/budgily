@@ -59,7 +59,7 @@ export function mapToVm({
     account: account ?? '-',
     description,
     opposite,
-    type: type === MovementType.Credit ? 'credit' : 'debit',
+    type: type.toLocaleLowerCase() === 'credit' ? 'credit' : 'debit',
     categories: cats ?? [],
     categoriesStr,
   };

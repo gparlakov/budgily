@@ -8,6 +8,7 @@ import { Button } from '@qwik-ui/tailwind';
 import shepherdStyles from 'shepherd.js/dist/css/shepherd.css?inline';
 import styles from './header.scss?inline';
 import { gtag as tag } from '@codedoc1/analytics';
+import { fetch, store } from '../../core/storage';
 
 export const md = {
   fn: function x(...args: unknown[]) {
@@ -16,22 +17,42 @@ export const md = {
   name: 'test'
 };
 
+const minimisedKey = 'minimised';
+const minimisedValue = 'true';
 export default component$(() => {
   useStylesScoped$(styles);
   useStyles$(shepherdStyles);
   useStyles$('.pad-down {transform: translateY(10px);} .mute-button { background-color: lightgray; }');
 
   const tour = useTour();
+  const minimised = useSignal<boolean>(true);
+
+  useVisibleTask$(() => {
+    const storedMinimised = fetch(minimisedKey);
+    if (storedMinimised != null) {
+      minimised.value = storedMinimised == minimisedValue;
+    }
+  })
 
   return (
-    <header>
-      <div class="bg-base-100">
-        <h3>Hello and welcome to Budgily DEMO.</h3>
-        <p>The app can visualize, categorize and see bank account movements in grid form.</p>
-        <p>This is the demo version with a 1000 randomly generated movements. Import your own is coming soon.</p>
-        <p>Want to sign up for full version: <a class="link" href="https://docs.google.com/forms/d/1dsxhIgV8Hs2xphy_AxOdDg12iY0qW4GfqMcWafiZ5GE" target="_blank"> Sign up (Google Form)</a></p>
-        <Button onClick$={() => {tour.value += 1}}>Want a tour?</Button>
-      </div>
+    <header class="min-h-3 block">
+      {minimised.value
+        ? <div class="absolute right-2 top-1"> <button onClick$={() => (store(minimisedKey, null), minimised.value = false)} class="btn btn-outline btn-xs float-left">
+          Help and Tour
+        </button></div>
+        : <div class="bg-base-100">
+          <button onClick$={() => (store(minimisedKey, minimisedValue), minimised.value = true)} class="btn btn-outline btn-sm float-right">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          <h3>Hello and welcome to Budgily DEMO.</h3>
+          <p>The app can visualize, categorize and see bank account movements in grid form.</p>
+          <p>This is the demo version with a 1000 randomly generated movements. Import your own is coming soon.</p>
+          <p>Want to sign up for full version: <a class="link" href="https://docs.google.com/forms/d/1dsxhIgV8Hs2xphy_AxOdDg12iY0qW4GfqMcWafiZ5GE" target="_blank"> Sign up (Google Form)</a></p>
+          <button class="btn btn-accent btn-sm" onClick$={() => { tour.value += 1 }}>Want a tour?</button>
+        </div>}
     </header>
   );
 });
@@ -419,7 +440,7 @@ function navigationTourInit() {
 }
 
 function wireUpAnalytics(tour: Shepherd.Tour, name: string): void {
-  tour.once('start', () => tag({event: 'start-tour', name}))
-  tour.once('complete', () => tag({event: 'complete-tour', name}))
-  tour.once('cancel', () => tag({event: 'cancel-tour', name}))
+  tour.once('start', () => tag({ event: 'start-tour', name }))
+  tour.once('complete', () => tag({ event: 'complete-tour', name }))
+  tour.once('cancel', () => tag({ event: 'cancel-tour', name }))
 }
