@@ -1,7 +1,7 @@
-import { Resource, component$, noSerialize, useContext, useResource$, useStore, useStylesScoped$ } from '@builder.io/qwik';
+import { Resource, component$, noSerialize, useContext, useResource$, useStore, useStylesScoped$, $ } from '@builder.io/qwik';
 
 import { ClientContextType, getMovementsFromLocalStorageOrWellKnown } from '@codedoc1/budgily-data-client';
-import { Pagination } from '@qwik-ui/tailwind';
+import { Pagination, PaginationButtonProps } from '@qwik-ui/headless';
 import { AppStore } from '../../core/app.store';
 import { ClientContext } from '../../core/client.context';
 
@@ -38,7 +38,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                     grid.selected.selected = grid.allIds.reduce((acc, n) => ({ ...acc, [n]: true }), {});
                     appStore.selectedId = grid.allIds;
                   }
-                }} data-tour="table-row-all-checkbox"/>
+                }} data-tour="table-row-all-checkbox" />
             </label>
               <button onClick$={() => navigator?.clipboard.writeText(Object.keys(grid.selected.selected).join(','))} title="Copy selected ids">
                 <img src="copy.svg" width="12" height="12" />
@@ -64,7 +64,7 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
                     appStore.selectedId = Object.entries(grid.selected.selected).filter(([, selected]) => selected).map(([id]) => id);
                   }}
                   data-tour="table-row-checkbox"
-                  /></th>
+                /></th>
                 <td>{m.type === 'credit' ? '+' : '-'} {m.amount}</td>
                 <td>{m.description}</td>
                 <td>{m.type}</td>
@@ -105,7 +105,9 @@ export const MovementsGrid = component$(({ appStore }: MovementsGridProps) => {
 
       / {grid.totalCount}
     </div>
-    <div class="w-10/12 inline-block"> <Pagination pages={grid.totalPages} page={grid.page} onPaging$={(page: number) => { if (page != grid.page) grid.page = page }} /></div>
+    <div class="w-10/12 inline-block"> <Pagination pages={grid.totalPages ?? 1} page={grid.page} onPaging$={(page: number) => { if (page != grid.page) grid.page = page }}
+      RenderItem={PageButton}
+    /></div>
   </>;
 });
 
@@ -156,3 +158,13 @@ function resourceMovementsPaginated(ctx: ClientContextType, grid: MovementsGridS
 
   });
 }
+
+const PageButton = component$(({ key, disabled, onClick$, value, ...props }: PaginationButtonProps) => <button
+  onClick$={onClick$}
+  aria-label={props['aria-label']}
+  disabled={disabled}
+  key={key}
+  class={`btn btn-sm ${props['aria-current'] ? 'btn-accent' : ''}`}
+>
+  {value}
+</button>)
