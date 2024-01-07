@@ -19,6 +19,7 @@
   "dependencies": {
     "@apollo/server": "^4.7.0",
     "@brightspace-ui/intl": "^3.13.2",
+    "@floating-ui/dom": "^1.5.4",
     "axios": "^1.0.0",
     "body-parser": "^1.20.2",
     "compression": "^1.7.4",
